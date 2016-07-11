@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="tangible_main" type="scene_visualization_main" name="scene_visualization">
+    <remap from="cloud_in" to="/camera/depth_registered/points" />
+  </node>
+</launch>
