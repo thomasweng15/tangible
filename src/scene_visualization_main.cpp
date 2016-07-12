@@ -52,6 +52,7 @@ private:
 				setAction(scene_elements.at(i), DELETE);
 				scene_element_pub.publish(scene_elements.at(i));
 				scene_elements.pop_back();
+				// TO-DO test
 			}
 		} else {
 			ROS_INFO("displaying objects.");
@@ -96,36 +97,106 @@ private:
 
 	void displayElements() {
 		const rapid::perception::HSurface& table_top = scene.primary_surface();
-		
+		//ROS_INFO("***** scene info *****\nTable top (%2.2f, %2.2f, %2.2f) with %3d objects",
+		//	                                        table_top.pose().pose.position.x,
+		//	                                        table_top.pose().pose.position.y,
+		//	                                        table_top.pose().pose.position.z,
+		//	                                        (int)(table_top.objects().size()));
+
 		if(scene_elements.size() == 0) {
 			ROS_INFO("Filling scene element stack afresh...");
 			// box
 			visualization_msgs::Marker table_top_box = 
 			    rapid::viz::Marker::Box(NULL, table_top.pose(), table_top.scale()).marker();
 			setNamespace(table_top_box, "scene_visualization");
+			setColor(table_top_box,
+				     table_top_box.color.r, table_top_box.color.g, table_top_box.color.b,
+				     0.25);
 			setID(table_top_box, 0);
-			setAction(table_top_box, ADD);
 			scene_elements.push_back(table_top_box);
-
-
-			// lable
+			
+			// label
 			visualization_msgs::Marker table_top_label = 
 			    rapid::viz::Marker::Text(NULL, table_top.pose(), "table top", 0.03).marker();
 			setNamespace(table_top_label, "scene_visualization");
 			setID(table_top_label, 1);
-			setColor(table_top_label, 1, 0, 0, 1);
-			setAction(table_top_label, ADD);
+			setColor(table_top_label, 1, 1, 1, 1);
 			scene_elements.push_back(table_top_label);
-
-			// TO-DO add objects segmented on the table top
+			// YSS: table_top_box or table_top_label are defined on stack memory.
+			//      How their push_back into a structure accessible outside the current scope
+			//      is handled?
 		} else {
-			// TO-DO objects that are no longer segmented should be deleted
-			//       new objects should be added
+			setPose(scene_elements.at(0), table_top.pose());
+			setScale(scene_elements.at(1), table_top.scale());
+		}
+		setAction(scene_elements.at(0), ADD);
+		setAction(scene_elements.at(1), ADD);
+
+		const std::vector<rapid::perception::Object>& objects = table_top.objects();
+
+		//for(int i = 0; i < objects.size(); i++) {
+		//	ROS_INFO("object-%02d (%2.2f, %2.2f, %2.2f)", i, 
+		//		                objects.at(i).pose().pose.position.x,
+		//		                objects.at(i).pose().pose.position.y,
+		//		                objects.at(i).pose().pose.position.z);
+		//}
+		
+		int prevObjNum = scene_elements.size()/2 - 1;
+		int currObjNum = objects.size();
+		std::stringstream ss;
+
+		ROS_INFO("%3d objects now, %3d object last time", currObjNum, prevObjNum);
+
+		for(int i = 0; i < currObjNum; i++) {
+			if(i < prevObjNum) { // update info
+				//ROS_INFO("updating object %2d box and label at %2d, %2d", i, 2+i*2, 2+i*2+1);
+				// box
+				setPose(scene_elements.at(2+i*2), objects.at(i).pose());
+				setScale(scene_elements.at(2+i*2), objects.at(i).scale());
+
+				// label
+				setPose(scene_elements.at(2+i*2+1), objects.at(i).pose());
+				setScale(scene_elements.at(2+i*2+1), objects.at(i).scale());
+			} else { // add new markers
+				//ROS_INFO("the  new object %2d box and label at %2d, %2d", i, 2+i*2, 2+i*2+1);
+				// box
+				visualization_msgs::Marker box =
+				    rapid::viz::Marker::Box(NULL, objects.at(i).pose(), objects.at(i).scale()).marker();
+				setNamespace(box, "scene_visualization");
+				setID(box, 2+i*2);
+				setColor(box, box.color.r, box.color.g, box.color.b, 0.45);
+				scene_elements.push_back(box);
+
+				// label
+				ss.str(std::string());
+				ss << "object_" << i;
+				visualization_msgs::Marker label = 
+				    rapid::viz::Marker::Text(NULL, objects.at(i).pose(), ss.str(), 0.02).marker();
+				setNamespace(label, "scene_visualization");
+				setID(label, 2+i*2+1);
+				setColor(label, 0, 0, 1, 1);
+				scene_elements.push_back(label);
+			}
+			setAction(scene_elements.at(2+i*2), ADD);
+			setAction(scene_elements.at(2+i*2+1), ADD);
 		}
 
-		for(int i = 0; i < scene_elements.size(); i++) {
-			scene_element_pub.publish(scene_elements.at(i));
+		// objects no longer existing should not be displayed
+		for(int i = currObjNum; i < prevObjNum; i++) {
+			setAction(scene_elements.at(2+i*2), DELETE);
+			setAction(scene_elements.at(2+i*2+1), DELETE);
 		}
+
+		for(int i = 0; i < scene_elements.size(); i++)
+			scene_element_pub.publish(scene_elements.at(i));
+
+		// markers associated with objects no longer existing should be removed
+		for(int i = prevObjNum; i > currObjNum; i--){
+			scene_elements.pop_back(); // label
+			scene_elements.pop_back(); // box
+		}
+
+		//NOTE: there might be jumps in labels.
 	}
 
 	void labelCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg) {
@@ -139,7 +210,7 @@ private:
 		std::stringstream ss;
 		for(int i = 0; i < TAG_NUM; i++) {
 			ss.str(std::string());
-			ss << "tag " << i;
+			ss << "tag_" << i;
 			if(found[i] == -1) setAction(labels[i], DELETE);
 			else {
 				geometry_msgs::PoseStamped ps = msg->markers[found[i]].pose;
@@ -217,16 +288,16 @@ public:
 		ar_marker_sub = node.subscribe("/ar_pose_marker", 10, &Visualization::labelCallback, this);
 		label_pub = node.advertise<visualization_msgs::Marker>("ar_label_viz", 10);
 		for(int i = 0; i < TAG_NUM; i++){
-			setNamespace(labels[i], "scene_visualization");
+			setNamespace(labels[i], "tag_visualization");
 			setID(labels[i], i);
 		}
-		//YSS: where are the pcl deleted?
-		//     they are shared pointers so pcl handles deletion itself
+		//NOTE: where are the pcl deleted?
+		//      they are shared pointers so pcl handles deletion itself
 	}
 	
 	~Visualization() { //YSS: this is not called upon Ctrl+c. Why? How to force its call?
 
-		ROS_INFO("removing the labels and objects (if any) upon exit...");
+		ROS_INFO("removing the labels and boxes (if any) upon exit...");
 		for(int i = 0; i < TAG_NUM; i++) {
 			setAction(labels[i], DELETE);
 			label_pub.publish(labels[i]);
