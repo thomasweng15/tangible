@@ -52,12 +52,10 @@ private:
 				setAction(scene_elements.at(i), DELETE);
 				scene_element_pub.publish(scene_elements.at(i));
 				scene_elements.pop_back();
-				// TO-DO test
+				//TO-DO test
 			}
-		} else {
-			ROS_INFO("displaying objects.");
+		} else
 			displayElements();
-		}
 		publishCloud();
 	}
 
@@ -109,9 +107,7 @@ private:
 			visualization_msgs::Marker table_top_box = 
 			    rapid::viz::Marker::Box(NULL, table_top.pose(), table_top.scale()).marker();
 			setNamespace(table_top_box, "scene_visualization");
-			setColor(table_top_box,
-				     table_top_box.color.r, table_top_box.color.g, table_top_box.color.b,
-				     0.25);
+			setColor(table_top_box,0, 1, 0, 0.25);
 			setID(table_top_box, 0);
 			scene_elements.push_back(table_top_box);
 			
@@ -133,6 +129,7 @@ private:
 		setAction(scene_elements.at(1), ADD);
 
 		const std::vector<rapid::perception::Object>& objects = table_top.objects();
+		ROS_INFO("displaying %3d objects", (int)(objects.size()));
 
 		//for(int i = 0; i < objects.size(); i++) {
 		//	ROS_INFO("object-%02d (%2.2f, %2.2f, %2.2f)", i, 
@@ -145,7 +142,7 @@ private:
 		int currObjNum = objects.size();
 		std::stringstream ss;
 
-		ROS_INFO("%3d objects now, %3d object last time", currObjNum, prevObjNum);
+		//ROS_INFO("%3d objects now, %3d object last time", currObjNum, prevObjNum);
 
 		for(int i = 0; i < currObjNum; i++) {
 			if(i < prevObjNum) { // update info
@@ -164,7 +161,7 @@ private:
 				    rapid::viz::Marker::Box(NULL, objects.at(i).pose(), objects.at(i).scale()).marker();
 				setNamespace(box, "scene_visualization");
 				setID(box, 2+i*2);
-				setColor(box, box.color.r, box.color.g, box.color.b, 0.45);
+				setColor(box, 0.5, 0, 0.5, 0.45);
 				scene_elements.push_back(box);
 
 				// label
@@ -189,6 +186,9 @@ private:
 
 		for(int i = 0; i < scene_elements.size(); i++)
 			scene_element_pub.publish(scene_elements.at(i));
+		//YSS: visualizing boxes only
+		//for(int i=0; i < scene_elements.size(); i+=2)
+		//	scene_element_pub.publish(scene_elements.at(i));
 
 		// markers associated with objects no longer existing should be removed
 		for(int i = prevObjNum; i > currObjNum; i--){
