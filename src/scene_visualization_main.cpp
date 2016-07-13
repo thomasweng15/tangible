@@ -67,23 +67,29 @@ private:
 	}
 
 	bool parseScene() {
-		setParseParams();
+		retrieveParams();
 		return rapid::perception::ParseScene(cloud, params, &scene);
 	}
 
-	void setParseParams() {
-		params.scene.min_x = 0.2;
-		params.scene.max_x = 1.2;
-		params.scene.min_y = -1;
-		params.scene.max_y = 1;
-		params.scene.min_z = 0.3;
-		params.scene.max_z = 1.7;
-		params.hsurface.distance_threshold = 0.015;
-		params.hsurface.eps_angle = rapid::utils::DegreesToRadians(5);
-		params.objects.distance_threshold = 0.05;
-		params.objects.point_color_threshold = 35;
-		params.objects.region_color_threshold = 20;
-		params.objects.min_cluster_size = 38;
+	void retrieveParams() {
+		ros::param::param("parse/scene/min_x", params.scene.min_x, 0.2);
+		ros::param::param("parse/scene/max_x", params.scene.max_x, 1.2);
+		ros::param::param("parse/scene/min_y", params.scene.min_y, -1.0);
+		ros::param::param("parse/scene/max_y", params.scene.max_y, 1.0);
+		ros::param::param("parse/scene/min_z", params.scene.min_z, 0.3);
+		ros::param::param("parse/scene/max_z", params.scene.max_z, 1.7);
+		ros::param::param("parse/hsurface/distance_threshold",
+			               params.hsurface.distance_threshold, 0.015);
+		ros::param::param("parse/hsurface/eps_angle",
+			               params.hsurface.eps_angle, rapid::utils::DegreesToRadians(5));
+		ros::param::param("parse/objects/distance_threshold",
+			               params.objects.distance_threshold, 0.05);
+		ros::param::param("parse/objects/point_color_threshold",
+			               params.objects.point_color_threshold, (double) 35);
+		ros::param::param("parse/objects/region_color_threshold",
+			               params.objects.region_color_threshold, (double) 20);
+		ros::param::param("parse/objects/min_cluster_size", 
+			               params.objects.min_cluster_size, (double) 38);
 	}
 
 	void publishCloud() {
@@ -184,11 +190,11 @@ private:
 			setAction(scene_elements.at(2+i*2+1), DELETE);
 		}
 
-		for(int i = 0; i < scene_elements.size(); i++)
-			scene_element_pub.publish(scene_elements.at(i));
-		//YSS: visualizing boxes only
-		//for(int i=0; i < scene_elements.size(); i+=2)
+		//for(int i = 0; i < scene_elements.size(); i++)
 		//	scene_element_pub.publish(scene_elements.at(i));
+		//YSS: visualizing boxes only
+		for(int i=0; i < scene_elements.size(); i+=2)
+			scene_element_pub.publish(scene_elements.at(i));
 
 		// markers associated with objects no longer existing should be removed
 		for(int i = prevObjNum; i > currObjNum; i--){
