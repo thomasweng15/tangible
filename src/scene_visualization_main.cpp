@@ -42,6 +42,7 @@ private:
 	ros::Subscriber ar_marker_sub;
 	visualization_msgs::Marker labels[TAG_NUM];
 	ros::Publisher label_pub;
+	ros::Publisher transformed_marker_pub;
 
 	void segmentationCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
 		readPointCloud(msg);
@@ -205,7 +206,7 @@ private:
 		//NOTE: there might be jumps in labels.
 	}
 
-	void labelCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg) {
+	void ARMarkerCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg) {
 		int found[TAG_NUM];
 		for(int i = 0; i < TAG_NUM; i++)
 			found[i] = -1;
@@ -226,6 +227,24 @@ private:
 			}
 			label_pub.publish(labels[i]);
 		}
+
+		ar_track_alvar_msgs::AlvarMarkers transformedMarkers;
+		for(int i = 0; i < msg->markers.size(); i++) {
+			geometry_msgs::PoseStamped original = msg->markers[i].pose;
+			original.header.frame_id = msg->markers[i].header.frame_id;
+			
+			geometry_msgs::PoseStamped transformed;
+			tf_listener.transformPose("/"+FRAME_ID, original, transformed);
+
+			ar_track_alvar_msgs::AlvarMarker ar_marker;
+			ar_marker.header = msg->markers[i].header;
+			ar_marker.header.frame_id = "/"+FRAME_ID;
+			ar_marker.id = msg->markers[i].id;
+			ar_marker.confidence = msg->markers[i].confidence;
+			ar_marker.pose = transformed;
+			transformedMarkers.markers.push_back(ar_marker);
+		}
+		transformed_marker_pub.publish(transformedMarkers);
 	}
 
 	void fillLabel(visualization_msgs::Marker& marker, geometry_msgs::PoseStamped ps, std::string txt) {
@@ -291,12 +310,15 @@ public:
 		cloud_pub = node.advertise<sensor_msgs::PointCloud2>("cloud_viz", 100);
 		scene_element_pub = node.advertise<visualization_msgs::Marker>("scene_viz", 100);
 
-		ar_marker_sub = node.subscribe("/ar_pose_marker", 10, &Visualization::labelCallback, this);
+		ar_marker_sub =
+		    node.subscribe("/ar_pose_marker", 10, &Visualization::ARMarkerCallback, this);
 		label_pub = node.advertise<visualization_msgs::Marker>("ar_label_viz", 10);
 		for(int i = 0; i < TAG_NUM; i++){
 			setNamespace(labels[i], "tag_visualization");
 			setID(labels[i], i);
 		}
+		transformed_marker_pub = 
+		    node.advertise<ar_track_alvar_msgs::AlvarMarkers>("ar_pose_marker_transformed", 10);
 		//NOTE: where are the pcl deleted?
 		//      they are shared pointers so pcl handles deletion itself
 	}
