@@ -112,29 +112,47 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
+## Library files
+## ----------------
 ## Declare a C++ library
-# add_library(tangible_main
-#   src/${PROJECT_NAME}/tangible_main.cpp
-# )
-
 ## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(tangible_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+##    as an example, code may need to be generated before libraries
+##    either from message generation or dynamic reconfigure
 
+add_library(tangible_frame_transform src/frame_transform.cpp)
+add_dependencies(tangible_frame_transform
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_frame_transform ${catkin_LIBRARIES})
+
+## Executable files
+## ----------------
 ## Declare a C++ executable
-add_executable(scene_visualization_main src/scene_visualization_main.cpp)
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-add_dependencies(scene_visualization_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+## Add cmake target dependencies of the executable (same as for the library above)
 ## Specify libraries to link a library or executable target against
+
+add_executable(system_main src/system_main.cpp)
+add_dependencies(system_main
+  tangible_frame_transform
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(system_main
+  tangible_frame_transform
+  ${catkin_LIBRARIES}
+)
+
+add_executable(scene_visualization_main src/scene_visualization_main.cpp)
+add_dependencies(scene_visualization_main
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 target_link_libraries(scene_visualization_main ${catkin_LIBRARIES})
 
 #############
