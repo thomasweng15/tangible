@@ -1,31 +1,31 @@
-#include "tangible/frame_transform.h"
+#include "tangible/frame_transformer.h"
 
 namespace tangible {
 
-FrameTransform::FrameTransform(ros::NodeHandle& n, std::string id) : tf_listener() {
+FrameTransformer::FrameTransformer(ros::NodeHandle& n, std::string id) : tf_listener() {
 	node = n;
 	frame_id = id;
 	ROS_INFO("\n******* Allow time for TF buffer to build up the TF tree *******\n");
 	ros::Duration(10).sleep();
 
-	pcl_sub = node.subscribe("/cloud_in", 10, &FrameTransform::PCLcallback, this);
-	//NOTE: does not require full addressing (tangible::FrameTransform)
+	pcl_sub = node.subscribe("/cloud_in", 10, &FrameTransformer::PCLcallback, this);
+	//NOTE: does not require full addressing (tangible::FrameTransformer)
 	//      as its under the same name space
 	pcl_pub = node.advertise<sensor_msgs::PointCloud2>("cloud_transformed", 10);
 
-	ar_sub = node.subscribe("/ar_pose_marker", 10, &FrameTransform::ARcallback, this);
+	ar_sub = node.subscribe("/ar_pose_marker", 10, &FrameTransformer::ARcallback, this);
 	ar_pub = node.advertise<ar_track_alvar_msgs::AlvarMarkers>("/ar_pose_transformed", 10);
 
 }
 
-FrameTransform::~FrameTransform() {
-	ROS_INFO("FrameTransform destructor called.");
+FrameTransformer::~FrameTransformer() {
+	ROS_INFO("FrameTransformer destructor called.");
 	//NOTE: this is not called upon
 	//        - Ctrl+C
 	//        - rosnode kill <node_name> 
 }
 
-void FrameTransform::PCLcallback(const sensor_msgs::PointCloud2::ConstPtr& msg)  {
+void FrameTransformer::PCLcallback(const sensor_msgs::PointCloud2::ConstPtr& msg)  {
 	sensor_msgs::PointCloud2 transformedCloud;
 	tf_listener.waitForTransform("/"+frame_id,
 		                        msg->header.frame_id,
@@ -35,7 +35,7 @@ void FrameTransform::PCLcallback(const sensor_msgs::PointCloud2::ConstPtr& msg) 
 	pcl_pub.publish(transformedCloud);
 }
 
-void FrameTransform::ARcallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg) {
+void FrameTransformer::ARcallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg) {
 	ar_track_alvar_msgs::AlvarMarkers transformedMarkers;
 	for(int i = 0; i < msg->markers.size(); i++) {
 		// filling in the frame_id of each marker pose (ar_track_alvar lists frame_id

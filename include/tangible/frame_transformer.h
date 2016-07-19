@@ -1,5 +1,5 @@
-#ifndef TANGIBLE_FRAME_TRANSFORM
-#define TANGIBLE_FRAME_TRANSFORM
+#ifndef TANGIBLE_FRAME_TRANSFORMER
+#define TANGIBLE_FRAME_TRANSFORMER
 
 #include <string>
 
@@ -15,7 +15,7 @@
 
 namespace tangible {
 
-class FrameTransform {
+class FrameTransformer {
 private:
 	std::string frame_id;
 
@@ -31,8 +31,8 @@ private:
 	void ARcallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg);
 
 public:
-	FrameTransform (ros::NodeHandle& n, std::string id);
-	~FrameTransform();
+	FrameTransformer (ros::NodeHandle& n, std::string id);
+	~FrameTransformer ();
 };
 
 }

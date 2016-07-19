@@ -1,10 +1,10 @@
 #include "ros/ros.h"
-#include "tangible/frame_transform.h"
+#include "tangible/frame_transformer.h"
 
 int main (int argc, char** argv) {
 	ros::init(argc, argv, "tangible_pbd");
 	ros::NodeHandle node;
-	tangible::FrameTransform trns(node, "base_footprint");
+	tangible::FrameTransformer trns(node, "base_footprint");
 	ros::spin();
 	return 0;
 }

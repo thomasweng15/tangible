@@ -124,12 +124,12 @@ include_directories(
 ##    as an example, code may need to be generated before libraries
 ##    either from message generation or dynamic reconfigure
 
-add_library(tangible_frame_transform src/frame_transform.cpp)
-add_dependencies(tangible_frame_transform
+add_library(tangible_frame_transformer src/frame_transformer.cpp)
+add_dependencies(tangible_frame_transformer
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(tangible_frame_transform ${catkin_LIBRARIES})
+target_link_libraries(tangible_frame_transformer ${catkin_LIBRARIES})
 
 ## Executable files
 ## ----------------
@@ -139,12 +139,12 @@ target_link_libraries(tangible_frame_transform ${catkin_LIBRARIES})
 
 add_executable(system_main src/system_main.cpp)
 add_dependencies(system_main
-  tangible_frame_transform
+  tangible_frame_transformer
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(system_main
-  tangible_frame_transform
+  tangible_frame_transformer
   ${catkin_LIBRARIES}
 )
 
