@@ -7,9 +7,7 @@
 #include "tf/transform_listener.h"
 #include "sensor_msgs/PointCloud2.h"
 
-#include "pcl/point_cloud.h"
 #include "pcl_ros/transforms.h"
-#include "pcl_conversions/pcl_conversions.h"
 
 #include "ar_track_alvar_msgs/AlvarMarkers.h"
 
