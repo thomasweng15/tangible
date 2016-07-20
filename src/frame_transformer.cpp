@@ -48,12 +48,14 @@ void FrameTransformer::ARcallback(const ar_track_alvar_msgs::AlvarMarkers::Const
 		//TO-DO look into pcl_ros::tranformPointCloud
 
 		ar_track_alvar_msgs::AlvarMarker ar_marker;
-		ar_marker.header = msg->markers[i].header;
+		ar_marker.header = transformedPose.header;
+		//YSS more appropriate than msg->markers[i].header or ros::Now()  
 		ar_marker.header.frame_id = "/"+frame_id;
 		ar_marker.id = msg->markers[i].id;
 		ar_marker.confidence = msg->markers[i].confidence;
 		ar_marker.pose = transformedPose;
 		transformedMarkers.markers.push_back(ar_marker);
+
 	}
 	ar_pub.publish(transformedMarkers);
 }
