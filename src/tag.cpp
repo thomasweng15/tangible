@@ -68,7 +68,7 @@ double Tag::dist(Tag& otherTag) {
 	this2that[0] = otherTag.center.x - center.x;
 	this2that[1] = otherTag.center.y - center.x;
 	this2that[2] = otherTag.center.z - center.z;
-	return std::inner_product(begin(this2that), end(this2that), begin(this2that), 0.0);
+	return std::inner_product(this2that, this2that+3, this2that, 0.0);
 }
 
 }
