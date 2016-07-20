@@ -131,19 +131,30 @@ add_dependencies(tangible_frame_transformer
 )
 target_link_libraries(tangible_frame_transformer ${catkin_LIBRARIES})
 
+add_library(tangible_tag src/tag.cpp)
+add_dependencies(tangible_tag
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_tag ${catkin_LIBRARIES})
+
+add_library(tangible_tag_extractor src/tag_extractor.cpp)
+add_dependencies(tangible_tag_extractor
+  tangible_tag
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_tag_extractor 
+  tangible_tag
+  ${catkin_LIBRARIES}
+)
+
 add_library(tangible_scene_parser src/scene_parser.cpp)
 add_dependencies(tangible_scene_parser
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
-
-add_library(tangible_tag_extractor src/tag_extractor.cpp)
-add_dependencies(tangible_tag_extractor
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_tag_extractor ${catkin_LIBRARIES})
 
 ## Executable files
 ## ----------------
@@ -154,15 +165,17 @@ target_link_libraries(tangible_tag_extractor ${catkin_LIBRARIES})
 add_executable(system_main src/system_main.cpp)
 add_dependencies(system_main
   tangible_frame_transformer
-  tangible_scene_parser
+  tangible_tag
   tangible_tag_extractor
+  tangible_scene_parser
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(system_main
   tangible_frame_transformer
-  tangible_scene_parser
+  tangible_tag
   tangible_tag_extractor
+  tangible_scene_parser
   ${catkin_LIBRARIES}
 )
 

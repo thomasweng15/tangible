@@ -6,35 +6,9 @@
 #include "ros/ros.h"
 #include "ar_track_alvar_msgs/AlvarMarkers.h"
 
+#include "tangible/tag.h"
+
 namespace tangible {
-
-struct Position {
-	double x;
-	double y;
-	double z;
-};
-
-struct Quaternion {
-	double x;
-	double y;
-	double z;
-	double w;
-};
-
-struct Axis {
-	double x;
-	double y;
-	double z;
-};
-
-struct Tag {
-	Position center;
-	Quaternion orientation;
-	Axis x_axis;
-	Axis y_axis;
-	Axis z_axis;
-	int id;
-};
 
 class TagExtractor {
 private:
@@ -44,10 +18,6 @@ private:
 	std::vector<Tag> tags;
 
 	void ARcallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr msg);
-	
-	void fillCenter(Tag& t, geometry_msgs::PoseStamped& p);
-	void fillOrientation(Tag& t, geometry_msgs::PoseStamped& p);
-	void fillAxes(Tag& t, geometry_msgs::PoseStamped& p);
 public:
 	TagExtractor(ros::NodeHandle& n);
 	~TagExtractor();
