@@ -1,6 +1,8 @@
 #ifndef TANGIBLE_TAG
 #define TANGIBLE_TAG
 
+#include "Eigen/Geometry"
+
 #include "geometry_msgs/PoseStamped.h"
 
 namespace tangible {
@@ -48,11 +50,12 @@ public:
 	Axis getX();
 	Axis getY();
 	Axis getZ();
-	//double[] getXvect();
-	//double[] getYvect();
-	//double[] getZvect();
+	Eigen::Vector3d getXvect();
+	Eigen::Vector3d getYvect();
+	Eigen::Vector3d getZvect();
 	int getID();
 
+	Eigen::Vector3d vect(Tag& otherTag);
 	double dist(Tag& otherTag);
 };
 

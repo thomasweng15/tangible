@@ -3,8 +3,6 @@
 #include <sstream>
 #include <numeric>
 
-#include "Eigen/Geometry"
-
 namespace tangible {
 
 Tag::Tag() : center(), orientation(), x_axis(), y_axis(), z_axis(), id(-1) {}
@@ -58,17 +56,37 @@ Quaternion Tag::getOrientation() { return orientation; }
 Axis Tag::getX() { return x_axis; }
 Axis Tag::getY() { return y_axis; }
 Axis Tag::getZ() { return z_axis; }
-//double[] Tag::getXvect();
-//double[] Tag::getYvect();
-//double[] Tag::getZvect();
+
+Eigen::Vector3d Tag::getXvect() {
+	Eigen::Vector3d v;
+	v << x_axis.x, x_axis.y, x_axis.z;
+	return v;
+}
+
+Eigen::Vector3d Tag::getYvect() {
+	Eigen::Vector3d v;
+	v << y_axis.x, y_axis.y, y_axis.z;
+	return v;
+}
+
+Eigen::Vector3d Tag::getZvect() {
+	Eigen::Vector3d v;
+	v << z_axis.x, z_axis.y, z_axis.z;
+	return v;
+}
+
 int Tag::getID() { return id; }
 
+Eigen::Vector3d Tag::vect(Tag& otherTag) {
+	Eigen::Vector3d this2that;
+	this2that << otherTag.center.x - center.x,
+	             otherTag.center.y - center.y,
+	             otherTag.center.z - center.z;
+	return this2that;
+}
+
 double Tag::dist(Tag& otherTag) {
-	double this2that[3];
-	this2that[0] = otherTag.center.x - center.x;
-	this2that[1] = otherTag.center.y - center.x;
-	this2that[2] = otherTag.center.z - center.z;
-	return std::inner_product(this2that, this2that+3, this2that, 0.0);
+	return vect(otherTag).norm();
 }
 
 }
