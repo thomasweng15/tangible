@@ -156,6 +156,26 @@ add_dependencies(tangible_scene_parser
 )
 target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
 
+add_library(tangible_utils src/utils.cpp)
+add_dependencies(tangible_utils
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_utils ${catkin_LIBRARIES})
+
+add_library(tangible_program src/program.cpp)
+add_dependencies(tangible_program
+  tangible_tag
+  tangible_utils
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_program
+  tangible_tag
+  tangible_utils
+  ${catkin_LIBRARIES}
+)
+
 ## Executable files
 ## ----------------
 ## Declare a C++ executable
@@ -168,6 +188,8 @@ add_dependencies(system_main
   tangible_tag
   tangible_tag_extractor
   tangible_scene_parser
+  tangible_utils
+  tangible_program
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
@@ -176,6 +198,8 @@ target_link_libraries(system_main
   tangible_tag
   tangible_tag_extractor
   tangible_scene_parser
+  tangible_utils
+  tangible_program
   ${catkin_LIBRARIES}
 )
 

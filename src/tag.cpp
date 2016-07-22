@@ -1,13 +1,13 @@
 #include "tangible/tag.h"
 
 #include <sstream>
-#include <numeric>
 
 namespace tangible {
 
 Tag::Tag() : center(), orientation(), x_axis(), y_axis(), z_axis(), id(-1) {}
 
 Tag::Tag(geometry_msgs::PoseStamped& p) : Tag(p, -1) {}
+//NOTE this requires c++11 to compile
 
 Tag::Tag(geometry_msgs::PoseStamped& p, int _id) {
 	setCenter(p);
@@ -49,6 +49,24 @@ void Tag::setAxes(geometry_msgs::PoseStamped& p) {
 	z_axis.z = rotation_matrix(2, 2);
 }
 
+void Tag::setX(double x, double y, double z) {
+	x_axis.x = x;
+	x_axis.y = y;
+	x_axis.z = z;
+}
+
+void Tag::setY(double x, double y, double z) {
+	y_axis.x = x;
+	y_axis.y = y;
+	y_axis.z = z;
+}
+
+void Tag::setZ(double x, double y, double z) {
+	z_axis.x = x;
+	z_axis.y = y;
+	z_axis.z = z;
+}
+
 void Tag::setID(int _id) { id = _id; }
 
 Position Tag::getCenter() { return center; }
@@ -87,6 +105,10 @@ Eigen::Vector3d Tag::vect(Tag& otherTag) {
 
 double Tag::dist(Tag& otherTag) {
 	return vect(otherTag).norm();
+}
+
+bool Tag::operator<(const Tag& otherTag) const {
+	return id < otherTag.id;
 }
 
 }
