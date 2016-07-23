@@ -35,6 +35,9 @@ public:
 	//TO-DO
 	//generate program
 	//run program
+
+	//YSS just for test
+	void printTag(Tag& t);
 };
 
 }

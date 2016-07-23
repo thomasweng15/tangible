@@ -1,6 +1,8 @@
 #ifndef TANGIBLE_TAG
 #define TANGIBLE_TAG
 
+#include <string>
+
 #include "Eigen/Geometry"
 
 #include "geometry_msgs/PoseStamped.h"
@@ -75,6 +77,14 @@ public:
 	double dist(Tag& otherTag);
 
 	bool operator<(const Tag& otherTag) const;
+
+	
+	std::string printCenter();
+	std::string printOrientation();
+	std::string printX();
+	std::string printY();
+	std::string printZ();
+	std::string printID();
 
 };
 

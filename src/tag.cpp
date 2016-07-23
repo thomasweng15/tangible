@@ -111,4 +111,52 @@ bool Tag::operator<(const Tag& otherTag) const {
 	return id < otherTag.id;
 }
 
+//YSS just for testing
+std::string Tag::printCenter() {
+	std::stringstream ss;
+	ss << "(" << center.x;
+	ss << ", " << center.y;
+	ss << ", " << center.z << ")";
+	return ss.str();
+}
+
+std::string Tag::printOrientation() {
+	std::stringstream ss;
+	ss << "(" << orientation.x;
+	ss << ", " << orientation.y;
+	ss << ", " << orientation.z;
+	ss << ", " << orientation.w << ")";
+	return ss.str();
+}
+
+std::string Tag::printX() {
+	std::stringstream ss;
+	ss << "(" << x_axis.x;
+	ss << ", " << x_axis.y;
+	ss << ", " << x_axis.z << ")";
+	return ss.str();
+}
+
+std::string Tag::printY() {
+	std::stringstream ss;
+	ss << "(" << y_axis.x;
+	ss << ", " << y_axis.y;
+	ss << ", " << y_axis.z << ")";
+	return ss.str();
+}
+
+std::string Tag::printZ() {
+	std::stringstream ss;
+	ss << "(" << z_axis.x;
+	ss << ", " << z_axis.y;
+	ss << ", " << z_axis.z << ")";
+	return ss.str();
+}
+
+std::string Tag::printID() {
+	std::stringstream ss;
+	ss << "\\" << id;
+	return ss.str();	
+}
+
 }
