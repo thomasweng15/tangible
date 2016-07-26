@@ -26,38 +26,38 @@ FrameTransformer::~FrameTransformer() {
 }
 
 void FrameTransformer::PCLcallback(const sensor_msgs::PointCloud2::ConstPtr& msg)  {
-	sensor_msgs::PointCloud2 transformedCloud;
+	sensor_msgs::PointCloud2 transformed_cloud;
 	tf_listener.waitForTransform("/"+frame_id,
 		                        msg->header.frame_id,
 		                        ros::Time(0),
 		                        ros::Duration(10));
-	pcl_ros::transformPointCloud("/"+frame_id, *msg, transformedCloud, tf_listener);
-	pcl_pub.publish(transformedCloud);
+	pcl_ros::transformPointCloud("/"+frame_id, *msg, transformed_cloud, tf_listener);
+	pcl_pub.publish(transformed_cloud);
 }
 
 void FrameTransformer::ARcallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr& msg) {
-	ar_track_alvar_msgs::AlvarMarkers transformedMarkers;
+	ar_track_alvar_msgs::AlvarMarkers transformed_markers;
 	for(int i = 0; i < msg->markers.size(); i++) {
 		// filling in the frame_id of each marker pose (ar_track_alvar lists frame_id
 		// under the header of marker array msg but not each pose in the array)
 		geometry_msgs::PoseStamped original = msg->markers[i].pose;
 		original.header.frame_id = msg->markers[i].header.frame_id;
 
-		geometry_msgs::PoseStamped transformedPose;
-		tf_listener.transformPose("/"+frame_id, original, transformedPose);
+		geometry_msgs::PoseStamped transformed_pose;
+		tf_listener.transformPose("/"+frame_id, original, transformed_pose);
 		//TO-DO look into pcl_ros::tranformPointCloud
 
 		ar_track_alvar_msgs::AlvarMarker ar_marker;
-		ar_marker.header = transformedPose.header;
+		ar_marker.header = transformed_pose.header;
 		//YSS more appropriate than msg->markers[i].header or ros::Now()  
 		ar_marker.header.frame_id = "/"+frame_id;
 		ar_marker.id = msg->markers[i].id;
 		ar_marker.confidence = msg->markers[i].confidence;
-		ar_marker.pose = transformedPose;
-		transformedMarkers.markers.push_back(ar_marker);
+		ar_marker.pose = transformed_pose;
+		transformed_markers.markers.push_back(ar_marker);
 
 	}
-	ar_pub.publish(transformedMarkers);
+	ar_pub.publish(transformed_markers);
 }
 
 }
