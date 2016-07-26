@@ -125,9 +125,9 @@ private:
 			setID(table_top_label, 1);
 			setColor(table_top_label, 1, 1, 1, 1);
 			scene_elements.push_back(table_top_label);
-			// YSS: table_top_box or table_top_label are defined on stack memory.
-			//      How their push_back into a structure accessible outside the current scope
-			//      is handled?
+			//YSS: table_top_box or table_top_label are defined on stack memory.
+			//     How their push_back into a structure accessible outside the current scope
+			//     is handled?
 		} else {
 			setPose(scene_elements.at(0), table_top.pose());
 			setScale(scene_elements.at(1), table_top.scale());
