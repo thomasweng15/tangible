@@ -81,10 +81,10 @@ public:
 	Eigen::Vector3d getZvect();
 	int getID();
 
-	Eigen::Vector3d vect(Tag& otherTag);
-	double dist(Tag& otherTag);
+	Eigen::Vector3d vect(Tag& other_tag);
+	double dist(Tag& other_tag);
 
-	bool operator<(const Tag& otherTag) const;
+	bool operator<(const Tag& other_tag) const;
 
 	
 	std::string printCenter();

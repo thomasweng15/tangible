@@ -21,7 +21,10 @@ private:
 	std::vector<Instruction> instructions;
 	std::string error_msg;
 
+	bool tag2Instruction();
+
 public:
+	//TO-DO register these as ros params so you can modify them on the go
 	const static double MAX_WORKSPACE_DIST = 200;
 	const static double DIST_ERR_MARGIN = 0.01;
 	const static double ROTATE_ERR_MARGIN = 0.01;
@@ -29,9 +32,8 @@ public:
 	Program(std::vector<Tag>& tgs);//YSS should consider objs next
 	~Program();
 
-	bool refreshTags(std::vector<Tag>& tgs);
+	bool refresh(std::vector<Tag>& tgs);
 
-	bool groupTags();
 	std::string error();
 
 	//TO-DO

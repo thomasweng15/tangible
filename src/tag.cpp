@@ -95,20 +95,20 @@ Eigen::Vector3d Tag::getZvect() {
 
 int Tag::getID() { return id; }
 
-Eigen::Vector3d Tag::vect(Tag& otherTag) {
+Eigen::Vector3d Tag::vect(Tag& other_tag) {
 	Eigen::Vector3d this2that;
-	this2that << otherTag.center.x - center.x,
-	             otherTag.center.y - center.y,
-	             otherTag.center.z - center.z;
+	this2that << other_tag.center.x - center.x,
+	             other_tag.center.y - center.y,
+	             other_tag.center.z - center.z;
 	return this2that;
 }
 
-double Tag::dist(Tag& otherTag) {
-	return vect(otherTag).norm();
+double Tag::dist(Tag& other_tag) {
+	return vect(other_tag).norm();
 }
 
-bool Tag::operator<(const Tag& otherTag) const {
-	return id < otherTag.id;
+bool Tag::operator<(const Tag& other_tag) const {
+	return id < other_tag.id;
 }
 
 //YSS just for testing

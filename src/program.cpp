@@ -10,13 +10,13 @@ namespace tangible {
 
 Program::Program(std::vector<Tag>& tgs) { 
 	tags = tgs;
-	groupTags();
+	tag2Instruction();
 }
 Program::~Program() {}
 
-bool Program::refreshTags(std::vector<Tag>& tgs) {
-	tags = tags;
-	return groupTags();
+bool Program::refresh(std::vector<Tag>& tgs) {
+	tags = tgs;
+	return tag2Instruction();
 }
 
 //grouping:
@@ -34,12 +34,12 @@ bool Program::refreshTags(std::vector<Tag>& tgs) {
 //      center-2-center distance and should check alignment with y-axis
 //  - number tags with equal id's are selection and secondary selection that should be grouped
 //  - instructions are formed based on the tags grouped together
-bool Program::groupTags() {
+bool Program::tag2Instruction() {
 	instructions.clear();
 	//NOTE: this ensures no instruction is formed for invalid tag settings
 
-	int tagNum = tags.size();
-	if(tagNum == 0) {
+	int tag_num = tags.size();
+	if(tag_num == 0) {
 		error_msg = "ERROR - TAG GROUPING - no tags to group.";
 		std::cout << error_msg << "\n";
 		return false;
@@ -47,89 +47,89 @@ bool Program::groupTags() {
 
 	std::sort(tags.begin(), tags.end());
 
-	int selectionCount = 0;
-	int selection2ndCount = 0;
-	int actionCount = 0;
-	int numberCount = 0;
-	int otherCount = 0;
-	int regionIDCount = 0;
-	int grouped[tagNum];
-	for(int i = 0; i < tagNum; i++) {
+	int selection_count = 0;
+	int selection2nd_count = 0;
+	int action_count = 0;
+	int number_count = 0;
+	int other_count = 0;
+	int regionID_count = 0;
+	int grouped[tag_num];
+	for(int i = 0; i < tag_num; i++) {
 		if(inRange(Tag::SELECTION_ID_MIN, Tag::SELECTION_ID_MAX, tags.at(i).getID()))
-			selectionCount++;
+			selection_count++;
 		else if(tags.at(i).getID() == Tag::SELECTION_2ND_ID)
-			selection2ndCount++;
+			selection2nd_count++;
 		else if(inRange(Tag::ACTION_ID_MIN, Tag::ACTION_ID_MAX, tags.at(i).getID()))
-			actionCount++;
+			action_count++;
 		else if(inRange(Tag::NUMBER_ID_MIN, Tag::NUMBER_ID_MAX, tags.at(i).getID()))
-			numberCount++;
+			number_count++;
 		else if(tags.at(i).getID() > Tag::NUMBER_ID_MAX)
-			otherCount++;
+			other_count++;
 
 		if(tags.at(i).getID() == Tag::SELECT_REGION_ID ||
 		   tags.at(i).getID() == Tag::SELECT_OBJECTS_ID)
-			regionIDCount++;
+			regionID_count++;
 		
 		grouped[i] = -1;
 	}
 
-	if(selectionCount == 0) {
+	if(selection_count == 0) {
 		error_msg = "ERROR - TAG GROUPING - no selection tag.";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
-	if(actionCount == 0) {
+	if(action_count == 0) {
 		error_msg = "ERROR - TAG GROUPING - no action tag.";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
-	if(numberCount == 0) {
+	if(number_count == 0) {
 		error_msg = "ERROR - TAG GROUPING - no number tag.";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
-	if(actionCount < selectionCount) {
+	if(action_count < selection_count) {
 		error_msg = "ERROR - TAG GROUPING - too few action or two many selection tags.";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
-	if(selection2ndCount != regionIDCount) {
+	if(selection2nd_count != regionID_count) {
 		error_msg = "ERROR - TAG GROUPING - too many or too few secondary selection tags.";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
-	if(selection2ndCount + actionCount != numberCount) {
+	if(selection2nd_count + action_count != number_count) {
 		error_msg = "ERROR - TAG GROUPING - too many or too few number tags.";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
 	// index where selection tags start
-	int selectionInd = 0;
+	int selection_ind = 0;
 	// index where secondary selection tags start
-	int selection2ndInd = selectionInd + selectionCount; 
+	int selection2nd_ind = selection_ind + selection_count; 
 	// index where action tags start
-	int actionInd = selection2ndInd + selection2ndCount;
+	int action_ind = selection2nd_ind + selection2nd_count;
 	// index where number tags start
-	int numberInd = actionInd + actionCount;
+	int number_ind = action_ind + action_count;
 	//TO-DO to handle additional tags (e.g. loop)
-	int otherInd  = numberInd + numberCount;
+	int other_ind  = number_ind + number_count;
 
-	if(tags.at(actionInd).getID() != Tag::SIDE_PICK_ID &&
-	   tags.at(actionInd).getID() != Tag::TOP_PICK_ID) {
+	if(tags.at(action_ind).getID() != Tag::SIDE_PICK_ID &&
+	   tags.at(action_ind).getID() != Tag::TOP_PICK_ID) {
 		error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
 		std::cout << error_msg << "\n";
 		return false;
 	}
 
-	int currNum = Tag::NUMBER_ID_MIN;
-	for(int i = numberInd; i < otherInd - 1; i++) {
-		if(tags.at(i).getID() != currNum) {
+	int curr = Tag::NUMBER_ID_MIN;
+	for(int i = number_ind; i < other_ind - 1; i++) {
+		if(tags.at(i).getID() != curr) {
 			error_msg = "ERROR - TAG GROUPING - missing/out of order number tag.";
 			std::cout << error_msg << "\n";
 			return false;
@@ -137,23 +137,23 @@ bool Program::groupTags() {
 		if(tags.at(i).getID() == tags.at(i-1).getID() &&
 		   tags.at(i).getID() == tags.at(i+1).getID()) {
 		// NOTE: at this point there is at least one selection and one action tags so 
-		// numberInd >= 2 and i-1 will be valid.
+		// number_ind >= 2 and i-1 will be valid.
 			error_msg = "ERROR - TAG GROUPING - too many repeated number tags.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
 
 		if(tags.at(i).getID() != tags.at(i+1).getID())
-			currNum++;
+			curr++;
 	}
 
-	//std::cout << "selection tags @ " << selectionInd << ", " 
-	//          << "2ndary selection tags @ " << selection2ndInd << ", " 
-	//          << "ation tags @ " << actionInd << ", " 
-	//          << "number tags @ " << numberInd << "\n";
+	//std::cout << "selection tags @ " << selection_ind << ", " 
+	//          << "2ndary selection tags @ " << selection2nd_ind << ", " 
+	//          << "ation tags @ " << action_ind << ", " 
+	//          << "number tags @ " << number_ind << "\n";
 
-	//for(int i = 0; i < tagNum; i++) {
-	//	if(i == selectionInd || i == selection2ndInd || i == actionInd || i == numberInd)
+	//for(int i = 0; i < tag_num; i++) {
+	//	if(i == selection_ind || i == selection2nd_ind || i == action_ind || i == number_ind)
 	//		std::cout << "| ";
 	//	else
 	//		std::cout << ", ";
@@ -161,7 +161,7 @@ bool Program::groupTags() {
 	//}
 	//std::cout << " |\n";
 
-	for(int i = numberInd; i < otherInd; i++) {
+	for(int i = number_ind; i < other_ind; i++) {
 		Tag number = tags.at(i);
 		
 		//std::cout << "number " 
@@ -169,18 +169,18 @@ bool Program::groupTags() {
 		//          << number.printCenter()
 		//          << " at " << i << " to\n";
 		
-		for(int j = selection2ndInd; j < numberInd; j++) {
+		for(int j = selection2nd_ind; j < number_ind; j++) {
 			if(grouped[j] > -1) // action/secondary selection tag is already grouped
 				continue;
 
-			Tag actionOr2ndarySelection = tags.at(j);
+			Tag action_or_2ndary = tags.at(j);
 			
 			//std::cout << "\t action or secondary selection  " 
-			//          << actionOr2ndarySelection.printID()
-			//          << actionOr2ndarySelection.printCenter()
+			//          << action_or_2ndary.printID()
+			//          << action_or_2ndary.printCenter()
 			//          << " at " << j << "\n";
 			
-			double distance = number.dist(actionOr2ndarySelection);
+			double distance = number.dist(action_or_2ndary);
 			
 			//std::cout << "\t\tdistance: " << distance << "\n";
 			
@@ -190,19 +190,19 @@ bool Program::groupTags() {
 				continue;
 			
 			// normalized center-to-center vector
-			Eigen::Vector3d n2a = number.vect(actionOr2ndarySelection) / distance;
+			Eigen::Vector3d n2a = number.vect(action_or_2ndary) / distance;
 
 			Eigen::Vector3d ux = number.getXvect();
 			
 			//std::cout << "\t\tx axis: " << ux.transpose() << "\n";
 			
-			double innerProduct = ux.dot(n2a);
+			double inner_product = ux.dot(n2a);
 			
-			//std::cout << "\t\tinnerProduct: " << innerProduct << "\n";
+			//std::cout << "\t\tinner_product: " << inner_product << "\n";
 			
 			if(!inRange(1 - ROTATE_ERR_MARGIN,
 			            1 + ROTATE_ERR_MARGIN,
-			            innerProduct)) //action/secondary selection tag is not aligned w/ x-axis
+			            inner_product)) //action/secondary selection tag is not aligned w/ x-axis
 				continue;
 			
 			// number tag is grouped with action/secondary selection tag
@@ -221,22 +221,21 @@ bool Program::groupTags() {
 		}
 	}
 
-	for(int i = selection2ndInd; i < actionInd; i++)
+	for(int i = selection2nd_ind; i < action_ind; i++)
 		if(grouped[i] == -1) {
 			error_msg = "ERROR - TAG GROUPING - secondary selection tag not numbered.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
 
-	for(int i = actionInd; i < numberInd; i++)
+	for(int i = action_ind; i < number_ind; i++)
 		if(grouped[i] == -1) {
 			error_msg = "ERROR - TAG GROUPING - action tag not numbered.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
 
-	double latestActionDist[selectionCount];
-	for(int i = actionInd; i < numberInd; i++) {
+	for(int i = action_ind; i < number_ind; i++) {
 		Tag action = tags.at(i);
 
 		//std::cout << "action " 
@@ -245,8 +244,8 @@ bool Program::groupTags() {
 		//          << " at " << i 
 		//          << " with y-axis " << action.getYvect().transpose() << "\n";
 
-		double minDist = MAX_WORKSPACE_DIST; int tempGrouped = -1;
-		for(int j = selectionInd; j < selection2ndInd; j++) {
+		double minDist = MAX_WORKSPACE_DIST; int temp_grouped = -1;
+		for(int j = selection_ind; j < selection2nd_ind; j++) {
 			Tag selection = tags.at(j);
 
 			//std::cout << "\tselection " 
@@ -271,34 +270,34 @@ bool Program::groupTags() {
 				continue;
 
 			Eigen::Vector3d uy = action.getYvect();
-			double innerProduct = uy.dot(a2s);
+			double inner_product = uy.dot(a2s);
 			if(!inRange(1 - ROTATE_ERR_MARGIN,
 				        1 + ROTATE_ERR_MARGIN,
-				        innerProduct)) // selection tag is not aligned w/ y-axis
+				        inner_product)) // selection tag is not aligned w/ y-axis
 				continue;
 			
 			if(distance < minDist) {
 				minDist = distance;
-				tempGrouped = j;
+				temp_grouped = j;
 			}
 		}
 
-		//std::cout << "\tmin distance: " << minDist << " with tag at " << tempGrouped << "\n";
+		//std::cout << "\tmin distance: " << minDist << " with tag at " << temp_grouped << "\n";
 
-		if(tempGrouped == -1) {
+		if(temp_grouped == -1) {
 			error_msg = "ERROR - TAG GROUPING - singular action tag.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
 
-		//std::cout << "action at " << i << " grouped with selection at " << tempGrouped << "\n";
+		//std::cout << "action at " << i << " grouped with selection at " << temp_grouped << "\n";
 
-		grouped[i] = tempGrouped;
-		if(grouped[tempGrouped] == -1)
-			grouped[tempGrouped] = i;
+		grouped[i] = temp_grouped;
+		if(grouped[temp_grouped] == -1)
+			grouped[temp_grouped] = i;
 	}
 
-	for(int i = selectionInd; i < selection2ndInd; i++)
+	for(int i = selection_ind; i < selection2nd_ind; i++)
 		if(grouped[i] == -1) {
 			error_msg = "ERROR - TAG GROUPING - singular selection tag.";
 			std::cout << error_msg << "\n";
@@ -309,7 +308,7 @@ bool Program::groupTags() {
 	//   - the order of action tags grouped w/ the same selection tag does not follow
 	//     their distances
 
-	for(int i = numberInd; i < otherInd-1; i++) {
+	for(int i = number_ind; i < other_ind-1; i++) {
 		Tag num1 = tags.at(i);
 		Tag num2 = tags.at(i+1);
 		if(num1.getID() == num2.getID()) {
@@ -348,13 +347,13 @@ bool Program::groupTags() {
 	//   - the number grouped w/ the secondary selection tag is not equal to the smallest
 	//     number grouped w/ an action grouped with the primary selection
 
-	int instructionNum = actionCount;
-	for(int i = 0; i < instructionNum; i++) {
+	int instruction_num = action_count;
+	for(int i = 0; i < instruction_num; i++) {
 		Instruction instruction;
 		instructions.push_back(instruction);
 	}
 	
-	for(int i = numberInd; i < otherInd; i++) {
+	for(int i = number_ind; i < other_ind; i++) {
 		int index, action_at, selection_at;
 		index = tags.at(i).getID() - Tag::NUMBER_ID_MIN;
 		Instruction instruction = instructions.at(index);
@@ -389,7 +388,7 @@ bool Program::groupTags() {
 	//    This allows us to support picking up a tool for later pick&place
 
 	std::cout << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
-	for(int i = 0; i < instructionNum; i++) {
+	for(int i = 0; i < instruction_num; i++) {
 		Instruction instruction = instructions.at(i);
 		std::cout << i
 		          << "\t" << instruction.number.printID() << instruction.number.printCenter()
