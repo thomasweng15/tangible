@@ -41,11 +41,19 @@ public:
 	// ID of selection tags {0, 1, 2, 3}
 	const static int SELECTION_ID_MIN = 0;
 	const static int SELECTION_ID_MAX = 3;
+	const static int SELECT_POSITION_ID = 0;
+	const static int SELECT_REGION_ID = 1;
+	const static int SELECT_OBJECT_ID = 2;
+	const static int SELECT_OBJECTS_ID = 3;
 	// ID of secondary selection tag = 4
 	const static int SELECTION_2ND_ID = 4;
 	// ID of action tags {5, 6, 7, 8}
 	const static int ACTION_ID_MIN = 5;
 	const static int ACTION_ID_MAX = 8;
+	const static int SIDE_PICK_ID = 5;
+	const static int TOP_PICK_ID = 6;
+	const static int POSITION_ID = 7;
+	const static int DROP_ID = 8;
 	// ID of number tags {9, 10, ..., 15}
 	const static int NUMBER_ID_MIN = 9;
 	const static int NUMBER_ID_MAX = 15;

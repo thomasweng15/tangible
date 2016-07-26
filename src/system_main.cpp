@@ -22,9 +22,9 @@ int main (int argc, char** argv) {
 	ros::spin();*/
 
 	//YSS testing
-	int SELECTION_TAG_NUM =4;
-	int ACTION_TAG_NUM = 4;
-	int NUMBER_TAG_NUM = 7;
+	int SELECTION_TAG_NUM = tangible::Tag::SELECTION_ID_MAX - tangible::Tag::SELECTION_ID_MIN + 1;
+	int ACTION_TAG_NUM = tangible::Tag::ACTION_ID_MAX - tangible::Tag::ACTION_ID_MIN + 1;
+	int NUMBER_TAG_NUM = tangible::Tag::NUMBER_ID_MAX - tangible::Tag::NUMBER_ID_MIN + 1;
 
 	int SCENE_SIZE = 50;
 
@@ -36,7 +36,7 @@ int main (int argc, char** argv) {
 	int selectionID, actionID, numberID;
 	geometry_msgs::PoseStamped ps; double x, y, z;
 	for(int i = 0; i < instructionNum; i++) {
-		selectionID = std::rand()%SELECTION_TAG_NUM + 0;
+		selectionID = std::rand()%SELECTION_TAG_NUM + tangible::Tag::SELECTION_ID_MIN;
 		x = std::rand()%SCENE_SIZE + 4*tangible::Tag::EDGE_SIZE;
 		y = std::rand()%SCENE_SIZE + 4*tangible::Tag::EDGE_SIZE;
 		z = 0;
@@ -47,7 +47,7 @@ int main (int argc, char** argv) {
 		std::cout << selection.printID() << ": " << selection.printCenter() << ", ";
 		tags.push_back(selection);
 
-		actionID = std::rand()%ACTION_TAG_NUM + SELECTION_TAG_NUM + 1;
+		actionID = std::rand()%ACTION_TAG_NUM + tangible::Tag::ACTION_ID_MIN;
 		ps.pose.position.y -= tangible::Tag::EDGE_SIZE;
 		tangible::Tag action;
 		action.setID(actionID);
@@ -56,7 +56,8 @@ int main (int argc, char** argv) {
 		std::cout << action.printID() << ": " << action.printCenter() << ", ";
 		tags.push_back(action);
 
-		numberID = std::rand()%NUMBER_TAG_NUM + SELECTION_TAG_NUM + 1 + ACTION_TAG_NUM;
+		//numberID = std::rand()%NUMBER_TAG_NUM + tangible::Tag::NUMBER_ID_MIN;
+		numberID = i + tangible::Tag::NUMBER_ID_MIN;
 		ps.pose.position.x -= tangible::Tag::EDGE_SIZE; 
 		tangible::Tag number;
 		number.setID(numberID);

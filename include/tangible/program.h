@@ -2,6 +2,7 @@
 #define TANGIBLE_PROGRAM
 
 #include <vector>
+#include <string>
 
 #include "tangible/tag.h"
 
@@ -18,6 +19,7 @@ class Program {
 private:
 	std::vector<Tag> tags;
 	std::vector<Instruction> instructions;
+	std::string error_msg;
 
 public:
 	const static double MAX_WORKSPACE_DIST = 200;
@@ -30,14 +32,11 @@ public:
 	bool refreshTags(std::vector<Tag>& tgs);
 
 	bool groupTags();
-
+	std::string error();
 
 	//TO-DO
-	//generate program
 	//run program
 
-	//YSS just for test
-	void printTag(Tag& t);
 };
 
 }
