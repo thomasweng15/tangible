@@ -41,6 +41,7 @@ bool Program::groupTags() {
 	int tagNum = tags.size();
 	if(tagNum == 0) {
 		error_msg = "ERROR - TAG GROUPING - no tags to group.";
+		std::cout << error_msg << "\n";
 		return false;
 	}
 
@@ -119,10 +120,17 @@ bool Program::groupTags() {
 	//TO-DO to handle additional tags (e.g. loop)
 	int otherInd  = numberInd + numberCount;
 
+	if(tags.at(actionInd).getID() != Tag::SIDE_PICK_ID &&
+	   tags.at(actionInd).getID() != Tag::TOP_PICK_ID) {
+		error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
+		std::cout << error_msg << "\n";
+		return false;
+	}
+
 	int currNum = Tag::NUMBER_ID_MIN;
 	for(int i = numberInd; i < otherInd - 1; i++) {
 		if(tags.at(i).getID() != currNum) {
-			error_msg = "ERROR - TAG GROUPING - missing number tag.";
+			error_msg = "ERROR - TAG GROUPING - missing/out of order number tag.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
@@ -162,7 +170,7 @@ bool Program::groupTags() {
 		//          << " at " << i << " to\n";
 		
 		for(int j = selection2ndInd; j < numberInd; j++) {
-			if(grouped[j] > -1) // action or secondary selection tag is already grouped
+			if(grouped[j] > -1) // action/secondary selection tag is already grouped
 				continue;
 
 			Tag actionOr2ndarySelection = tags.at(j);
@@ -178,7 +186,7 @@ bool Program::groupTags() {
 			
 			if(!inRange(Tag::EDGE_SIZE - DIST_ERR_MARGIN,
 				        Tag::EDGE_SIZE + DIST_ERR_MARGIN,
-				        distance)) // action or secondary selection tag is too close/far
+				        distance)) // action/secondary selection tag is too close/far
 				continue;
 			
 			// normalized center-to-center vector
@@ -194,16 +202,22 @@ bool Program::groupTags() {
 			
 			if(!inRange(1 - ROTATE_ERR_MARGIN,
 			            1 + ROTATE_ERR_MARGIN,
-			            innerProduct)) //action or secondary selection tag is not along x-axis
+			            innerProduct)) //action/secondary selection tag is not aligned w/ x-axis
 				continue;
 			
-			// number tag is grouped with action or secondary selection tag
+			// number tag is grouped with action/secondary selection tag
 			grouped[i] = j; 
 			grouped[j] = i;
 			
 			//std::cout << "number at " << i << " grouped with action or secondary selection at at " << j << "\n";
 			
 			break;
+		}
+
+		if(grouped[i] == -1) {
+			error_msg = "ERROR - TAG GROUPING - singular number tag.";
+			std::cout << error_msg << "\n";
+			return false;
 		}
 	}
 
@@ -221,14 +235,7 @@ bool Program::groupTags() {
 			return false;
 		}
 
-	for(int i = numberInd; i < otherInd; i++)
-		if(grouped[i] == -1) {
-			error_msg = "ERROR - TAG GROUPING - singular number tag.";
-			std::cout << error_msg << "\n";
-			return false;
-		}
-
-	
+	double latestActionDist[selectionCount];
 	for(int i = actionInd; i < numberInd; i++) {
 		Tag action = tags.at(i);
 
@@ -253,11 +260,21 @@ bool Program::groupTags() {
 
 			// normalized center-to-center vector
 			Eigen::Vector3d a2s = action.vect(selection) / distance;
+
+			double quantizedDist = round(distance/Tag::EDGE_SIZE);		
+			
+			//std::cout << "\tideal distance: " << quantizedDist*Tag::EDGE_SIZE << "\n";
+
+			if(!inRange(quantizedDist*Tag::EDGE_SIZE - DIST_ERR_MARGIN,
+			            quantizedDist*Tag::EDGE_SIZE + DIST_ERR_MARGIN,
+			            distance)) // distance of selection tag is not a multiples of EDGE_SIZE
+				continue;
+
 			Eigen::Vector3d uy = action.getYvect();
 			double innerProduct = uy.dot(a2s);
 			if(!inRange(1 - ROTATE_ERR_MARGIN,
 				        1 + ROTATE_ERR_MARGIN,
-				        innerProduct)) // selection tag is not along the y-axis
+				        innerProduct)) // selection tag is not aligned w/ y-axis
 				continue;
 			
 			if(distance < minDist) {
@@ -268,14 +285,11 @@ bool Program::groupTags() {
 
 		//std::cout << "\tmin distance: " << minDist << " with tag at " << tempGrouped << "\n";
 
-		double quantizedDist = round(minDist/Tag::EDGE_SIZE);
-
-		//std::cout << "\tclosest ideal distance: " << quantizedDist*Tag::EDGE_SIZE << "\n";
-
-		if(!inRange(quantizedDist*Tag::EDGE_SIZE - DIST_ERR_MARGIN,
-			        quantizedDist*Tag::EDGE_SIZE + DIST_ERR_MARGIN,
-			        minDist)) // selection tag is not located in multiples of EDGE_SIZE
-			continue;
+		if(tempGrouped == -1) {
+			error_msg = "ERROR - TAG GROUPING - singular action tag.";
+			std::cout << error_msg << "\n";
+			return false;
+		}
 
 		//std::cout << "action at " << i << " grouped with selection at " << tempGrouped << "\n";
 
@@ -283,13 +297,6 @@ bool Program::groupTags() {
 		if(grouped[tempGrouped] == -1)
 			grouped[tempGrouped] = i;
 	}
-
-	for(int i = actionInd; i < numberInd; i++)
-		if(grouped[i] == -1) {
-			error_msg = "ERROR - TAG GROUPING - singular action tag.";
-			std::cout << error_msg << "\n";
-			return false;
-		}
 
 	for(int i = selectionInd; i < selection2ndInd; i++)
 		if(grouped[i] == -1) {
@@ -366,10 +373,20 @@ bool Program::groupTags() {
 		instructions.at(index) = instruction;
 	}
 
-	//TO-DO return false for the following error cases (assuming a one-arm manipulation)
-	//  - the first action is not a pick
-	//  - the even steps are not pick actions or the odd steps are not place actions
-	//  - secondary selection tool info is unavailable for a region selection instruction
+	for(int i = 0; i < instructions.size(); i++) {
+		if((instructions.at(i).selection.getID() == Tag::SELECT_REGION_ID ||
+		    instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID) &&
+		   instructions.at(i).selection2nd.getID() == -1) {
+		   	error_msg = "ERROR - TAG GROUPING - missing secondary selection tag.";
+			std::cout << error_msg << "\n";
+			instructions.clear();
+			return false;
+		}
+	}
+
+	//NOTE: decided not to enforce the following:
+	//  - the even steps are pick actions and the odd steps are place actions.
+	//    This allows us to support picking up a tool for later pick&place
 
 	std::cout << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
 	for(int i = 0; i < instructionNum; i++) {
@@ -381,7 +398,7 @@ bool Program::groupTags() {
 		          << "\t" << instruction.action.printID() << instruction.action.printCenter() << "\n";
 	}
 
-	//TO-DO handling addition other tags
+	//TO-DO handling additional other tags
 	return true;
 }
 
