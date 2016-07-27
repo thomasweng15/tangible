@@ -120,13 +120,6 @@ bool Program::tag2Instruction() {
 	//TO-DO to handle additional tags (e.g. loop)
 	int other_ind  = number_ind + number_count;
 
-	if(tags.at(action_ind).getID() != Tag::SIDE_PICK_ID &&
-	   tags.at(action_ind).getID() != Tag::TOP_PICK_ID) {
-		error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
-		std::cout << error_msg << "\n";
-		return false;
-	}
-
 	int curr = Tag::NUMBER_ID_MIN;
 	for(int i = number_ind; i < other_ind - 1; i++) {
 		if(tags.at(i).getID() != curr) {
@@ -370,6 +363,14 @@ bool Program::tag2Instruction() {
 		}
 
 		instructions.at(index) = instruction;
+	}
+
+	if(instructions.at(0).action.getID() != Tag::SIDE_PICK_ID &&
+	   instructions.at(0).action.getID() != Tag::TOP_PICK_ID) {
+		error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
+		std::cout << error_msg << "\n";
+		instructions.clear();
+		return false;
 	}
 
 	for(int i = 0; i < instructions.size(); i++) {

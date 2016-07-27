@@ -11,6 +11,8 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
+void test_synthetic_valid();
+
 int main (int argc, char** argv) {
 	ros::init(argc, argv, "tangible_pbd");
 	
@@ -22,6 +24,12 @@ int main (int argc, char** argv) {
 	ros::spin();*/
 
 	//YSS testing
+	test_synthetic_valid();
+
+	return 0;
+}
+
+void test_synthetic_valid() {
 	int SELECTION_TAG_NUM = tangible::Tag::SELECTION_ID_MAX - tangible::Tag::SELECTION_ID_MIN + 1;
 	int ACTION_TAG_NUM = tangible::Tag::ACTION_ID_MAX - tangible::Tag::ACTION_ID_MIN + 1;
 	int NUMBER_TAG_NUM = tangible::Tag::NUMBER_ID_MAX - tangible::Tag::NUMBER_ID_MIN + 1;
@@ -48,6 +56,11 @@ int main (int argc, char** argv) {
 		tags.push_back(selection);
 
 		actionID = std::rand()%ACTION_TAG_NUM + tangible::Tag::ACTION_ID_MIN;
+		if(i == 0){
+			while(actionID != tangible::Tag::SIDE_PICK_ID && 
+				  actionID != tangible::Tag::TOP_PICK_ID)
+				actionID = std::rand()%ACTION_TAG_NUM + tangible::Tag::ACTION_ID_MIN;
+		}
 		ps.pose.position.y -= tangible::Tag::EDGE_SIZE;
 		tangible::Tag action;
 		action.setID(actionID);
@@ -56,7 +69,6 @@ int main (int argc, char** argv) {
 		std::cout << action.printID() << ": " << action.printCenter() << ", ";
 		tags.push_back(action);
 
-		//numberID = std::rand()%NUMBER_TAG_NUM + tangible::Tag::NUMBER_ID_MIN;
 		numberID = i + tangible::Tag::NUMBER_ID_MIN;
 		ps.pose.position.x -= tangible::Tag::EDGE_SIZE; 
 		tangible::Tag number;
@@ -86,6 +98,4 @@ int main (int argc, char** argv) {
 	std::cout << "\n";
 	
 	tangible::Program program(tags);
-
-	return 0;
 }

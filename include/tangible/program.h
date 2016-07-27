@@ -29,10 +29,16 @@ public:
 	const static double DIST_ERR_MARGIN = 0.01;
 	const static double ROTATE_ERR_MARGIN = 0.01;
 
-	Program(std::vector<Tag>& tgs);//YSS should consider objs next
+	Program(std::vector<Tag>& tgs);
+	//Program(std::vector<Tag>& tgs,
+	//	    rapid::perception::HSurface tt,
+	//	    std::vector<rapid::perception::Object> objs);
 	~Program();
 
 	bool refresh(std::vector<Tag>& tgs);
+	//bool refresh(std::vector<Tag>& tgs,
+	//	         rapid::perception::HSurface tt,
+	//	         std::vector<rapid::perception::Object> objs);
 
 	std::string error();
 
