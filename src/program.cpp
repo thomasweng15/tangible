@@ -16,7 +16,7 @@ Program::~Program() {}
 
 bool Program::refresh(std::vector<Tag>& tgs) {
 	tags = tgs;
-	return tag2Instruction();
+	tag2Instruction();
 }
 
 //grouping:
@@ -36,6 +36,7 @@ bool Program::refresh(std::vector<Tag>& tgs) {
 //  - instructions are formed based on the tags grouped together
 bool Program::tag2Instruction() {
 	instructions.clear();
+	error_msg.clear();
 	//NOTE: this ensures no instruction is formed for invalid tag settings
 
 	int tag_num = tags.size();
@@ -123,7 +124,7 @@ bool Program::tag2Instruction() {
 	int curr = Tag::NUMBER_ID_MIN;
 	for(int i = number_ind; i < other_ind - 1; i++) {
 		if(tags.at(i).getID() != curr) {
-			error_msg = "ERROR - TAG GROUPING - missing/out of order number tag.";
+			error_msg = "ERROR - TAG GROUPING - missing number tag.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
@@ -212,6 +213,31 @@ bool Program::tag2Instruction() {
 			std::cout << error_msg << "\n";
 			return false;
 		}
+
+		//NOTE: decided to enforce the following:
+		//  - the even steps are pick actions and the odd steps are place actions.
+		//    This allows us to consider each pick and the subsequent place as a block
+		//    We cannot thus accpet nested blocks to support such cases as picking up a tool
+		//    for later pick&place (later pick&place blocks are nested in tool pickup block)
+		//TO-DO once decided to support nested blocks should remove this check
+
+		if(number.getID()%2 == 1 && 
+		   (tags.at(grouped[i]).getID() != Tag::TOP_PICK_ID ||
+		   	tags.at(grouped[i]).getID() != Tag::SIDE_PICK_ID ||
+		   	tags.at(grouped[i]).getID() != Tag::SELECTION_2ND_ID)) {
+			error_msg = "ERROR - TAG GROUPING - expected a pick action." ;
+			std::cout << error_msg << "\n";
+			return false;
+		}
+
+		if(number.getID()%2 == 0 && 
+		   (tags.at(grouped[i]).getID() != Tag::POSITION_ID ||
+		   	tags.at(grouped[i]).getID() != Tag::DROP_ID ||
+		   	tags.at(grouped[i]).getID() != Tag::SELECTION_2ND_ID)) {
+			error_msg = "ERROR - TAG GROUPING - expected a place action." ;
+			std::cout << error_msg << "\n";
+			return false;
+		}
 	}
 
 	for(int i = selection2nd_ind; i < action_ind; i++)
@@ -259,7 +285,7 @@ bool Program::tag2Instruction() {
 
 			if(!inRange(quantizedDist*Tag::EDGE_SIZE - DIST_ERR_MARGIN,
 			            quantizedDist*Tag::EDGE_SIZE + DIST_ERR_MARGIN,
-			            distance)) // distance of selection tag is not a multiples of EDGE_SIZE
+			            distance)) // distance of selection tag is not a multiple of EDGE_SIZE
 				continue;
 
 			Eigen::Vector3d uy = action.getYvect();
@@ -383,10 +409,6 @@ bool Program::tag2Instruction() {
 			return false;
 		}
 	}
-
-	//NOTE: decided not to enforce the following:
-	//  - the even steps are pick actions and the odd steps are place actions.
-	//    This allows us to support picking up a tool for later pick&place
 
 	std::cout << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
 	for(int i = 0; i < instruction_num; i++) {
