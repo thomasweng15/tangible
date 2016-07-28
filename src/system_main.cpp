@@ -9,7 +9,10 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include <geometry_msgs/PoseStamped.h>
+#include "geometry_msgs/PoseStamped.h"
+#include "pcl/point_cloud.h"
+#include "pcl/point_types.h"
+#include "Eigen/Geometry"
 
 void testSyntheticValid(int caseID, int instruction_num);
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID);
@@ -44,33 +47,48 @@ int main (int argc, char** argv) {
 	tangible::FrameTransformer trns(node, "base_footprint");
 	tangible::TagExtractor tagext(node);
 	//tangible::SceneParser parser(node);
-	tangible::Program program(tagext.get_tags());
+	//if(parser.isSuccessful)
+		tangible::Program program(tagext.get_tags(), parser.getObjects());
 	ros::spin();*/
 
 	//YSS testing
-	int caseID, instruction_num = 2;
-	do {
-		std::cout << "enter the desired test case ID or 0 to quit\n";
-		std::cout << "\t  1: only arrow selection\n";
-		std::cout << "\t  2: only region selection\n";
-		std::cout << "\t  3: mixed arrow and region selections\n";
-		std::cin >> caseID;
-		if(caseID <= 0)
-			break;
-		std::cout << "enter the number of instructions ( <= 7 )\n";
-		std::cin >> instruction_num;
-		if(instruction_num < 1 || instruction_num > 7) {
-			std::cout << "\t number of instructions can be {1, 2, 3, 4, 5, 6, 7}\n";
-			continue;
-		}
-		testSyntheticValid(caseID, instruction_num);
-	} while(caseID > 0);
+	//int caseID, instruction_num = 2;
+	//do {
+	//	std::cout << "enter the desired test case ID or 0 to quit\n";
+	//	std::cout << "\t  1: only arrow selection\n";
+	//	std::cout << "\t  2: only region selection\n";
+	//	std::cout << "\t  3: mixed arrow and region selections\n";
+	//	std::cin >> caseID;
+	//	if(caseID <= 0)
+	//		break;
+	//	std::cout << "enter the number of instructions ( <= 7 )\n";
+	//	std::cin >> instruction_num;
+	//	if(instruction_num < 1 || instruction_num > 7) {
+	//		std::cout << "\t number of instructions can be {1, 2, 3, 4, 5, 6, 7}\n";
+	//		continue;
+	//	}
+	//	testSyntheticValid(caseID, instruction_num);
+	//} while(caseID > 0);
+
+	Eigen::Vector3d v3;
+	v3 << 1, 2, 3;
+	Eigen::Vector4f v4;
+	v4 << 1, 2, 3, 4;
+	std::cout << v3 << "|" << v4.block(0, 0, 0, 2) << std::endl;
 
 	return 0;
 }
 
 void testSyntheticValid(int caseID, int instruction_num) {
 	std::vector<tangible::Tag> tags;
+	std::vector<rapid::perception::Object> objects;//YSS not used yet
+	//TO-DO create fake objects is possible
+	// pcl::PointXYZRGB point;
+	// point.x = 0; define where you want it to be;
+	// the same for point.y and point.z
+	// pcl::PointCloud<pcl::PointXYZRGB> cloud;
+	// cloud.push_back(point);
+	// but I'm not sure if this will be an organized cloud.
 	
 	int selectionID, actionID, numberID;
 	geometry_msgs::PoseStamped ps; double x, y, z = 0; tangible::Axis axis;
@@ -122,7 +140,7 @@ void testSyntheticValid(int caseID, int instruction_num) {
 	}
 	std::cout << "\ncompiling the tags to build the program...\n";
 	
-	tangible::Program program(tags);
+	tangible::Program program(tags, objects);
 }
 
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID) {

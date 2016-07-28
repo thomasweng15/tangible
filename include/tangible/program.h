@@ -5,6 +5,7 @@
 #include <string>
 
 #include "tangible/tag.h"
+#include "rapid_perception/object.h"
 
 namespace tangible {
 
@@ -13,15 +14,18 @@ struct Instruction {
 	Tag selection2nd;
 	Tag action;
 	Tag number;
+	std::vector<rapid::perception::Object> objects;
 };
 
 class Program {
 private:
 	std::vector<Tag> tags;
+	std::vector<rapid::perception::Object> objects;
 	std::vector<Instruction> instructions;
 	std::string error_msg;
 
 	bool tag2Instruction();
+	bool matchObjects();
 
 public:
 	//TO-DO register these as ros params so you can modify them on the go
@@ -29,14 +33,18 @@ public:
 	const static double DIST_ERR_MARGIN = 0.01;
 	const static double ROTATE_ERR_MARGIN = 0.01;
 
-	Program(std::vector<Tag>& tgs);
+	const static int MIN_POINTCLOUD_OVERLAP = 15;
+
+	//Program(std::vector<Tag>& tgs);
+	Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
 	//Program(std::vector<Tag>& tgs,
 	//	    rapid::perception::HSurface tt,
 	//	    std::vector<rapid::perception::Object> objs);
 	~Program();
 
-	bool refresh(std::vector<Tag>& tgs);
-	//bool refresh(std::vector<Tag>& tgs,
+	//void refresh(std::vector<Tag>& tgs);
+	void refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
+	//void refresh(std::vector<Tag>& tgs,
 	//	         rapid::perception::HSurface tt,
 	//	         std::vector<rapid::perception::Object> objs);
 

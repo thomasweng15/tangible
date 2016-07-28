@@ -4,22 +4,30 @@
 #include <math.h>
 
 #include "Eigen/Geometry"
+#include "pcl/filters/crop_box.h"
+#include "pcl/point_cloud.h"
+#include "pcl/point_types.h"
+
 #include "tangible/utils.h"
 
 namespace tangible {
 
-Program::Program(std::vector<Tag>& tgs) { 
+Program::Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs) { 
 	tags = tgs;
-	tag2Instruction();
+	objects = objs;
+	if(tag2Instruction())
+		matchObjects();
 }
 Program::~Program() {}
 
-bool Program::refresh(std::vector<Tag>& tgs) {
+void Program::refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs) {
 	tags = tgs;
-	tag2Instruction();
+	objects = objs;
+	if(!tag2Instruction()) return;
+	matchObjects();
 }
 
-//grouping:
+//grouping tags to form instructions:
 //  - sort tags ascendingly based on id
 //  - find the range for selection, action, and number tags
 //  - for each pair of numbers and actions/secodndary selections tags
@@ -421,6 +429,63 @@ bool Program::tag2Instruction() {
 	}
 
 	//TO-DO handling additional other tags
+	return true;
+}
+
+// matching objects to instructions if necessary
+// for each instruction with a relative selection element
+//    - if SELECT_OBJECT_ID, for each object
+//        - copy the point cloud in separate variable so the original cloud is intact
+//        - use CropBox to find the overlap of the cloud with the box in front of the arrow
+//        - count the number of points remianing after the filter
+//     keep track of the max overlap. Match the object with the max overlap to the instruction
+//     if the overlap is larger that a threshold. 
+//     error if no object with THRESHOLD points is found: no object to select
+//    - if SELECT_OBJECTS_ID: match to all objects whose point cloud is fully contaied
+//      within a region.
+bool Program::matchObjects() {
+	for(int i = 0; i < instructions.size(); i++) {
+		Tag selection = instructions.at(i).selection;
+		if(selection.getID() == Tag::SELECT_OBJECT_ID) {
+			Eigen::Vector4f tip;
+			tip << selection.getCenter().x,
+			       selection.getCenter().y,
+			       selection.getCenter().z,
+			       1;
+			Eigen::Vector4f temp;
+			//temp << 
+			Eigen::Vector4f min, max;
+
+			int max_overlap = -1; int max_overlap_index = -1;
+			for(int j = 0; j < objects.size(); j++) {
+				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(objects.at(j).GetCloud());
+				
+				pcl::CropBox<pcl::PointXYZRGB> cbox;
+				cbox.setInputCloud(cloud);
+				cbox.setMin(min);
+				cbox.setMax(max);
+				cbox.filter(*cloud); //YSS will this change object's original point cloud?
+				
+				if(cloud->points.size() >= MIN_POINTCLOUD_OVERLAP &&
+				   cloud->points.size() > max_overlap) {
+					max_overlap = cloud->points.size();
+					max_overlap_index = j;
+				}
+			}
+
+			if(max_overlap_index == -1) {
+				error_msg = "ERROR - TAG GROUPING - no object to select.";
+				std::cout << error_msg << "\n";
+				return false;
+			}
+
+			instructions.at(i).objects.push_back(objects.at(max_overlap_index));
+		} else if (instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID){
+			// for each object
+			//    - test if point cloud is fully within the ROI
+			//      can use CropBox and compare the point before and after
+		}
+	}
 	return true;
 }
 
