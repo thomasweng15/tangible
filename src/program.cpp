@@ -447,14 +447,23 @@ bool Program::matchObjects() {
 	for(int i = 0; i < instructions.size(); i++) {
 		Tag selection = instructions.at(i).selection;
 		if(selection.getID() == Tag::SELECT_OBJECT_ID) {
-			Eigen::Vector4f tip;
-			tip << selection.getCenter().x,
-			       selection.getCenter().y,
-			       selection.getCenter().z,
-			       1;
-			Eigen::Vector4f temp;
-			//temp << 
+			Eigen::Vector3d x_axis = selection.getXvect();
+			Eigen::Vector4f x_axis_extended(x_axis(0), x_axis(1), x_axis(2), 1);
+			Eigen::Vector3d y_axis = selection.getYvect();
+			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 1);
+			Eigen::Vector3d z_axis = selection.getZvect();
+			Eigen::Vector4f z_axis_extended(z_axis(0), z_axis(1), z_axis(2), 1);
+
+			Eigen::Vector4f tip (selection.getCenter().x, 
+				                 selection.getCenter().y,
+				                 selection.getCenter().z,
+				                 1);
+			tip += tip + x_axis_extended * Tag::ARROW_SELECTION_LEN;
 			Eigen::Vector4f min, max;
+			min = tip + OBJECT_SELECTION_BOX_SIZE * x_axis_extended;
+			max = tip + OBJECT_SELECTION_BOX_SIZE * (x_axis_extended + 
+				                                     y_axis_extended + 
+				                                     z_axis_extended);
 
 			int max_overlap = -1; int max_overlap_index = -1;
 			for(int j = 0; j < objects.size(); j++) {

@@ -38,6 +38,7 @@ private:
 	int id;
 public:
 	const static double EDGE_SIZE = 3;
+	const static double ARROW_SELECTION_LEN = 5;
 	// ID of selection tags {0, 1, 2, 3}
 	const static int SELECTION_ID_MIN = 0;
 	const static int SELECTION_ID_MAX = 3;

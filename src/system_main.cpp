@@ -70,12 +70,6 @@ int main (int argc, char** argv) {
 	//	testSyntheticValid(caseID, instruction_num);
 	//} while(caseID > 0);
 
-	Eigen::Vector3d v3;
-	v3 << 1, 2, 3;
-	Eigen::Vector4f v4;
-	v4 << 1, 2, 3, 4;
-	std::cout << v3 << "|" << v4.block(0, 0, 0, 2) << std::endl;
-
 	return 0;
 }
 

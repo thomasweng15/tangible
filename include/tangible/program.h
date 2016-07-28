@@ -34,6 +34,7 @@ public:
 	const static double ROTATE_ERR_MARGIN = 0.01;
 
 	const static int MIN_POINTCLOUD_OVERLAP = 15;
+	const static double OBJECT_SELECTION_BOX_SIZE = 1;
 
 	//Program(std::vector<Tag>& tgs);
 	Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
