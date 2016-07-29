@@ -15,6 +15,7 @@ namespace tangible {
 Program::Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs) { 
 	tags = tgs;
 	objects = objs;
+	tag2Instruction();
 	//if(tag2Instruction())
 	//	matchObjects();
 }
@@ -64,19 +65,19 @@ bool Program::tag2Instruction() {
 	int regionID_count = 0;
 	int grouped[tag_num];
 	for(int i = 0; i < tag_num; i++) {
-		if(inRange(Tag::SELECTION_ID_MIN, Tag::SELECTION_ID_MAX, tags.at(i).getID()))
+		if(inRange(Tag::SELECTION_ID_MIN, Tag::SELECTION_ID_MAX, tags[i].getID()))
 			selection_count++;
-		else if(tags.at(i).getID() == Tag::SELECTION_2ND_ID)
+		else if(tags[i].getID() == Tag::SELECTION_2ND_ID)
 			selection2nd_count++;
-		else if(inRange(Tag::ACTION_ID_MIN, Tag::ACTION_ID_MAX, tags.at(i).getID()))
+		else if(inRange(Tag::ACTION_ID_MIN, Tag::ACTION_ID_MAX, tags[i].getID()))
 			action_count++;
-		else if(inRange(Tag::NUMBER_ID_MIN, Tag::NUMBER_ID_MAX, tags.at(i).getID()))
+		else if(inRange(Tag::NUMBER_ID_MIN, Tag::NUMBER_ID_MAX, tags[i].getID()))
 			number_count++;
-		else if(tags.at(i).getID() > Tag::NUMBER_ID_MAX)
+		else if(tags[i].getID() > Tag::NUMBER_ID_MAX)
 			other_count++;
 
-		if(tags.at(i).getID() == Tag::SELECT_REGION_ID ||
-		   tags.at(i).getID() == Tag::SELECT_OBJECTS_ID)
+		if(tags[i].getID() == Tag::SELECT_REGION_ID ||
+		   tags[i].getID() == Tag::SELECT_OBJECTS_ID)
 			regionID_count++;
 		
 		grouped[i] = -1;
@@ -131,13 +132,13 @@ bool Program::tag2Instruction() {
 
 	int curr = Tag::NUMBER_ID_MIN;
 	for(int i = number_ind; i < other_ind - 1; i++) {
-		if(tags.at(i).getID() != curr) {
+		if(tags[i].getID() != curr) {
 			error_msg = "ERROR - TAG GROUPING - missing number tag.";
 			std::cout << error_msg << "\n";
 			return false;
 		}
-		if(tags.at(i).getID() == tags.at(i-1).getID() &&
-		   tags.at(i).getID() == tags.at(i+1).getID()) {
+		if(tags[i].getID() == tags[i-1].getID() &&
+		   tags[i].getID() == tags[i+1].getID()) {
 		// NOTE: at this point there is at least one selection and one action tags so 
 		// number_ind >= 2 and i-1 will be valid.
 			error_msg = "ERROR - TAG GROUPING - too many repeated number tags.";
@@ -145,7 +146,7 @@ bool Program::tag2Instruction() {
 			return false;
 		}
 
-		if(tags.at(i).getID() != tags.at(i+1).getID())
+		if(tags[i].getID() != tags[i+1].getID())
 			curr++;
 	}
 
@@ -159,12 +160,12 @@ bool Program::tag2Instruction() {
 	//		std::cout << "| ";
 	//	else
 	//		std::cout << ", ";
-	//	std::cout << tags.at(i).getID();
+	//	std::cout << tags[i].getID();
 	//}
 	//std::cout << " |\n";
 
 	for(int i = number_ind; i < other_ind; i++) {
-		Tag number = tags.at(i);
+		Tag number = tags[i];
 		
 		//std::cout << "number " 
 		//          << number.printID() 
@@ -175,7 +176,7 @@ bool Program::tag2Instruction() {
 			if(grouped[j] > -1) // action/secondary selection tag is already grouped
 				continue;
 
-			Tag action_or_2ndary = tags.at(j);
+			Tag action_or_2ndary = tags[j];
 			
 			//std::cout << "\t action or secondary selection  " 
 			//          << action_or_2ndary.printID()
@@ -230,18 +231,18 @@ bool Program::tag2Instruction() {
 		//TO-DO once decided to support nested blocks should remove this check
 
 		if(number.getID()%2 == 1 && 
-		   (tags.at(grouped[i]).getID() != Tag::TOP_PICK_ID ||
-		   	tags.at(grouped[i]).getID() != Tag::SIDE_PICK_ID ||
-		   	tags.at(grouped[i]).getID() != Tag::SELECTION_2ND_ID)) {
+		   (tags[grouped[i]].getID() != Tag::TOP_PICK_ID &&
+		   	tags[grouped[i]].getID() != Tag::SIDE_PICK_ID &&
+		   	tags[grouped[i]].getID() != Tag::SELECTION_2ND_ID)) {
 			error_msg = "ERROR - TAG GROUPING - expected a pick action." ;
 			std::cout << error_msg << "\n";
 			return false;
 		}
 
 		if(number.getID()%2 == 0 && 
-		   (tags.at(grouped[i]).getID() != Tag::POSITION_ID ||
-		   	tags.at(grouped[i]).getID() != Tag::DROP_ID ||
-		   	tags.at(grouped[i]).getID() != Tag::SELECTION_2ND_ID)) {
+		   (tags[grouped[i]].getID() != Tag::POSITION_ID &&
+		   	tags[grouped[i]].getID() != Tag::DROP_ID &&
+		   	tags[grouped[i]].getID() != Tag::SELECTION_2ND_ID)) {
 			error_msg = "ERROR - TAG GROUPING - expected a place action." ;
 			std::cout << error_msg << "\n";
 			return false;
@@ -263,7 +264,7 @@ bool Program::tag2Instruction() {
 		}
 
 	for(int i = action_ind; i < number_ind; i++) {
-		Tag action = tags.at(i);
+		Tag action = tags[i];
 
 		//std::cout << "action " 
 		//          << action.printID()
@@ -273,7 +274,7 @@ bool Program::tag2Instruction() {
 
 		double minDist = MAX_WORKSPACE_DIST; int temp_grouped = -1;
 		for(int j = selection_ind; j < selection2nd_ind; j++) {
-			Tag selection = tags.at(j);
+			Tag selection = tags[j];
 
 			//std::cout << "\tselection " 
 			//          << selection.printID()
@@ -336,32 +337,32 @@ bool Program::tag2Instruction() {
 	//     their distances
 
 	for(int i = number_ind; i < other_ind-1; i++) {
-		Tag num1 = tags.at(i);
-		Tag num2 = tags.at(i+1);
+		Tag num1 = tags[i];
+		Tag num2 = tags[i+1];
 		if(num1.getID() == num2.getID()) {
 			
 			//std::cout << num1.printID() << " @" << i 
-			//          << " --> " << tags.at(grouped[i]).printID() << " @" << grouped[i];
+			//          << " --> " << tags[grouped[i]].printID() << " @" << grouped[i];
 			//std::cout << " ---- ";
 			//std::cout << num2.printID() << " @" << i+1 
-			//          << " --> " << tags.at(grouped[i+1]).printID() << " @" << grouped[i+1];
+			//          << " --> " << tags[grouped[i+1]].printID() << " @" << grouped[i+1];
 			//std::cout << "\n";
 			
 			// of two successive tags with the same id, one is grouped with an action and
 	        // another with a secondary selection tool
-			if((tags.at(grouped[i]).getID() == Tag::SELECTION_2ND_ID &&
-			    tags.at(grouped[i+1]).getID() == Tag::SELECTION_2ND_ID) ||
-			   (tags.at(grouped[i]).getID() != Tag::SELECTION_2ND_ID &&
-			    tags.at(grouped[i+1]).getID() != Tag::SELECTION_2ND_ID))  {
+			if((tags[grouped[i]].getID() == Tag::SELECTION_2ND_ID &&
+			    tags[grouped[i+1]].getID() == Tag::SELECTION_2ND_ID) ||
+			   (tags[grouped[i]].getID() != Tag::SELECTION_2ND_ID &&
+			    tags[grouped[i+1]].getID() != Tag::SELECTION_2ND_ID))  {
 				error_msg = "ERROR - TAG GROUPING - region tag invalidly numbered.";
 				std::cout << error_msg << "\n";
 				return false;
 			}
 
-			if(tags.at(grouped[i]).getID() == Tag::SELECTION_2ND_ID) {
+			if(tags[grouped[i]].getID() == Tag::SELECTION_2ND_ID) {
 				grouped[grouped[i]] = grouped[grouped[i+1]];
-				std::cout << "secondary selection at " << i 
-				          << " grouped with selectio at" << grouped[grouped[i+1]] << "\n";
+				//std::cout << "secondary selection at " << i 
+				//          << " grouped with selection at " << grouped[grouped[i+1]] << "\n";
 			} else {
 				grouped[grouped[i+1]] = grouped[grouped[i]];
 				//std::cout << "secondary selection at " << i+1 
@@ -382,25 +383,25 @@ bool Program::tag2Instruction() {
 	
 	for(int i = number_ind; i < other_ind; i++) {
 		int index, action_at, selection_at;
-		index = tags.at(i).getID() - Tag::NUMBER_ID_MIN;
-		Instruction instruction = instructions.at(index);
+		index = tags[i].getID() - Tag::NUMBER_ID_MIN;
+		Instruction instruction = instructions[index];
 
 		action_at = grouped[i];
 		selection_at = grouped[action_at];
 
-		if(tags.at(action_at).getID() == Tag::SELECTION_2ND_ID) {
-			instruction.selection2nd = tags.at(action_at);
+		if(tags[action_at].getID() == Tag::SELECTION_2ND_ID) {
+			instruction.selection2nd = tags[action_at];
 		} else {
-			instruction.number = tags.at(i);
-			instruction.action = tags.at(action_at);
-			instruction.selection = tags.at(selection_at);
+			instruction.number = tags[i];
+			instruction.action = tags[action_at];
+			instruction.selection = tags[selection_at];
 		}
 
-		instructions.at(index) = instruction;
+		instructions[index] = instruction;
 	}
 
-	if(instructions.at(0).action.getID() != Tag::SIDE_PICK_ID &&
-	   instructions.at(0).action.getID() != Tag::TOP_PICK_ID) {
+	if(instructions[0].action.getID() != Tag::SIDE_PICK_ID &&
+	   instructions[0].action.getID() != Tag::TOP_PICK_ID) {
 		error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
 		std::cout << error_msg << "\n";
 		instructions.clear();
@@ -408,9 +409,9 @@ bool Program::tag2Instruction() {
 	}
 
 	for(int i = 0; i < instructions.size(); i++) {
-		if((instructions.at(i).selection.getID() == Tag::SELECT_REGION_ID ||
-		    instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID) &&
-		   instructions.at(i).selection2nd.getID() == -1) {
+		if((instructions[i].selection.getID() == Tag::SELECT_REGION_ID ||
+		    instructions[i].selection.getID() == Tag::SELECT_OBJECTS_ID) &&
+		   instructions[i].selection2nd.getID() == -1) {
 		   	error_msg = "ERROR - TAG GROUPING - missing secondary selection tag.";
 			std::cout << error_msg << "\n";
 			instructions.clear();
@@ -418,15 +419,15 @@ bool Program::tag2Instruction() {
 		}
 	}
 
-	std::cout << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
-	for(int i = 0; i < instruction_num; i++) {
-		Instruction instruction = instructions.at(i);
-		std::cout << i
-		          << "\t" << instruction.number.printID() << instruction.number.printCenter()
-		          << "\t" << instruction.selection.printID() << instruction.selection.printCenter()
-		          << "\t" << instruction.selection2nd.printID() << instruction.selection2nd.printCenter()
-		          << "\t" << instruction.action.printID() << instruction.action.printCenter() << "\n";
-	}
+	//std::cout << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
+	//for(int i = 0; i < instruction_num; i++) {
+	//	Instruction instruction = instructions[i];
+	//	std::cout << i
+	//	          << "\t" << instruction.number.printID() << instruction.number.printCenter()
+	//	          << "\t" << instruction.selection.printID() << instruction.selection.printCenter()
+	//	          << "\t" << instruction.selection2nd.printID() << instruction.selection2nd.printCenter()
+	//	          << "\t" << instruction.action.printID() << instruction.action.printCenter() << "\n";
+	//}
 
 	//TO-DO handling additional other tags
 	return true;
@@ -446,7 +447,7 @@ bool Program::tag2Instruction() {
 //        - if little is lost after cropping, assign the object to the instruction 
 bool Program::matchObjects() {
 	for(int i = 0; i < instructions.size(); i++) {
-		Tag selection = instructions.at(i).selection;
+		Tag selection = instructions[i].selection;
 		if(selection.getID() == Tag::SELECT_OBJECT_ID) {
 			Eigen::Vector3d x_axis = selection.getXvect();
 			Eigen::Vector4f x_axis_extended(x_axis(0), x_axis(1), x_axis(2), 1);
@@ -469,7 +470,7 @@ bool Program::matchObjects() {
 			int max_overlap = -1; int max_overlap_index = -1;
 			for(int j = 0; j < objects.size(); j++) {
 				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-				*cloud = *objects.at(j).GetCloud();
+				*cloud = *objects[j].GetCloud();
 				
 				pcl::CropBox<pcl::PointXYZRGB> cbox;
 				cbox.setInputCloud(cloud);
@@ -490,7 +491,7 @@ bool Program::matchObjects() {
 				return false;
 			}
 
-			instructions.at(i).objects.push_back(objects.at(max_overlap_index));
+			instructions[i].objects.push_back(objects[max_overlap_index]);
 		} else if (instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID){
 			Eigen::Vector3d y_axis = selection.getYvect();
 			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 1);
@@ -500,7 +501,7 @@ bool Program::matchObjects() {
 				                            1);
 			primary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
 			
-			Tag selection2nd = instructions.at(i).selection2nd;
+			Tag selection2nd = instructions[i].selection2nd;
 			y_axis = selection2nd.getYvect();
 			y_axis_extended(0) = y_axis(0);
 			y_axis_extended(1) = y_axis(1);
@@ -513,7 +514,7 @@ bool Program::matchObjects() {
 			secondary_corner(2) = MAX_WORKSPACE_HEIGHT;
 			for(int j = 0; j < objects.size(); j++) {
 				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-				*cloud = *objects.at(j).GetCloud();
+				*cloud = *objects[j].GetCloud();
 
 				int size_before_crop = cloud->points.size();
 				
@@ -527,7 +528,7 @@ bool Program::matchObjects() {
 
 				if(size_before_crop - size_after_crop < MIN_REGION_NON_OVERLAP)
 					continue;
-				instructions.at(i).objects.push_back(objects.at(j));
+				instructions[i].objects.push_back(objects[j]);
 			}
 		}
 	}

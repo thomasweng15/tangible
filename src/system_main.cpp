@@ -14,33 +14,40 @@
 #include "pcl/point_types.h"
 #include "Eigen/Geometry"
 
-void testSyntheticSetup(int caseID, int instruction_num);
-void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID);
-bool tagSetup(tangible::Tag& t,
-	          int id,
-	          geometry_msgs::PoseStamped ps,
-	          tangible::Axis a,
-	          int axis_id);
-pcl::PointCloud<pcl::PointXYZRGB> objectSetup(double x, double y, double z, int size)
-
 const int ARROW_ONLY = 1;
-const int REGION_ONLY = 2;
+const int CORNER_ONLY = 2;
 const int MIXED = 3;
+
+const int SELECTION_TAG = 1;
+const int ACTION_TAG = 2;
+const int NUMBER_TAG = 3;
+const int SELECTION_2ND_TAG = 4;
+const int NUMBER_2ND_TAG = 5;
 
 const int SELECTION_TAG_NUM = tangible::Tag::SELECTION_ID_MAX - tangible::Tag::SELECTION_ID_MIN + 1;
 const int ACTION_TAG_NUM = tangible::Tag::ACTION_ID_MAX - tangible::Tag::ACTION_ID_MIN + 1;
 const int NUMBER_TAG_NUM = tangible::Tag::NUMBER_ID_MAX - tangible::Tag::NUMBER_ID_MIN + 1;
 
-const int OBJECT_SIZE = 4;
-
-const int SCENE_SIZE = 50;
-
-const int MAX_REGION_LEN = 10;
-
 const int X_AXIS = 0;
 const int Y_AXIS = 1;
 const int Z_AXIS = 2;
 
+const int OBJECT_SIZE = 4;
+
+void testSyntheticSetup(int caseID, int instruction_num);
+void make_arrow_instructions(std::vector<tangible::Tag>& tags,
+	                         std::vector<rapid::perception::Object>& objects);
+void make_corner_instructions(std::vector<tangible::Tag>& tags,
+	                         std::vector<rapid::perception::Object>& objects);
+void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID);
+tangible::Tag createTag(double x, double y, double z, int id, int type);
+void setupAxis(tangible::Axis&, int type);
+bool setupTag(tangible::Tag& t,
+	          int id,
+	          geometry_msgs::PoseStamped ps,
+	          tangible::Axis a,
+	          int axis_id);
+pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr setupObject(double x, double y, double z, int size);
 //YSS end for testing
 
 int main (int argc, char** argv) {
@@ -57,92 +64,100 @@ int main (int argc, char** argv) {
 	ros::spin();*/
 
 	//YSS testing
-	int caseID, instruction_num = 2;
-	do {
-		std::cout << "enter the desired test case ID or 0 to quit\n";
-		std::cout << "\t  1: only arrow selection\n";
-		std::cout << "\t  2: only region selection\n";
-		std::cout << "\t  3: mixed arrow and region selections\n";
-		std::cin >> caseID;
-		if(caseID <= 0)
-			break;
-		std::cout << "enter the number of instructions ( <= 7 )\n";
-		std::cin >> instruction_num;
-		if(instruction_num < 1 || instruction_num > 7) {
-			std::cout << "\t number of instructions can be {1, 2, 3, 4, 5, 6, 7}\n";
-			continue;
-		}
-		testSyntheticSetup(caseID, instruction_num);
-	} while(caseID > 0);
+	std::vector<tangible::Tag> tags;
+	std::vector<rapid::perception::Object> objects;
+
+	//make_arrow_instructions(tags, objects);
+	make_corner_instructions(tags, objects);
+
+	for(int i = 0; i < tags.size(); i++)
+		std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
+	std::cout << "\n";
+
+	std::cout << "\ncompiling the tags to build the program...\n";
+	tangible::Program program(tags, objects);
+	std::cout << "errors: " << (program.error().empty() ? "None" : program.error()) << "\n";
 
 	return 0;
 }
 
-void testSyntheticSetup(int caseID, int instruction_num) {
-	std::vector<tangible::Tag> tags;
-	std::vector<rapid::perception::Object> objects;//YSS not used yet
-	//TO-DO create fake objects is possible
-	// pcl::PointXYZRGB point;
-	// point.x = 0; define where you want it to be;
-	// the same for point.y and point.z
-	// pcl::PointCloud<pcl::PointXYZRGB> cloud;
-	// cloud.push_back(point);
-	// but I'm not sure if this will be an organized cloud.
-	 
-	for(int i = 0; i < instruction_num; i++) {
-		int selectionID, actionID, numberID;
-		geometry_msgs::PoseStamped ps;
-		tangible::Axis axis;
-		double x, y, z = 0;
+void make_arrow_instructions(std::vector<tangible::Tag>& tags,
+	                         std::vector<rapid::perception::Object>& objects) {
+	int selectionID, actionID, numberID;
+	double x, y, z = 0;
 
-		tagIDs(selectionID, actionID, numberID, i, caseID);
+	// instruction #1
+	tagIDs(selectionID, actionID, numberID, 0, ARROW_ONLY);
 
-		x = std::rand()%SCENE_SIZE + 4*tangible::Tag::EDGE_SIZE;
-		y = std::rand()%SCENE_SIZE + 4*tangible::Tag::EDGE_SIZE;
-		ps.pose.position.x = x; ps.pose.position.y = y; ps.pose.position.z = z;
-		axis.x = 0; axis.y = 1; axis.z = 0;
-		tangible::Tag selection;
-		if(!tagSetup(selection, selectionID, ps, axis, Y_AXIS))	break;
-		std::cout << selection.printID() << ": " << selection.printCenter() << ", ";
-		tags.push_back(selection);
+	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
+	//TO-DO add object
 
-		
-		ps.pose.position.y -= tangible::Tag::EDGE_SIZE;
-		axis.x = 0; axis.y = 1; axis.z = 0;
-		tangible::Tag action;
-		if(!tagSetup(action, actionID, ps, axis, Y_AXIS)) break;
-		std::cout << action.printID() << ": " << action.printCenter() << ", ";
-		tags.push_back(action);
+	y -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
 
-		
-		ps.pose.position.x -= tangible::Tag::EDGE_SIZE; 
-		axis.x = 1; axis.y = 0; axis.z = 0;
-		tangible::Tag number;
-		if(!tagSetup(number, numberID, ps, axis, X_AXIS)) break;
-		std::cout << number.printID() << ": " << number.printCenter() << ", ";
-		tags.push_back(number);
-		
-		if(selectionID == tangible::Tag::SELECT_REGION_ID ||
-		   selectionID == tangible::Tag::SELECT_OBJECTS_ID) { // a region task
-			int w = std::rand()%MAX_REGION_LEN; x += w; 
-			int h = std::rand()%MAX_REGION_LEN; y -= h;
-			ps.pose.position.x = x; ps.pose.position.y = y; ps.pose.position.z = z;
-			axis.x = 1; axis.y = 0; axis.z = 0;
-			tangible::Tag selection2nd;
-			if(!tagSetup(selection2nd, tangible::Tag::SELECTION_2ND_ID, ps, axis, Y_AXIS)) break;
-			std::cout << selection2nd.printID() << ": " << selection2nd.printCenter() << ", ";
-			tags.push_back(selection2nd);
-			
-			ps.pose.position.y += tangible::Tag::EDGE_SIZE;
-			axis.x = 0; axis.y = -1; axis.z = 0;
-			if(!tagSetup(number, numberID, ps, axis, X_AXIS)) break;
-			std::cout << number.printID() << ": " << number.printCenter() << ", ";
-			tags.push_back(number);
-		}		
-	}
-	std::cout << "\ncompiling the tags to build the program...\n";
-	
-	tangible::Program program(tags, objects);
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	// instruction #2
+	tagIDs(selectionID, actionID, numberID, 1, ARROW_ONLY);
+
+	x = 7*tangible::Tag::EDGE_SIZE; y = 2*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
+	//TO-DO add object
+
+	y -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	//TO-DO try out with the second instruction at (6, 5)*EDGE_SIZE
+}
+
+void make_corner_instructions(std::vector<tangible::Tag>& tags,
+	                         std::vector<rapid::perception::Object>& objects) {
+	int selectionID, actionID, numberID;
+	double x, y, z = 0;
+	double w = 2*tangible::Tag::EDGE_SIZE; double h = 3*tangible::Tag::EDGE_SIZE;
+
+	// instruction #1
+	tagIDs(selectionID, actionID, numberID, 0, CORNER_ONLY);
+
+	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
+	//TO-DO add object
+
+	y -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	x = 4*tangible::Tag::EDGE_SIZE + w; y = 4*tangible::Tag::EDGE_SIZE - h;
+	tags.push_back(createTag(x, y, z, tangible::Tag::SELECTION_2ND_ID, SELECTION_2ND_TAG));
+
+	y += tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_2ND_TAG));
+
+	// instruction #2
+	tagIDs(selectionID, actionID, numberID, 1, CORNER_ONLY);
+
+	x = 10*tangible::Tag::EDGE_SIZE; y = 11*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
+	//TO-DO add object
+
+	y -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	x = 10*tangible::Tag::EDGE_SIZE + w; y = 11*tangible::Tag::EDGE_SIZE - h;
+	tags.push_back(createTag(x, y, z, tangible::Tag::SELECTION_2ND_ID, SELECTION_2ND_TAG));
+
+	y += tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_2ND_TAG));
 }
 
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID) {
@@ -151,7 +166,7 @@ void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID
 		case ARROW_ONLY:
 			selectionID += (std::rand()%2)*2;
 			break;
-		case REGION_ONLY:
+		case CORNER_ONLY:
 			selectionID += (std::rand()%2)*2+1;
 			break;
 		default:
@@ -165,7 +180,33 @@ void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID
 	numberID = step + tangible::Tag::NUMBER_ID_MIN;
 }
 
-bool tagSetup(tangible::Tag& t,
+tangible::Tag createTag(double x, double y, double z, int id, int type) {
+	geometry_msgs::PoseStamped ps;
+	ps.pose.position.x = x; ps.pose.position.y = y; ps.pose.position.z = z;
+
+	tangible::Axis axis;
+	setupAxis(axis, type);
+
+	tangible::Tag tag;
+	if(type == SELECTION_TAG || type == ACTION_TAG || type == SELECTION_2ND_TAG)
+		setupTag(tag, id, ps, axis, Y_AXIS);
+	else if(type == NUMBER_TAG || type == NUMBER_2ND_TAG)
+		setupTag(tag, id, ps, axis, X_AXIS);
+
+	return tag;
+}
+
+void setupAxis(tangible::Axis& axis, int type) {
+	if(type == SELECTION_TAG || type == ACTION_TAG) {
+		axis.x = 0; axis.y = 1; axis.z = 0;
+	} else if(type == NUMBER_TAG || type == SELECTION_2ND_TAG) {
+		axis.x = 1; axis.y = 0; axis.z = 0;
+	} else if(type == NUMBER_2ND_TAG) {
+		axis.x = 0; axis.y = -1; axis.z = 0;
+	}
+}
+
+bool setupTag(tangible::Tag& t,
 	          int id,
 	          geometry_msgs::PoseStamped ps,
 	          tangible::Axis a,
@@ -185,6 +226,14 @@ bool tagSetup(tangible::Tag& t,
 	return true;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB> objectSetup(double x, double y, double z, int size) {
-
+pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr setupObject(double x, double y, double z, int size) {
+	//TO-DO create fake objects is possible
+	// pcl::PointXYZRGB point;
+	// point.x = 0; define where you want it to be;
+	// the same for point.y and point.z
+	// pcl::PointCloud<pcl::PointXYZRGB> cloud;
+	// cloud.push_back(point);
+	// but I'm not sure if this will be an organized cloud.
+	pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+	return cloud;
 }
