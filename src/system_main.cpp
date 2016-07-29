@@ -21,6 +21,7 @@ bool tagSetup(tangible::Tag& t,
 	          geometry_msgs::PoseStamped ps,
 	          tangible::Axis a,
 	          int axis_id);
+pcl::PointCloud<pcl::PointXYZRGB> objectSetup(double x, double y, double z, int size)
 
 const int ARROW_ONLY = 1;
 const int REGION_ONLY = 2;
@@ -29,6 +30,8 @@ const int MIXED = 3;
 const int SELECTION_TAG_NUM = tangible::Tag::SELECTION_ID_MAX - tangible::Tag::SELECTION_ID_MIN + 1;
 const int ACTION_TAG_NUM = tangible::Tag::ACTION_ID_MAX - tangible::Tag::ACTION_ID_MIN + 1;
 const int NUMBER_TAG_NUM = tangible::Tag::NUMBER_ID_MAX - tangible::Tag::NUMBER_ID_MIN + 1;
+
+const int OBJECT_SIZE = 4;
 
 const int SCENE_SIZE = 50;
 
@@ -85,10 +88,13 @@ void testSyntheticSetup(int caseID, int instruction_num) {
 	// pcl::PointCloud<pcl::PointXYZRGB> cloud;
 	// cloud.push_back(point);
 	// but I'm not sure if this will be an organized cloud.
-	
-	int selectionID, actionID, numberID;
-	geometry_msgs::PoseStamped ps; double x, y, z = 0; tangible::Axis axis;
+	 
 	for(int i = 0; i < instruction_num; i++) {
+		int selectionID, actionID, numberID;
+		geometry_msgs::PoseStamped ps;
+		tangible::Axis axis;
+		double x, y, z = 0;
+
 		tagIDs(selectionID, actionID, numberID, i, caseID);
 
 		x = std::rand()%SCENE_SIZE + 4*tangible::Tag::EDGE_SIZE;
@@ -177,4 +183,8 @@ bool tagSetup(tangible::Tag& t,
 		return false;
 	}
 	return true;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB> objectSetup(double x, double y, double z, int size) {
+
 }
