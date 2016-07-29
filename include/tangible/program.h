@@ -55,6 +55,8 @@ public:
 	std::vector<Instruction> getInstructions();
 	std::string error();
 
+	std::string printInstructionTags();
+
 	//TO-DO
 	//run program
 

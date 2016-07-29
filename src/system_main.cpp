@@ -41,6 +41,8 @@ void make_arrow_instructions(std::vector<tangible::Tag>& tags,
 	                         std::vector<rapid::perception::Object>& objects);
 void make_corner_instructions(std::vector<tangible::Tag>& tags,
 	                         std::vector<rapid::perception::Object>& objects);
+void make_colocated_instructions(std::vector<tangible::Tag>& tags,
+	                             std::vector<rapid::perception::Object>& objects);
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID);
 tangible::Tag createTag(double x, double y, double z, int id, int type);
 void setupAxis(tangible::Axis&, int type);
@@ -66,36 +68,20 @@ int main (int argc, char** argv) {
 	ros::spin();*/
 
 	//YSS testing
-	//std::vector<tangible::Tag> tags;
-	//std::vector<rapid::perception::Object> objects;
-	//
+	std::vector<tangible::Tag> tags;
+	std::vector<rapid::perception::Object> objects;
+	
 	//make_arrow_instructions(tags, objects);
 	//make_corner_instructions(tags, objects);
-	//
-	//for(int i = 0; i < tags.size(); i++)
-	//	std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
-	//std::cout << "\n";
-	//
-	//std::cout << "\ncompiling the tags to build the program...\n";
-	//tangible::Program program(tags, objects);
-	//std::cout << "errors: " << (program.error().empty() ? "None" : program.error()) << "\n";
-
-	rapid::perception::Object obj = createObject(0, 0, 0, 50, "obj1");
-	std::cout << obj.GetCloud()->points.size() << "\n";
-	//YSS run-time error likely because I don't set the point indices
-
-	//Eigen::Vector4f min, max;
-	//min << -1, -1, -1, 1; max << 6, 6, 6, 1;
-	//
-	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-	//*cloud = *obj.GetCloud();
-	//
-	//pcl::CropBox<pcl::PointXYZRGB> cbox;
-	//cbox.setInputCloud(cloud);
-	//cbox.setMin(min);
-	//cbox.setMax(max);
-	//cbox.filter(*cloud);
-	//std::cout << cloud->points.size() << "\n";
+	make_colocated_instructions(tags, objects);
+	
+	for(int i = 0; i < tags.size(); i++)
+		std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
+	std::cout << "\n";
+	
+	std::cout << "\ncompiling the tags to build the program...\n";
+	tangible::Program program(tags, objects);
+	std::cout << "errors: " << (program.error().empty() ? "None" : program.error()) << "\n";
 
 	return 0;
 }
@@ -179,6 +165,69 @@ void make_corner_instructions(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_2ND_TAG));
 }
 
+void make_colocated_instructions(std::vector<tangible::Tag>& tags,
+	                             std::vector<rapid::perception::Object>& objects) {
+	int selectionID, actionID, numberID;
+	double x, y, z = 0;
+	double w = 2*tangible::Tag::EDGE_SIZE; double h = 3*tangible::Tag::EDGE_SIZE;
+
+	// instruction #1
+	tagIDs(selectionID, actionID, numberID, 0, ARROW_ONLY);
+
+	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
+	//TO-DO add object
+
+	y -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	// instruction #2
+	tagIDs(selectionID, actionID, numberID, 1, CORNER_ONLY);
+
+	x = 10*tangible::Tag::EDGE_SIZE; y = 11*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
+	//TO-DO add object
+
+	y -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	x = 10*tangible::Tag::EDGE_SIZE + w; y = 11*tangible::Tag::EDGE_SIZE - h;
+	tags.push_back(createTag(x, y, z, tangible::Tag::SELECTION_2ND_ID, SELECTION_2ND_TAG));
+
+	y += tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_2ND_TAG));
+
+	// instruction #3 - colocated w/ instruction #1 (i.e. they share the selection tag)
+	tagIDs(selectionID, actionID, numberID, 2, ARROW_ONLY);
+
+	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
+	//TO-DO add object
+
+	y -= 2*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+
+	// instruction #4 - colocated w/ instruction #2 (i.e. they share the selection tag)
+	tagIDs(selectionID, actionID, numberID, 3, CORNER_ONLY);
+
+	x = 10*tangible::Tag::EDGE_SIZE; y = 11*tangible::Tag::EDGE_SIZE;
+	//TO-DO add object
+
+	y -= 2*tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
+
+	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
+}
+
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID) {
 	selectionID = tangible::Tag::SELECTION_ID_MIN;
 	switch(caseID) {
@@ -245,6 +294,7 @@ bool setupTag(tangible::Tag& t,
 	return true;
 }
 
+//YSS unless I figure out a way to fake the indices, I cannot use this
 rapid::perception::Object createObject(double x, double y, double z, int count, std::string name) {
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 	for(int i = 0; i < count; i++)
@@ -257,6 +307,10 @@ rapid::perception::Object createObject(double x, double y, double z, int count, 
 	pcl::PointIndices::Ptr indices;
 	obj.SetCloud(cloud, indices);
 	obj.set_name(name);
+
+	//YSS run-time error likely because I don't set the point indices when I try using obj
+	//std::cout << obj.GetCloud()->points.size() << "\n";
+
 	return obj;
 	//YSS not sure if this is an organized point cloud
 }

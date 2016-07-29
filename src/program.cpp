@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <math.h>
+#include <sstream>
 
 #include "Eigen/Geometry"
 #include "pcl/filters/crop_box.h"
@@ -263,6 +264,11 @@ bool Program::tag2Instruction() {
 			return false;
 		}
 
+	//std::cout << "number-action grouping:\t\t";
+	//for(int i = 0; i < tag_num; i++)
+	//	std::cout << grouped[i] << ", ";
+	//std::cout << "\n";
+
 	for(int i = action_ind; i < number_ind; i++) {
 		Tag action = tags[i];
 
@@ -336,9 +342,14 @@ bool Program::tag2Instruction() {
 	//   - the order of action tags grouped w/ the same selection tag does not follow
 	//     their distances
 
+	//std::cout << "action-selection grouping:\t";
+	//for(int i = 0; i < tag_num; i++)
+	//	std::cout << grouped[i] << ", ";
+	//std::cout << "\n";
+
 	for(int i = number_ind; i < other_ind-1; i++) {
-		Tag num1 = tags[i];
-		Tag num2 = tags[i+1];
+		Tag num1 = tags[i]; int num1_action_or_2ndary_at = grouped[i];
+		Tag num2 = tags[i+1]; int num2_action_or_2ndary_at = grouped[i+1];
 		if(num1.getID() == num2.getID()) {
 			
 			//std::cout << num1.printID() << " @" << i 
@@ -350,26 +361,33 @@ bool Program::tag2Instruction() {
 			
 			// of two successive tags with the same id, one is grouped with an action and
 	        // another with a secondary selection tool
-			if((tags[grouped[i]].getID() == Tag::SELECTION_2ND_ID &&
-			    tags[grouped[i+1]].getID() == Tag::SELECTION_2ND_ID) ||
-			   (tags[grouped[i]].getID() != Tag::SELECTION_2ND_ID &&
-			    tags[grouped[i+1]].getID() != Tag::SELECTION_2ND_ID))  {
+			if((tags[num1_action_or_2ndary_at].getID() == Tag::SELECTION_2ND_ID &&
+			    tags[num2_action_or_2ndary_at].getID() == Tag::SELECTION_2ND_ID) ||
+			   (tags[num1_action_or_2ndary_at].getID() != Tag::SELECTION_2ND_ID &&
+			    tags[num2_action_or_2ndary_at].getID() != Tag::SELECTION_2ND_ID))  {
 				error_msg = "ERROR - TAG GROUPING - region tag invalidly numbered.";
 				std::cout << error_msg << "\n";
 				return false;
 			}
 
-			if(tags[grouped[i]].getID() == Tag::SELECTION_2ND_ID) {
-				grouped[grouped[i]] = grouped[grouped[i+1]];
+			if(tags[num1_action_or_2ndary_at].getID() == Tag::SELECTION_2ND_ID) {
+				grouped[num1_action_or_2ndary_at] = grouped[num2_action_or_2ndary_at];
+				grouped[grouped[num2_action_or_2ndary_at]] = num1_action_or_2ndary_at;
 				//std::cout << "secondary selection at " << i 
 				//          << " grouped with selection at " << grouped[grouped[i+1]] << "\n";
 			} else {
-				grouped[grouped[i+1]] = grouped[grouped[i]];
+				grouped[num2_action_or_2ndary_at] = grouped[num1_action_or_2ndary_at];
+				grouped[grouped[num1_action_or_2ndary_at]] = num2_action_or_2ndary_at;
 				//std::cout << "secondary selection at " << i+1 
 				//          << " grouped with selection at " << grouped[grouped[i]] << "\n";
 			}
 		}
 	}
+
+	//std::cout << "full grouping:\t\t\t";
+	//for(int i = 0; i < tag_num; i++)
+	//	std::cout << grouped[i] << ", ";
+	//std::cout << "\n";
 
 	//TO-DO return false for the following error cases
 	//   - the number grouped w/ the secondary selection tag is not equal to the smallest
@@ -395,6 +413,11 @@ bool Program::tag2Instruction() {
 			instruction.number = tags[i];
 			instruction.action = tags[action_at];
 			instruction.selection = tags[selection_at];
+			if(tags[selection_at].getID() == Tag::SELECT_REGION_ID ||
+			   tags[selection_at].getID() == Tag::SELECT_OBJECTS_ID) {
+				int selection2nd_at = grouped[selection_at];
+				instruction.selection2nd = tags[selection2nd_at];
+			}
 		}
 
 		instructions[index] = instruction;
@@ -419,15 +442,7 @@ bool Program::tag2Instruction() {
 		}
 	}
 
-	//std::cout << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
-	//for(int i = 0; i < instruction_num; i++) {
-	//	Instruction instruction = instructions[i];
-	//	std::cout << i
-	//	          << "\t" << instruction.number.printID() << instruction.number.printCenter()
-	//	          << "\t" << instruction.selection.printID() << instruction.selection.printCenter()
-	//	          << "\t" << instruction.selection2nd.printID() << instruction.selection2nd.printCenter()
-	//	          << "\t" << instruction.action.printID() << instruction.action.printCenter() << "\n";
-	//}
+	std::cout << printInstructionTags();
 
 	//TO-DO handling additional other tags
 	return true;
@@ -538,5 +553,21 @@ bool Program::matchObjects() {
 std::vector<Instruction> Program::getInstructions() { return instructions; }
 
 std::string Program::error() { return error_msg; }
+
+std::string Program::printInstructionTags() {
+	std::stringstream ss;
+	ss << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
+	for(int i = 0; i < instructions.size(); i++) {
+		Instruction instruction = instructions[i];
+		ss << i;
+		ss << "\t" << instruction.number.printID() << instruction.number.printCenter();
+		ss << "\t" << instruction.selection.printID() << instruction.selection.printCenter();
+		ss << "\t" << instruction.selection2nd.printID() << instruction.selection2nd.printCenter();
+		ss << "\t" << instruction.action.printID() << instruction.action.printCenter();
+		ss << "\n";
+	}
+
+	return ss.str();
+}
 
 }

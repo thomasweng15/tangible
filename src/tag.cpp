@@ -111,7 +111,6 @@ bool Tag::operator<(const Tag& other_tag) const {
 	return id < other_tag.id;
 }
 
-//YSS just for testing
 std::string Tag::printCenter() {
 	std::stringstream ss;
 	ss << "(" << center.x;
