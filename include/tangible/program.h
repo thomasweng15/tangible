@@ -30,10 +30,13 @@ private:
 public:
 	//TO-DO register these as ros params so you can modify them on the go
 	const static double MAX_WORKSPACE_DIST = 200;
+	const static double MAX_WORKSPACE_HEIGHT = 50;
+
 	const static double DIST_ERR_MARGIN = 0.01;
 	const static double ROTATE_ERR_MARGIN = 0.01;
 
-	const static int MIN_POINTCLOUD_OVERLAP = 15;
+	const static int MIN_POINT_OVERLAP = 15;
+	const static int MIN_REGION_NON_OVERLAP = 15;
 	const static double OBJECT_SELECTION_BOX_SIZE = 1;
 
 	//Program(std::vector<Tag>& tgs);

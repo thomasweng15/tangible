@@ -441,8 +441,9 @@ bool Program::tag2Instruction() {
 //     keep track of the max overlap. Match the object with the max overlap to the instruction
 //     if the overlap is larger that a threshold. 
 //     error if no object with THRESHOLD points is found: no object to select
-//    - if SELECT_OBJECTS_ID: match to all objects whose point cloud is fully contaied
-//      within a region.
+//    - if SELECT_OBJECTS_ID, for each object
+//        - test if point cloud is fully within the ROI (crop objects against the ROI crop box)
+//        - if little is lost after cropping, assign the object to the instruction 
 bool Program::matchObjects() {
 	for(int i = 0; i < instructions.size(); i++) {
 		Tag selection = instructions.at(i).selection;
@@ -458,7 +459,7 @@ bool Program::matchObjects() {
 				                 selection.getCenter().y,
 				                 selection.getCenter().z,
 				                 1);
-			tip += tip + x_axis_extended * Tag::ARROW_SELECTION_LEN;
+			tip += y_axis_extended * Tag::ARROW_SELECTION_LEN;
 			Eigen::Vector4f min, max;
 			min = tip + OBJECT_SELECTION_BOX_SIZE * x_axis_extended;
 			max = tip + OBJECT_SELECTION_BOX_SIZE * (x_axis_extended + 
@@ -476,7 +477,7 @@ bool Program::matchObjects() {
 				cbox.setMax(max);
 				cbox.filter(*cloud); //YSS will this change object's original point cloud?
 				
-				if(cloud->points.size() >= MIN_POINTCLOUD_OVERLAP &&
+				if(cloud->points.size() >= MIN_POINT_OVERLAP &&
 				   cloud->points.size() > max_overlap) {
 					max_overlap = cloud->points.size();
 					max_overlap_index = j;
@@ -491,10 +492,43 @@ bool Program::matchObjects() {
 
 			instructions.at(i).objects.push_back(objects.at(max_overlap_index));
 		} else if (instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID){
-			// for each object
-			//    - test if point cloud is fully within the ROI
-			//      can use CropBox and compare the point before and after
-			// pcl_common getMinMax3D gives the info
+			Eigen::Vector3d y_axis = selection.getYvect();
+			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 1);
+			Eigen::Vector4f primary_corner (selection.getCenter().x,
+				                            selection.getCenter().y,
+				                            selection.getCenter().z,
+				                            1);
+			primary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
+			
+			Tag selection2nd = instructions.at(i).selection2nd;
+			y_axis = selection2nd.getYvect();
+			y_axis_extended(0) = y_axis(0);
+			y_axis_extended(1) = y_axis(1);
+			y_axis_extended(2) = y_axis(2);
+			Eigen::Vector4f secondary_corner (selection2nd.getCenter().x,
+				                              selection2nd.getCenter().y,
+				                              selection2nd.getCenter().z,
+				                              1);
+			secondary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
+			secondary_corner(2) = MAX_WORKSPACE_HEIGHT;
+			for(int j = 0; j < objects.size(); j++) {
+				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+				*cloud = *objects.at(j).GetCloud();
+
+				int size_before_crop = cloud->points.size();
+				
+				pcl::CropBox<pcl::PointXYZRGB> cbox;
+				cbox.setInputCloud(cloud);
+				cbox.setMin(primary_corner);
+				cbox.setMax(secondary_corner);
+				cbox.filter(*cloud); //YSS will this change object's original point cloud?
+
+				int size_after_crop = cloud->points.size();
+
+				if(size_before_crop - size_after_crop < MIN_REGION_NON_OVERLAP)
+					continue;
+				instructions.at(i).objects.push_back(objects.at(j));
+			}
 		}
 	}
 	return true;
