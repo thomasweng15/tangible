@@ -12,7 +12,9 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "pcl/point_cloud.h"
 #include "pcl/point_types.h"
+#include "pcl/PointIndices.h"
 #include "Eigen/Geometry"
+#include "pcl/filters/crop_box.h"
 
 const int ARROW_ONLY = 1;
 const int CORNER_ONLY = 2;
@@ -32,7 +34,7 @@ const int X_AXIS = 0;
 const int Y_AXIS = 1;
 const int Z_AXIS = 2;
 
-const int OBJECT_SIZE = 4;
+const double CLOUD_DENSITY = 0.1;
 
 void testSyntheticSetup(int caseID, int instruction_num);
 void make_arrow_instructions(std::vector<tangible::Tag>& tags,
@@ -47,7 +49,7 @@ bool setupTag(tangible::Tag& t,
 	          geometry_msgs::PoseStamped ps,
 	          tangible::Axis a,
 	          int axis_id);
-pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr setupObject(double x, double y, double z, int size);
+rapid::perception::Object createObject(double x, double y, double z, int count, std::string name);
 //YSS end for testing
 
 int main (int argc, char** argv) {
@@ -64,19 +66,36 @@ int main (int argc, char** argv) {
 	ros::spin();*/
 
 	//YSS testing
-	std::vector<tangible::Tag> tags;
-	std::vector<rapid::perception::Object> objects;
-
+	//std::vector<tangible::Tag> tags;
+	//std::vector<rapid::perception::Object> objects;
+	//
 	//make_arrow_instructions(tags, objects);
-	make_corner_instructions(tags, objects);
+	//make_corner_instructions(tags, objects);
+	//
+	//for(int i = 0; i < tags.size(); i++)
+	//	std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
+	//std::cout << "\n";
+	//
+	//std::cout << "\ncompiling the tags to build the program...\n";
+	//tangible::Program program(tags, objects);
+	//std::cout << "errors: " << (program.error().empty() ? "None" : program.error()) << "\n";
 
-	for(int i = 0; i < tags.size(); i++)
-		std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
-	std::cout << "\n";
+	rapid::perception::Object obj = createObject(0, 0, 0, 50, "obj1");
+	std::cout << obj.GetCloud()->points.size() << "\n";
+	//YSS run-time error likely because I don't set the point indices
 
-	std::cout << "\ncompiling the tags to build the program...\n";
-	tangible::Program program(tags, objects);
-	std::cout << "errors: " << (program.error().empty() ? "None" : program.error()) << "\n";
+	//Eigen::Vector4f min, max;
+	//min << -1, -1, -1, 1; max << 6, 6, 6, 1;
+	//
+	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+	//*cloud = *obj.GetCloud();
+	//
+	//pcl::CropBox<pcl::PointXYZRGB> cbox;
+	//cbox.setInputCloud(cloud);
+	//cbox.setMin(min);
+	//cbox.setMax(max);
+	//cbox.filter(*cloud);
+	//std::cout << cloud->points.size() << "\n";
 
 	return 0;
 }
@@ -226,14 +245,18 @@ bool setupTag(tangible::Tag& t,
 	return true;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr setupObject(double x, double y, double z, int size) {
-	//TO-DO create fake objects is possible
-	// pcl::PointXYZRGB point;
-	// point.x = 0; define where you want it to be;
-	// the same for point.y and point.z
-	// pcl::PointCloud<pcl::PointXYZRGB> cloud;
-	// cloud.push_back(point);
-	// but I'm not sure if this will be an organized cloud.
-	pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-	return cloud;
+rapid::perception::Object createObject(double x, double y, double z, int count, std::string name) {
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+	for(int i = 0; i < count; i++)
+		for(int j = 0; j < count; j++)
+			for(int k = 0; k < count; k++)
+				cloud->push_back(pcl::PointXYZRGB(x + i * CLOUD_DENSITY,
+				                                  y + j * CLOUD_DENSITY,
+				                                  z + k * CLOUD_DENSITY));
+	rapid::perception::Object obj;
+	pcl::PointIndices::Ptr indices;
+	obj.SetCloud(cloud, indices);
+	obj.set_name(name);
+	return obj;
+	//YSS not sure if this is an organized point cloud
 }
