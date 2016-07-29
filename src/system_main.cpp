@@ -14,7 +14,7 @@
 #include "pcl/point_types.h"
 #include "Eigen/Geometry"
 
-void testSyntheticValid(int caseID, int instruction_num);
+void testSyntheticSetup(int caseID, int instruction_num);
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID);
 bool tagSetup(tangible::Tag& t,
 	          int id,
@@ -47,33 +47,35 @@ int main (int argc, char** argv) {
 	tangible::FrameTransformer trns(node, "base_footprint");
 	tangible::TagExtractor tagext(node);
 	//tangible::SceneParser parser(node);
-	//if(parser.isSuccessful)
+	//if(parser.isSuccessful) {
 		tangible::Program program(tagext.get_tags(), parser.getObjects());
+		//TO-DO visualize the tag grouping and object matching
+	}
 	ros::spin();*/
 
 	//YSS testing
-	//int caseID, instruction_num = 2;
-	//do {
-	//	std::cout << "enter the desired test case ID or 0 to quit\n";
-	//	std::cout << "\t  1: only arrow selection\n";
-	//	std::cout << "\t  2: only region selection\n";
-	//	std::cout << "\t  3: mixed arrow and region selections\n";
-	//	std::cin >> caseID;
-	//	if(caseID <= 0)
-	//		break;
-	//	std::cout << "enter the number of instructions ( <= 7 )\n";
-	//	std::cin >> instruction_num;
-	//	if(instruction_num < 1 || instruction_num > 7) {
-	//		std::cout << "\t number of instructions can be {1, 2, 3, 4, 5, 6, 7}\n";
-	//		continue;
-	//	}
-	//	testSyntheticValid(caseID, instruction_num);
-	//} while(caseID > 0);
+	int caseID, instruction_num = 2;
+	do {
+		std::cout << "enter the desired test case ID or 0 to quit\n";
+		std::cout << "\t  1: only arrow selection\n";
+		std::cout << "\t  2: only region selection\n";
+		std::cout << "\t  3: mixed arrow and region selections\n";
+		std::cin >> caseID;
+		if(caseID <= 0)
+			break;
+		std::cout << "enter the number of instructions ( <= 7 )\n";
+		std::cin >> instruction_num;
+		if(instruction_num < 1 || instruction_num > 7) {
+			std::cout << "\t number of instructions can be {1, 2, 3, 4, 5, 6, 7}\n";
+			continue;
+		}
+		testSyntheticSetup(caseID, instruction_num);
+	} while(caseID > 0);
 
 	return 0;
 }
 
-void testSyntheticValid(int caseID, int instruction_num) {
+void testSyntheticSetup(int caseID, int instruction_num) {
 	std::vector<tangible::Tag> tags;
 	std::vector<rapid::perception::Object> objects;//YSS not used yet
 	//TO-DO create fake objects is possible

@@ -49,6 +49,7 @@ public:
 	//	         rapid::perception::HSurface tt,
 	//	         std::vector<rapid::perception::Object> objs);
 
+	std::vector<Instruction> getInstructions();
 	std::string error();
 
 	//TO-DO

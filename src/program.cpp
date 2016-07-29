@@ -15,8 +15,8 @@ namespace tangible {
 Program::Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs) { 
 	tags = tgs;
 	objects = objs;
-	if(tag2Instruction())
-		matchObjects();
+	//if(tag2Instruction())
+	//	matchObjects();
 }
 Program::~Program() {}
 
@@ -24,7 +24,7 @@ void Program::refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Obje
 	tags = tgs;
 	objects = objs;
 	if(!tag2Instruction()) return;
-	matchObjects();
+	//matchObjects();
 }
 
 //grouping tags to form instructions:
@@ -467,7 +467,8 @@ bool Program::matchObjects() {
 
 			int max_overlap = -1; int max_overlap_index = -1;
 			for(int j = 0; j < objects.size(); j++) {
-				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(objects.at(j).GetCloud());
+				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+				*cloud = *objects.at(j).GetCloud();
 				
 				pcl::CropBox<pcl::PointXYZRGB> cbox;
 				cbox.setInputCloud(cloud);
@@ -493,10 +494,13 @@ bool Program::matchObjects() {
 			// for each object
 			//    - test if point cloud is fully within the ROI
 			//      can use CropBox and compare the point before and after
+			// pcl_common getMinMax3D gives the info
 		}
 	}
 	return true;
 }
+
+std::vector<Instruction> Program::getInstructions() { return instructions; }
 
 std::string Program::error() { return error_msg; }
 
