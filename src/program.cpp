@@ -52,7 +52,6 @@ bool Program::tag2Instruction() {
 	int tag_num = tags.size();
 	if(tag_num == 0) {
 		error_msg = "ERROR - TAG GROUPING - no tags to group.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
@@ -86,37 +85,31 @@ bool Program::tag2Instruction() {
 
 	if(selection_count == 0) {
 		error_msg = "ERROR - TAG GROUPING - no selection tag.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
 	if(action_count == 0) {
 		error_msg = "ERROR - TAG GROUPING - no action tag.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
 	if(number_count == 0) {
 		error_msg = "ERROR - TAG GROUPING - no number tag.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
 	if(action_count < selection_count) {
 		error_msg = "ERROR - TAG GROUPING - too few action or two many selection tags.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
 	if(selection2nd_count != regionID_count) {
 		error_msg = "ERROR - TAG GROUPING - too many or too few secondary selection tags.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
 	if(selection2nd_count + action_count != number_count) {
 		error_msg = "ERROR - TAG GROUPING - too many or too few number tags.";
-		std::cout << error_msg << "\n";
 		return false;
 	}
 
@@ -131,24 +124,20 @@ bool Program::tag2Instruction() {
 	//TO-DO to handle additional tags (e.g. loop)
 	int other_ind  = number_ind + number_count;
 
-	int curr = Tag::NUMBER_ID_MIN;
 	for(int i = number_ind; i < other_ind - 1; i++) {
-		if(tags[i].getID() != curr) {
-			error_msg = "ERROR - TAG GROUPING - missing number tag.";
-			std::cout << error_msg << "\n";
-			return false;
-		}
-		if(tags[i].getID() == tags[i-1].getID() &&
-		   tags[i].getID() == tags[i+1].getID()) {
+		int prev = tags[i-1].getID();
 		// NOTE: at this point there is at least one selection and one action tags so 
 		// number_ind >= 2 and i-1 will be valid.
-			error_msg = "ERROR - TAG GROUPING - too many repeated number tags.";
-			std::cout << error_msg << "\n";
+		int curr = tags[i].getID();
+		int next = tags[i+1].getID();
+		if(next > (curr+1)) {
+			error_msg = "ERROR - TAG GROUPING - missing number tag.";
 			return false;
 		}
-
-		if(tags[i].getID() != tags[i+1].getID())
-			curr++;
+		if(prev == next) {
+			error_msg = "ERROR - TAG GROUPING - too many repeated number tags.";
+			return false;
+		}
 	}
 
 	//std::cout << "selection tags @ " << selection_ind << ", " 
@@ -220,7 +209,6 @@ bool Program::tag2Instruction() {
 
 		if(grouped[i] == -1) {
 			error_msg = "ERROR - TAG GROUPING - singular number tag.";
-			std::cout << error_msg << "\n";
 			return false;
 		}
 
@@ -236,7 +224,6 @@ bool Program::tag2Instruction() {
 		   	tags[grouped[i]].getID() != Tag::SIDE_PICK_ID &&
 		   	tags[grouped[i]].getID() != Tag::SELECTION_2ND_ID)) {
 			error_msg = "ERROR - TAG GROUPING - expected a pick action." ;
-			std::cout << error_msg << "\n";
 			return false;
 		}
 
@@ -245,22 +232,31 @@ bool Program::tag2Instruction() {
 		   	tags[grouped[i]].getID() != Tag::DROP_ID &&
 		   	tags[grouped[i]].getID() != Tag::SELECTION_2ND_ID)) {
 			error_msg = "ERROR - TAG GROUPING - expected a place action." ;
-			std::cout << error_msg << "\n";
 			return false;
 		}
 	}
 
+	//YSS cannot think of a case where a selection2nd is not grouped yet none of the earlier
+	//    error cases is triggered. I think this check is redundant.
+	//    - extra selection2nd ---> selection2nd_count != regionID_count
+	//    - selection2nd not numbered ---> selection2nd_count + action_count != number_count
+	//    - selection2nd and number improperly placed ---> dangling number tag
+	//    but I leave it just in case
 	for(int i = selection2nd_ind; i < action_ind; i++)
 		if(grouped[i] == -1) {
-			error_msg = "ERROR - TAG GROUPING - secondary selection tag not numbered.";
-			std::cout << error_msg << "\n";
+			error_msg = "ERROR - TAG GROUPING - secondary selection tag not numbered (WEIRD).";
 			return false;
 		}
 
+	//YSS again cannot think of a case where a selection2nd is not grouped yet none of the 
+	//    earlier error cases is triggered. I think this check is redundant.
+	//    - extra action ---> selection2nd_count + action_count != number_count
+	//    - action not numbered ---> selection2nd_count + action_count != number_count
+	//    - action and number improperly placed ---> dangling number tag
+	//    but I leave it just in case
 	for(int i = action_ind; i < number_ind; i++)
 		if(grouped[i] == -1) {
-			error_msg = "ERROR - TAG GROUPING - action tag not numbered.";
-			std::cout << error_msg << "\n";
+			error_msg = "ERROR - TAG GROUPING - action tag not numbered (WEIRD).";
 			return false;
 		}
 
@@ -442,7 +438,7 @@ bool Program::tag2Instruction() {
 		}
 	}
 
-	std::cout << printInstructionTags();
+	//std::cout << printInstructionTags();
 
 	//TO-DO handling additional other tags
 	return true;
