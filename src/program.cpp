@@ -208,7 +208,7 @@ bool Program::tag2Instruction() {
 		}
 
 		if(grouped[i] == -1) {
-			error_msg = "ERROR - TAG GROUPING - singular number tag.";
+			error_msg = "ERROR - TAG GROUPING - dangling number tag.";
 			return false;
 		}
 
@@ -315,8 +315,7 @@ bool Program::tag2Instruction() {
 		//std::cout << "\tmin distance: " << minDist << " with tag at " << temp_grouped << "\n";
 
 		if(temp_grouped == -1) {
-			error_msg = "ERROR - TAG GROUPING - singular action tag.";
-			std::cout << error_msg << "\n";
+			error_msg = "ERROR - TAG GROUPING - dangling action tag.";
 			return false;
 		}
 
@@ -329,8 +328,7 @@ bool Program::tag2Instruction() {
 
 	for(int i = selection_ind; i < selection2nd_ind; i++)
 		if(grouped[i] == -1) {
-			error_msg = "ERROR - TAG GROUPING - singular selection tag.";
-			std::cout << error_msg << "\n";
+			error_msg = "ERROR - TAG GROUPING - dangling selection tag.";
 			return false;
 		}
 
@@ -355,14 +353,18 @@ bool Program::tag2Instruction() {
 			//          << " --> " << tags[grouped[i+1]].printID() << " @" << grouped[i+1];
 			//std::cout << "\n";
 			
-			// of two successive tags with the same id, one is grouped with an action and
-	        // another with a secondary selection tool
+			// of two successive number tags with the same id, one is grouped with an action
+	        // and another with a secondary selection tool. The action is grouped with a
+	        // region selection tool
 			if((tags[num1_action_or_2ndary_at].getID() == Tag::SELECTION_2ND_ID &&
 			    tags[num2_action_or_2ndary_at].getID() == Tag::SELECTION_2ND_ID) ||
 			   (tags[num1_action_or_2ndary_at].getID() != Tag::SELECTION_2ND_ID &&
-			    tags[num2_action_or_2ndary_at].getID() != Tag::SELECTION_2ND_ID))  {
-				error_msg = "ERROR - TAG GROUPING - region tag invalidly numbered.";
-				std::cout << error_msg << "\n";
+			    tags[num2_action_or_2ndary_at].getID() != Tag::SELECTION_2ND_ID) ||
+			   tags[grouped[num1_action_or_2ndary_at]].getID() == Tag::SELECT_POSITION_ID ||
+			   tags[grouped[num1_action_or_2ndary_at]].getID() == Tag::SELECT_OBJECT_ID ||
+			   tags[grouped[num2_action_or_2ndary_at]].getID() == Tag::SELECT_POSITION_ID ||
+			   tags[grouped[num2_action_or_2ndary_at]].getID() == Tag::SELECT_OBJECT_ID) {
+				error_msg = "ERROR - TAG GROUPING - tags inavlidly paired.";
 				return false;
 			}
 
@@ -419,10 +421,10 @@ bool Program::tag2Instruction() {
 		instructions[index] = instruction;
 	}
 
+	//YSS this is already enforced by requiring all picks be on even steps
 	if(instructions[0].action.getID() != Tag::SIDE_PICK_ID &&
 	   instructions[0].action.getID() != Tag::TOP_PICK_ID) {
 		error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
-		std::cout << error_msg << "\n";
 		instructions.clear();
 		return false;
 	}
@@ -432,7 +434,6 @@ bool Program::tag2Instruction() {
 		    instructions[i].selection.getID() == Tag::SELECT_OBJECTS_ID) &&
 		   instructions[i].selection2nd.getID() == -1) {
 		   	error_msg = "ERROR - TAG GROUPING - missing secondary selection tag.";
-			std::cout << error_msg << "\n";
 			instructions.clear();
 			return false;
 		}
