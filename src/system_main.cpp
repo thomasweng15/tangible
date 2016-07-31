@@ -89,31 +89,46 @@ rapid::perception::Object createObject(double x, double y, double z, int count, 
 //YSS end for testing
 
 int main (int argc, char** argv) {
+	const static int MAX_BLOCKING_THREAD_NUM = 5;
 	ros::init(argc, argv, "tangible_pbd");
 	
-	std::string err = "error";
 	ros::NodeHandle node;
+	ros::AsyncSpinner spinner(MAX_BLOCKING_THREAD_NUM);
+	spinner.start();
+
 	tangible::FrameTransformer trns(node, "base_footprint");
-	do {
-		tangible::TagExtractor tagext(node);
+	tangible::TagExtractor tagext(node);
+	ros::Duration(5).sleep();
+	//NOTE: wait is necessary here so tags are filled before the call to tagext.get_tags()
+	//TO-DO change the whole architecture to avoid this race condition
+	//      e.g. use ros::topic::waitForMessage<msg_type>("topic_name", timeOut);
+
+	
+	std::string err = "error";
+	std::vector<tangible::Tag> tags;
+	std::vector<rapid::perception::Object> objects;
+	//do {		
 		tags = tagext.get_tags();
 		for(int i = 0; i < tags.size(); i++)
 			std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
 		std::cout << "\n";
 		//tangible::SceneParser parser(node);
 		//if(parser.isSuccessful) {
-			//tangible::Program program(tagext.get_tags(), parser.getObjects());
-			//err = program.error();
+		    //objects = parser.getObjects();
+			tangible::Program program(tags, objects);
+			err = program.error();
+			if(!err.empty())
+				ROS_ERROR("\n%s", err.c_str());
+			else
+				ROS_INFO("\n%s", program.printInstructionTags().c_str());
 		//}
-	} while(!err.empty());
+	//} while(!err.empty());
 	//TO-DO visualize the tag grouping and object matching
 	//TO-DO later on there should be a mechanism for refreshing a program
-	ros::spin();
+	//ros::spin();
+	ros::waitForShutdown();
 
 	/*YSS testing
-	std::vector<tangible::Tag> tags;
-	std::vector<rapid::perception::Object> objects;
-	
 	make_no_instructions(tags, objects); // prints ERROR - TAG GROUPING - no tags to group. 
 	make_instructions_no_selection(tags, objects); // prints ERROR - TAG GROUPING - no selection tag.
 	make_instructions_no_action(tags, objects); // prints ERROR - TAG GROUPING - no action tag.
@@ -141,7 +156,8 @@ int main (int argc, char** argv) {
 	std::cout << "\ncompiling the tags to build the program...\n";
 	tangible::Program program(tags, objects);
 
-	std::cout << (program.error().empty() ? program.printInstructionTags() : program.error()) << "\n";*/
+	std::cout << (program.error().empty() ? program.printInstructionTags() : program.error()) << "\n";
+	*/
 
 	return 0;
 }
