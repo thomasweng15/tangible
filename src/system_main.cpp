@@ -3,6 +3,7 @@
 #include "tangible/tag_extractor.h"
 #include "tangible/scene_parser.h"
 #include "tangible/program.h"
+#include "tangible/visualizer.h"
 
 //YSS for testing
 #include <vector>
@@ -99,6 +100,7 @@ int main (int argc, char** argv) {
 	tangible::FrameTransformer trns(node, "base_footprint");
 	tangible::TagExtractor tagext(node);
 	ros::Duration(5).sleep();
+	tangible::Visualizer vis(node);
 	//NOTE: wait is necessary here so tags are filled before the call to tagext.get_tags()
 	//TO-DO change the whole architecture to avoid this race condition
 	//      e.g. use ros::topic::waitForMessage<msg_type>("topic_name", timeOut);
@@ -117,13 +119,16 @@ int main (int argc, char** argv) {
 		    //objects = parser.getObjects();
 			tangible::Program program(tags, objects);
 			err = program.error();
-			if(!err.empty())
+			if(!err.empty()) {
 				ROS_ERROR("\n%s", err.c_str());
-			else
+				vis.clear();
+			} else {
 				ROS_INFO("\n%s", program.printInstructionTags().c_str());
+				vis.update(program);
+			}
 		//}
 	//} while(!err.empty());
-	//TO-DO visualize the tag grouping and object matching
+
 	//TO-DO later on there should be a mechanism for refreshing a program
 	//ros::spin();
 	ros::waitForShutdown();
