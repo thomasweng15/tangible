@@ -111,9 +111,9 @@ int main (int argc, char** argv) {
 	std::vector<rapid::perception::Object> objects;
 	//do {		
 		tags = tagext.get_tags();
+		ROS_INFO("the following tags are detected:");
 		for(int i = 0; i < tags.size(); i++)
-			std::cout << tags[i].printID() << tags[i].printCenter() << ", ";
-		std::cout << "\n";
+			ROS_INFO("%s%s", tags[i].printID().c_str(), tags[i].printCenter().c_str());
 		//tangible::SceneParser parser(node);
 		//if(parser.isSuccessful) {
 		    //objects = parser.getObjects();
