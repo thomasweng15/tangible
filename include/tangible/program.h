@@ -29,8 +29,8 @@ private:
 
 public:
 	//TO-DO register these as ros params so you can modify them on the go
-	const static double MAX_WORKSPACE_DIST = 200;
-	const static double MAX_WORKSPACE_HEIGHT = 50;
+	const static double MAX_WORKSPACE_DIST = 1;
+	const static double MAX_WORKSPACE_HEIGHT = 0.3;
 
 	const static double DIST_ERR_MARGIN = 0.01;
 	const static double ROTATE_ERR_MARGIN = 0.01;
