@@ -17,7 +17,7 @@ int main (int argc, char** argv) {
 	tangible::FrameTransformer trns(node, "base_footprint");
 	tangible::TagExtractor tagext(node);
 	ros::Duration(5).sleep();
-	tangible::Visualizer vis(node);
+	tangible::Visualizer vis(node, "base_footprint");
 	//NOTE: wait is necessary here so tags are filled before the call to tagext.get_tags()
 	//TO-DO change the whole architecture to avoid this race condition
 	//      e.g. use ros::topic::waitForMessage<msg_type>("topic_name", timeOut);
@@ -36,16 +36,19 @@ int main (int argc, char** argv) {
 		    //objects = parser.getObjects();
 			tangible::Program program(tags, objects);
 			err = program.error();
-			if(!err.empty()) {
-				ROS_ERROR("\n%s", err.c_str());
-				vis.clear();
-			} else {
-				ROS_INFO("\n%s", program.printInstructionTags().c_str());
-				vis.update(program);
-			}
 		//}
 	//} while(!err.empty());
-
+	ros::Rate interval(10);
+	while(ros::ok()) {
+		if(!err.empty()) {
+			ROS_ERROR("\n%s", err.c_str());
+			vis.clear();
+		} else {
+			//ROS_INFO("\n%s", program.printInstructionTags().c_str());
+			vis.update(program);
+		}
+		interval.sleep();
+	}
 	//TO-DO later on there should be a mechanism for refreshing a program
 	ros::waitForShutdown();
 
