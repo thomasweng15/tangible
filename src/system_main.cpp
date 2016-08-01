@@ -16,39 +16,47 @@ int main (int argc, char** argv) {
 
 	tangible::FrameTransformer trns(node, "base_footprint");
 	tangible::TagExtractor tagext(node);
-	ros::Duration(5).sleep();
+	tangible::SceneParser parser(node);
 	tangible::Visualizer vis(node, "base_footprint");
+
+	ros::Duration(5).sleep();
 	//NOTE: wait is necessary here so tags are filled before the call to tagext.get_tags()
 	//TO-DO change the whole architecture to avoid this race condition
 	//      e.g. use ros::topic::waitForMessage<msg_type>("topic_name", timeOut);
+
+
 
 	
 	std::string err = "error";
 	std::vector<tangible::Tag> tags;
 	std::vector<rapid::perception::Object> objects;
+
 	//do {		
 		tags = tagext.get_tags();
 		ROS_INFO("the following tags are detected:");
 		for(int i = 0; i < tags.size(); i++)
 			ROS_INFO("%s%s", tags[i].printID().c_str(), tags[i].printCenter().c_str());
-		//tangible::SceneParser parser(node);
-		//if(parser.isSuccessful) {
-		    //objects = parser.getObjects();
+		
+		if(parser.isSuccessful()) {
+		    objects = parser.getObjects();
+		    vis.update(objects);
 			tangible::Program program(tags, objects);
 			err = program.error();
-		//}
-	//} while(!err.empty());
-	ros::Rate interval(10);
-	while(ros::ok()) {
-		if(!err.empty()) {
-			ROS_ERROR("\n%s", err.c_str());
-			vis.clear();
-		} else {
-			//ROS_INFO("\n%s", program.printInstructionTags().c_str());
-			vis.update(program);
 		}
+	//} while(!err.empty());
+	//ROS_INFO("\n%s", program.printInstructionTags().c_str());
+	
+	ros::Rate interval(3);
+	while(ros::ok()) {
+		//if(err.empty())
+		//	vis.update(program);
+		
+		if(parser.isSuccessful())
+			vis.update(parser.getObjects());
 		interval.sleep();
 	}
+
+	
 	//TO-DO later on there should be a mechanism for refreshing a program
 	ros::waitForShutdown();
 

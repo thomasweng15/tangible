@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "rapid_viz/markers.h"
+
 namespace tangible {
 
 Visualizer::Visualizer(ros::NodeHandle& n, std::string id) {
@@ -12,6 +14,9 @@ Visualizer::Visualizer(ros::NodeHandle& n, std::string id) {
 	ar_label_pub = n.advertise<visualization_msgs::Marker>("ar_label_viz", 10);
 	scene_pub = n.advertise<visualization_msgs::Marker>("scene_viz", 10);
 	program_pub = n.advertise<visualization_msgs::Marker>("program_viz", 10);
+
+	latest_instruction_num = 0;
+	latest_object_num = 0;
 }
 
 Visualizer::~Visualizer() {}
@@ -19,7 +24,7 @@ Visualizer::~Visualizer() {}
 void Visualizer::update(Program p) {
 	std::vector<Instruction> instructions = p.getInstructions();
 	latest_instruction_num = instructions.size();
-	for(int i = 0; i < instructions.size(); i++) {
+	for(int i = 0; i < latest_instruction_num; i++) {
 		visualization_msgs::Marker marker;
 		setHeader(marker);
 		setNamespace(marker, "tag_grouping");
@@ -28,7 +33,7 @@ void Visualizer::update(Program p) {
 		setAction(marker, ADD);
 		marker.pose.orientation.w = 1;
 		geometry_msgs::Vector3 scale;
-		scale.x = 0.02; scale.y = 0.02;
+		scale.x = 0.01; scale.y = 0.01;
 		setScale(marker, scale);
 		setColor(marker, 0.2, 1, 1, 1);
 		setPoints(marker, instructions[i]);
@@ -37,6 +42,18 @@ void Visualizer::update(Program p) {
 }
 
 //TO-DO overload update function for AR tags and scene
+
+void Visualizer::update(std::vector<rapid::perception::Object> objects) {
+	latest_object_num = objects.size();
+	for(int i = 0; i < latest_object_num; i++) {
+		visualization_msgs::Marker box =
+	        rapid::viz::Marker::Box(NULL, objects[i].pose(), objects[i].scale()).marker();
+		setNamespace(box, "scene_visualization");
+		setID(box, i+1);
+		setColor(box, 0.5, 0, 0.5, 0.45);
+		scene_pub.publish(box);
+	}
+}
 
 void Visualizer::setHeader(visualization_msgs::Marker& marker) {
 	marker.header.stamp = ros::Time::now();
@@ -114,6 +131,7 @@ void Visualizer::setPoints(visualization_msgs::Marker& marker, Instruction& ins)
 void Visualizer::clear() {
 	//TO-DO
 	//DELETE ALL markers
+	//use latest_instruction_num latest_object_num
 }
 
 }

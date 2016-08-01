@@ -7,6 +7,7 @@
 #include "visualization_msgs/Marker.h"
 
 #include "tangible/program.h"
+#include "rapid_perception/object.h"
 
 namespace tangible {
 
@@ -18,6 +19,7 @@ private:
 
 	const static int TAG_NUM = 18;
 	int latest_instruction_num;
+	int latest_object_num;
 
 	ros::NodeHandle node;
 
@@ -40,6 +42,7 @@ public:
 	~Visualizer();
 
 	void update(Program p);
+	void update(std::vector<rapid::perception::Object> objects);
 	//TO-DO overload update function for AR tags and scene
 	
 	void clear();
