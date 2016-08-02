@@ -17,8 +17,8 @@ Program::Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> o
 	tags = tgs;
 	objects = objs;
 	tag2Instruction();
-	//if(tag2Instruction())
-	//	matchObjects();
+	if(tag2Instruction())
+		matchObjects();
 }
 
 Program::~Program() {}
@@ -27,7 +27,7 @@ void Program::refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Obje
 	tags = tgs;
 	objects = objs;
 	if(!tag2Instruction()) return;
-	//matchObjects();
+	matchObjects();
 }
 
 //grouping tags to form instructions:
@@ -461,60 +461,104 @@ bool Program::tag2Instruction() {
 bool Program::matchObjects() {
 	for(int i = 0; i < instructions.size(); i++) {
 		Tag selection = instructions[i].selection;
+
 		if(selection.getID() == Tag::SELECT_OBJECT_ID) {
 			Eigen::Vector3d x_axis = selection.getXvect();
-			Eigen::Vector4f x_axis_extended(x_axis(0), x_axis(1), x_axis(2), 1);
+			Eigen::Vector4f x_axis_extended(x_axis(0), x_axis(1), x_axis(2), 0);
 			Eigen::Vector3d y_axis = selection.getYvect();
-			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 1);
+			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 0);
 			Eigen::Vector3d z_axis = selection.getZvect();
-			Eigen::Vector4f z_axis_extended(z_axis(0), z_axis(1), z_axis(2), 1);
+			Eigen::Vector4f z_axis_extended(z_axis(0), z_axis(1), z_axis(2), 0);
+
+			//std::cout << "selection at (" << selection.getCenter().x << ", "
+			//                              << selection.getCenter().y << ", "
+			//                              << selection.getCenter().z << ")\n";
 
 			Eigen::Vector4f tip (selection.getCenter().x, 
 				                 selection.getCenter().y,
 				                 selection.getCenter().z,
 				                 1);
 			tip += y_axis_extended * Tag::ARROW_SELECTION_LEN;
-			Eigen::Vector4f min, max;
-			min = tip + OBJECT_SELECTION_BOX_SIZE * x_axis_extended;
-			max = tip + OBJECT_SELECTION_BOX_SIZE * (x_axis_extended + 
-				                                     y_axis_extended + 
-				                                     z_axis_extended);
+
+			//std::cout << "tip at (" << tip(0) << ", " << tip(1) << ", " << tip(2) << ")\n";
+			
+			Eigen::Vector4f min_, max_;
+			min_ = tip - OBJECT_SELECTION_BOX_SIZE * x_axis_extended;
+			max_ = tip + OBJECT_SELECTION_BOX_SIZE * (x_axis_extended + 
+				                                      y_axis_extended + 
+				                                      z_axis_extended);
+			
+			//std::cout << "min at (" << min_(0) << ", " << min_(1) << ", " << min_(2) << ")\n";
+			//std::cout << "max at (" << max_(0) << ", " << max_(1) << ", " << max_(2) << ")\n";
 
 			int max_overlap = -1; int max_overlap_index = -1;
 			for(int j = 0; j < objects.size(); j++) {
 				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 				*cloud = *objects[j].GetCloud();
+				//NOTE make a copy of the cloud to ensure the original cloud is intact 
+
+				int cloud_size = cloud->points.size();
+
+				//std::cout << "object \\" << j;
+				//std::cout << "(" << objects[j].pose().pose.position.x << ", "
+		        //                 << objects[j].pose().pose.position.y << ", "
+		        //                 << objects[j].pose().pose.position.z << ") ";
+		        //std::cout << "cloud size (before crop: " << cloud_size << ") ";
 				
 				pcl::CropBox<pcl::PointXYZRGB> cbox;
 				cbox.setInputCloud(cloud);
-				cbox.setMin(min);
-				cbox.setMax(max);
-				cbox.filter(*cloud); //YSS will this change object's original point cloud?
+				cbox.setMin(min_);
+				cbox.setMax(max_);
+				cbox.filter(*cloud);
+
+				cloud_size = cloud->points.size();
+
+				//std::cout << "cloud size (after crop: " << cloud_size << ")";
 				
-				if(cloud->points.size() >= MIN_POINT_OVERLAP &&
-				   cloud->points.size() > max_overlap) {
-					max_overlap = cloud->points.size();
+				//std::cout << " pass min_overlap? (" << MIN_POINT_OVERLAP << ") " << (cloud_size >= MIN_POINT_OVERLAP);
+				//std::cout << " pass max_so_far? (" << max_overlap << ") " << (cloud_size > max_overlap);
+				
+				if(cloud_size >= MIN_POINT_OVERLAP &&
+				   cloud_size > max_overlap) {
+					max_overlap = cloud_size;
 					max_overlap_index = j;
+					
+					//std::cout << " <--- new max. ";
 				}
+
+				//std::cout << "\n";
 			}
 
 			if(max_overlap_index == -1) {
 				error_msg = "ERROR - TAG GROUPING - no object to select.";
-				std::cout << error_msg << "\n";
 				return false;
 			}
 
 			instructions[i].objects.push_back(objects[max_overlap_index]);
 		} else if (instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID){
 			Eigen::Vector3d y_axis = selection.getYvect();
-			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 1);
+			Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 0);
+
+			//std::cout << "selection at (" << selection.getCenter().x << ", "
+			//                              << selection.getCenter().y << ", "
+			//                              << selection.getCenter().z << ")\n";
+
 			Eigen::Vector4f primary_corner (selection.getCenter().x,
 				                            selection.getCenter().y,
 				                            selection.getCenter().z,
 				                            1);
 			primary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
+
+			//std::cout << "primary corner at (" << primary_corner(0) << ", " 
+			//                                   << primary_corner(1) << ", " 
+			//                                   << primary_corner(2) << ")\n";
 			
 			Tag selection2nd = instructions[i].selection2nd;
+
+			//std::cout << "2nd selection at (" << selection2nd.getCenter().x << ", "
+			//                                  << selection2nd.getCenter().y << ", "
+			//                                  << selection2nd.getCenter().z << ")\n";
+
 			y_axis = selection2nd.getYvect();
 			y_axis_extended(0) = y_axis(0);
 			y_axis_extended(1) = y_axis(1);
@@ -523,25 +567,62 @@ bool Program::matchObjects() {
 				                              selection2nd.getCenter().y,
 				                              selection2nd.getCenter().z,
 				                              1);
+			
 			secondary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
-			secondary_corner(2) = MAX_WORKSPACE_HEIGHT;
+
+			//std::cout << "secondary corner at (" << secondary_corner(0) << ", " 
+			//                                     << secondary_corner(1) << ", " 
+			//                                     << secondary_corner(2) << ")\n";
+
+			Eigen::Vector4f min_, max_;
+			min_(0) = std::min(primary_corner(0), secondary_corner(0));
+			min_(1) = std::min(primary_corner(1), secondary_corner(1));
+			min_(2) = primary_corner(2);
+			//YSS this should almost the same os secondary_corner(2)
+
+			max_(0) = std::max(primary_corner(0), secondary_corner(0));
+			max_(1) = std::max(primary_corner(0), secondary_corner(2));
+			max_(2) = primary_corner(2) + MAX_WORKSPACE_HEIGHT;
+			
 			for(int j = 0; j < objects.size(); j++) {
 				pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 				*cloud = *objects[j].GetCloud();
+				//NOTE make a copy of the cloud to ensure the original cloud is intact 
 
 				int size_before_crop = cloud->points.size();
+
+				//std::cout << "object \\" << j;
+				//std::cout << "(" << objects[j].pose().pose.position.x << ", "
+		        //                 << objects[j].pose().pose.position.y << ", "
+		        //                 << objects[j].pose().pose.position.z << ") ";
+		        //std::cout << "cloud size (before crop: " << size_before_crop << ") ";
 				
 				pcl::CropBox<pcl::PointXYZRGB> cbox;
 				cbox.setInputCloud(cloud);
-				cbox.setMin(primary_corner);
-				cbox.setMax(secondary_corner);
-				cbox.filter(*cloud); //YSS will this change object's original point cloud?
+				cbox.setMin(min_);
+				cbox.setMax(max_);
+				cbox.filter(*cloud);
 
 				int size_after_crop = cloud->points.size();
 
-				if(size_before_crop - size_after_crop < MIN_REGION_NON_OVERLAP)
+				//std::cout << "cloud size (after crop: " << size_after_crop << ")";
+
+				//std::cout << " ratio = " << (size_after_crop * 1.0 / size_before_crop);
+
+				if((size_after_crop * 1.0 / size_before_crop) < MIN_REGION_OVERLAP_RATIO) {
+					//std::cout << "\n";
 					continue;
+				}
+				//TO-DO this check does not address oversized segments
+
+				//std::cout << " <--- within the region\n";
+
 				instructions[i].objects.push_back(objects[j]);
+			}
+
+			if(instructions[i].objects.size() == 0) {
+				error_msg = "ERROR - TAG GROUPING - no object in region to select.";
+				return false;
 			}
 		}
 	}
@@ -552,19 +633,27 @@ std::vector<Instruction> Program::getInstructions() { return instructions; }
 
 std::string Program::error() { return error_msg; }
 
-std::string Program::printInstructionTags() {
+std::string Program::printInstructions() {
 	std::stringstream ss;
-	ss << "\tnumber" << "\t\tselection" << "\tsecondary" << "\taction\n";
+	
+	ss << "index\tnumber, selection, secondary, action\n";
+	ss << "\tobjects:\n";
 	for(int i = 0; i < instructions.size(); i++) {
 		Instruction instruction = instructions[i];
-		ss << i;
-		ss << "\t" << instruction.number.printID() << instruction.number.printCenter();
-		ss << "\t" << instruction.selection.printID() << instruction.selection.printCenter();
-		ss << "\t" << instruction.selection2nd.printID() << instruction.selection2nd.printCenter();
-		ss << "\t" << instruction.action.printID() << instruction.action.printCenter();
+		ss << i << "\t";
+		ss << instruction.number.printID() << instruction.number.printCenter() << ", ";
+		ss << instruction.selection.printID() << instruction.selection.printCenter() << ", ";
+		ss << instruction.selection2nd.printID() << instruction.selection2nd.printCenter() << ", ";
+		ss << instruction.action.printID() << instruction.action.printCenter() << "\n";
+		ss << "\tobjects:";
+		for(int j = 0; j < instruction.objects.size(); j++) {
+			ss << "(" << instruction.objects[j].pose().pose.position.x << ", "
+			          << instruction.objects[j].pose().pose.position.y << ", "
+			          << instruction.objects[j].pose().pose.position.z << "), ";
+		}
 		ss << "\n";
 	}
-
+	
 	return ss.str();
 }
 

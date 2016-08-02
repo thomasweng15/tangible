@@ -36,8 +36,8 @@ public:
 	const static double ROTATE_ERR_MARGIN = 0.01;
 
 	const static int MIN_POINT_OVERLAP = 15;
-	const static int MIN_REGION_NON_OVERLAP = 15;
-	const static double OBJECT_SELECTION_BOX_SIZE = 1;
+	const static double MIN_REGION_OVERLAP_RATIO = 0.5;
+	const static double OBJECT_SELECTION_BOX_SIZE = 0.02;
 
 	//Program(std::vector<Tag>& tgs);
 	Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
@@ -55,7 +55,7 @@ public:
 	std::vector<Instruction> getInstructions();
 	std::string error();
 
-	std::string printInstructionTags();
+	std::string printInstructions();
 
 	//TO-DO
 	//run program

@@ -45,6 +45,7 @@ public:
 	void update(std::vector<rapid::perception::Object> objects);
 	//TO-DO overload update function for AR tags and scene
 	
+	void clearScene();
 	void clear();
 };
 

@@ -1,21 +1,14 @@
 #include "ros/ros.h"
-#include "tangible/frame_transformer.h"
-#include "tangible/tag_extractor.h"
-#include "tangible/scene_parser.h"
+#include "tangible/tag.h"
 #include "tangible/program.h"
+#include "tangible/visualizer.h"
 
 #include <vector>
 #include <iostream>
-#include <stdlib.h>
 #include <string>
 #include <sstream>
 
 #include "geometry_msgs/PoseStamped.h"
-#include "pcl/point_cloud.h"
-#include "pcl/point_types.h"
-#include "pcl/PointIndices.h"
-#include "Eigen/Geometry"
-#include "pcl/filters/crop_box.h"
 
 const int ARROW_ONLY = 1;
 const int CORNER_ONLY = 2;
@@ -35,47 +28,27 @@ const int X_AXIS = 0;
 const int Y_AXIS = 1;
 const int Z_AXIS = 2;
 
-const double CLOUD_DENSITY = 0.1;
-
 void testSyntheticSetup(int caseID, int instruction_num);
-void make_no_instructions(std::vector<tangible::Tag>& tags,
-	                      std::vector<rapid::perception::Object>& objects);
-void make_instructions_no_selection(std::vector<tangible::Tag>& tags,
-	                                std::vector<rapid::perception::Object>& objects);
-void make_instructions_no_action(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects);
-void make_instructions_no_number(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects);
-void make_instructions_missing_action(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects);
-void make_instructions_missing_2ndary(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects);
-void make_instructions_missing_number(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects);
-void make_instructions_skip_step(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects);
-void make_instructions_repeat_step(std::vector<tangible::Tag>& tags,
-	                               std::vector<rapid::perception::Object>& objects);
-void make_instruction_dangling_number(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects);
-void make_instruction_place_1st(std::vector<tangible::Tag>& tags,
-	                            std::vector<rapid::perception::Object>& objects);
-void make_instruction_pick_2nd(std::vector<tangible::Tag>& tags,
-	                           std::vector<rapid::perception::Object>& objects);
-void make_instruction_dangling_action(std::vector<tangible::Tag>& tags,
-		                              std::vector<rapid::perception::Object>& objects);
-void make_instruction_dangling_selection(std::vector<tangible::Tag>& tags,
-	                                     std::vector<rapid::perception::Object>& objects);
-void make_instruction_invalid_pair(std::vector<tangible::Tag>& tags,
-	                               std::vector<rapid::perception::Object>& objects);
+void make_no_instructions(std::vector<tangible::Tag>& tags);
+void make_instructions_no_selection(std::vector<tangible::Tag>& tags);
+void make_instructions_no_action(std::vector<tangible::Tag>& tags);
+void make_instructions_no_number(std::vector<tangible::Tag>& tags);
+void make_instructions_missing_action(std::vector<tangible::Tag>& tags);
+void make_instructions_missing_2ndary(std::vector<tangible::Tag>& tags);
+void make_instructions_missing_number(std::vector<tangible::Tag>& tags);
+void make_instructions_skip_step(std::vector<tangible::Tag>& tags);
+void make_instructions_repeat_step(std::vector<tangible::Tag>& tags);
+void make_instruction_dangling_number(std::vector<tangible::Tag>& tags);
+void make_instruction_place_1st(std::vector<tangible::Tag>& tags);
+void make_instruction_pick_2nd(std::vector<tangible::Tag>& tags);
+void make_instruction_dangling_action(std::vector<tangible::Tag>& tags);
+void make_instruction_dangling_selection(std::vector<tangible::Tag>& tags);
+void make_instruction_invalid_pair(std::vector<tangible::Tag>& tags);
 
 
-void make_arrow_instructions(std::vector<tangible::Tag>& tags,
-	                         std::vector<rapid::perception::Object>& objects);
-void make_corner_instructions(std::vector<tangible::Tag>& tags,
-	                          std::vector<rapid::perception::Object>& objects);
-void make_colocated_instructions(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects);
+void make_arrow_instructions(std::vector<tangible::Tag>& tags);
+void make_corner_instructions(std::vector<tangible::Tag>& tags);
+void make_colocated_instructions(std::vector<tangible::Tag>& tags);
 
 
 void tagIDs(int& selectionID, int& actionID, int& numberID, int step, int caseID);
@@ -86,154 +59,149 @@ bool setupTag(tangible::Tag& t,
 	          geometry_msgs::PoseStamped ps,
 	          tangible::Axis a,
 	          int axis_id);
-rapid::perception::Object createObject(double x, double y, double z, int count, std::string name);
 
-std::string compileProgram(std::vector<tangible::Tag>& tags,
-	                std::vector<rapid::perception::Object>& objects);
+std::string compileProgram(std::vector<tangible::Tag>& tags);
 
 std::string printTags(std::vector<tangible::Tag>& tags);
 
 int main (int argc, char** argv) {
-	ros::init(argc, argv, "tangible_pbd");
+	ros::init(argc, argv, "tangible_pbd_grouping_test");
 
 	std::vector<tangible::Tag> tags;
-	std::vector<rapid::perception::Object> objects;
 	std::string output_msg;
 
-	make_no_instructions(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	make_no_instructions(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - no tags to group.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - no tags to group.";
 	
-	tags.clear(); objects.clear();
-	make_instructions_no_selection(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_no_selection(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - no selection tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - no selection tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_no_action(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_no_action(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - no action tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - no action tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_no_number(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_no_number(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - no number tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - no number tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_missing_action(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_missing_action(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - too few action or two many selection tags.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - too few action or two many selection tags.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_missing_2ndary(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_missing_2ndary(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - too many or too few secondary selection tags.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - too many or too few secondary selection tags.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_missing_number(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_missing_number(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - too many or too few number tags.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - too many or too few number tags.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_skip_step(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_skip_step(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - missing number tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - missing number tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instructions_repeat_step(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instructions_repeat_step(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - too many repeated number tags.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - too many repeated number tags.\n";
 	
-	tags.clear(); objects.clear();
-	make_instruction_dangling_number(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instruction_dangling_number(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - dangling number tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - dangling number tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instruction_place_1st(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instruction_place_1st(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - expected a pick action.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - expected a pick action.\n";
 	
-	tags.clear(); objects.clear();
-	make_instruction_pick_2nd(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instruction_pick_2nd(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - expected a place action.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - expected a place action.\n";
 	
-	tags.clear(); objects.clear();
-	make_instruction_dangling_action(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instruction_dangling_action(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - dangling action tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - dangling action tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instruction_dangling_selection(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instruction_dangling_selection(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - dangling selection tag.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - dangling selection tag.\n";
 	
-	tags.clear(); objects.clear();
-	make_instruction_invalid_pair(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_instruction_invalid_pair(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	if(output_msg.compare("ERROR - TAG GROUPING - tags inavlidly paired.") != 0)
 		std::cout << "expected: ERROR - TAG GROUPING - tags inavlidly paired.\n";
 	
 
-	tags.clear(); objects.clear();
-	make_arrow_instructions(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_arrow_instructions(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	// prints instructions
 	
-	tags.clear(); objects.clear();
-	make_corner_instructions(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_corner_instructions(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	// prints instructions
 	
-	tags.clear(); objects.clear();
-	make_colocated_instructions(tags, objects);
-	output_msg = compileProgram(tags, objects);
+	tags.clear();
+	make_colocated_instructions(tags);
+	output_msg = compileProgram(tags);
 	std::cout << output_msg << "\n";
 	// prints instructions
 
 	return 0;
 }
 
-void make_no_instructions(std::vector<tangible::Tag>& tags,
-	                      std::vector<rapid::perception::Object>& objects) {
+void make_no_instructions(std::vector<tangible::Tag>& tags) {
 	// no tag is created and pushed to tags
 	return;
 }
 
-void make_instructions_no_selection(std::vector<tangible::Tag>& tags,
-	                                std::vector<rapid::perception::Object>& objects) {
+void make_instructions_no_selection(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -250,8 +218,7 @@ void make_instructions_no_selection(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instructions_no_action(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects) {
+void make_instructions_no_action(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -268,8 +235,7 @@ void make_instructions_no_action(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instructions_no_number(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects) {
+void make_instructions_no_number(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -287,8 +253,7 @@ void make_instructions_no_number(std::vector<tangible::Tag>& tags,
 	
 }
 
-void make_instructions_missing_action(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects) {
+void make_instructions_missing_action(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -317,8 +282,7 @@ void make_instructions_missing_action(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instructions_missing_2ndary(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects) {
+void make_instructions_missing_2ndary(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 	double w = 2*tangible::Tag::EDGE_SIZE; double h = 3*tangible::Tag::EDGE_SIZE;
@@ -342,8 +306,7 @@ void make_instructions_missing_2ndary(std::vector<tangible::Tag>& tags,
 	// no number tag
 }
 
-void make_instructions_missing_number(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects) {
+void make_instructions_missing_number(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 	double w = 2*tangible::Tag::EDGE_SIZE; double h = 3*tangible::Tag::EDGE_SIZE;
@@ -367,8 +330,7 @@ void make_instructions_missing_number(std::vector<tangible::Tag>& tags,
 	// no number tag
 }
 
-void make_instructions_skip_step(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects) {
+void make_instructions_skip_step(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -399,8 +361,7 @@ void make_instructions_skip_step(std::vector<tangible::Tag>& tags,
 	//TO-DO try out with the second instruction at (6, 5)*EDGE_SIZE
 }
 
-void make_instructions_repeat_step(std::vector<tangible::Tag>& tags,
-	                               std::vector<rapid::perception::Object>& objects) {
+void make_instructions_repeat_step(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -441,8 +402,7 @@ void make_instructions_repeat_step(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instruction_dangling_number(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects) {
+void make_instruction_dangling_number(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -473,8 +433,7 @@ void make_instruction_dangling_number(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instruction_place_1st(std::vector<tangible::Tag>& tags,
-	                            std::vector<rapid::perception::Object>& objects) {
+void make_instruction_place_1st(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -492,8 +451,7 @@ void make_instruction_place_1st(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instruction_pick_2nd(std::vector<tangible::Tag>& tags,
-	                           std::vector<rapid::perception::Object>& objects) {
+void make_instruction_pick_2nd(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -523,8 +481,7 @@ void make_instruction_pick_2nd(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instruction_dangling_action(std::vector<tangible::Tag>& tags,
-	                                  std::vector<rapid::perception::Object>& objects) {
+void make_instruction_dangling_action(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -541,8 +498,7 @@ void make_instruction_dangling_action(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_instruction_dangling_selection(std::vector<tangible::Tag>& tags,
-	                                     std::vector<rapid::perception::Object>& objects) {
+void make_instruction_dangling_selection(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -574,8 +530,7 @@ void make_instruction_dangling_selection(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
 }
 
-void make_instruction_invalid_pair(std::vector<tangible::Tag>& tags,
-	                               std::vector<rapid::perception::Object>& objects) {
+void make_instruction_invalid_pair(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -604,8 +559,7 @@ void make_instruction_invalid_pair(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_TAG));
 }
 
-void make_arrow_instructions(std::vector<tangible::Tag>& tags,
-	                         std::vector<rapid::perception::Object>& objects) {
+void make_arrow_instructions(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 
@@ -614,7 +568,6 @@ void make_arrow_instructions(std::vector<tangible::Tag>& tags,
 
 	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
-	//TO-DO add object
 
 	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -627,7 +580,6 @@ void make_arrow_instructions(std::vector<tangible::Tag>& tags,
 
 	x = 7*tangible::Tag::EDGE_SIZE; y = 2*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
-	//TO-DO add object
 
 	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -638,8 +590,7 @@ void make_arrow_instructions(std::vector<tangible::Tag>& tags,
 	//TO-DO try out with the second instruction at (6, 5)*EDGE_SIZE
 }
 
-void make_corner_instructions(std::vector<tangible::Tag>& tags,
-	                          std::vector<rapid::perception::Object>& objects) {
+void make_corner_instructions(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 	double w = 2*tangible::Tag::EDGE_SIZE; double h = 3*tangible::Tag::EDGE_SIZE;
@@ -649,7 +600,6 @@ void make_corner_instructions(std::vector<tangible::Tag>& tags,
 
 	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
-	//TO-DO add object
 
 	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -668,7 +618,6 @@ void make_corner_instructions(std::vector<tangible::Tag>& tags,
 
 	x = 10*tangible::Tag::EDGE_SIZE; y = 11*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
-	//TO-DO add object
 
 	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -683,8 +632,7 @@ void make_corner_instructions(std::vector<tangible::Tag>& tags,
 	tags.push_back(createTag(x, y, z, numberID, NUMBER_2ND_TAG));
 }
 
-void make_colocated_instructions(std::vector<tangible::Tag>& tags,
-	                             std::vector<rapid::perception::Object>& objects) {
+void make_colocated_instructions(std::vector<tangible::Tag>& tags) {
 	int selectionID, actionID, numberID;
 	double x, y, z = 0;
 	double w = 2*tangible::Tag::EDGE_SIZE; double h = 3*tangible::Tag::EDGE_SIZE;
@@ -694,7 +642,6 @@ void make_colocated_instructions(std::vector<tangible::Tag>& tags,
 
 	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
-	//TO-DO add object
 
 	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -707,7 +654,6 @@ void make_colocated_instructions(std::vector<tangible::Tag>& tags,
 
 	x = 10*tangible::Tag::EDGE_SIZE; y = 11*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, selectionID, SELECTION_TAG));
-	//TO-DO add object
 
 	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -725,7 +671,6 @@ void make_colocated_instructions(std::vector<tangible::Tag>& tags,
 	tagIDs(selectionID, actionID, numberID, 2, ARROW_ONLY);
 
 	x = 4*tangible::Tag::EDGE_SIZE; y = 4*tangible::Tag::EDGE_SIZE;
-	//TO-DO add object
 
 	y -= 2*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -737,7 +682,6 @@ void make_colocated_instructions(std::vector<tangible::Tag>& tags,
 	tagIDs(selectionID, actionID, numberID, 3, CORNER_ONLY);
 
 	x = 10*tangible::Tag::EDGE_SIZE; y = 11*tangible::Tag::EDGE_SIZE;
-	//TO-DO add object
 
 	y -= 2*tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, actionID, ACTION_TAG));
@@ -812,27 +756,6 @@ bool setupTag(tangible::Tag& t,
 	return true;
 }
 
-//YSS unless I figure out a way to fake the indices, I cannot use this
-rapid::perception::Object createObject(double x, double y, double z, int count, std::string name) {
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-	for(int i = 0; i < count; i++)
-		for(int j = 0; j < count; j++)
-			for(int k = 0; k < count; k++)
-				cloud->push_back(pcl::PointXYZRGB(x + i * CLOUD_DENSITY,
-				                                  y + j * CLOUD_DENSITY,
-				                                  z + k * CLOUD_DENSITY));
-	rapid::perception::Object obj;
-	pcl::PointIndices::Ptr indices;
-	obj.SetCloud(cloud, indices);
-	obj.set_name(name);
-
-	//YSS run-time error likely because I don't set the point indices when I try using obj
-	//std::cout << obj.GetCloud()->points.size() << "\n";
-
-	return obj;
-	//YSS not sure if this is an organized point cloud
-}
-
 std::string printTags(std::vector<tangible::Tag>& tags) {
 	std::stringstream ss;
 	for(int i = 0; i < tags.size(); i++) {
@@ -844,10 +767,10 @@ std::string printTags(std::vector<tangible::Tag>& tags) {
 	return ss.str();
 }
 
-std::string compileProgram(std::vector<tangible::Tag>& tags,
-	                std::vector<rapid::perception::Object>& objects) {
+std::string compileProgram(std::vector<tangible::Tag>& tags) {
+	std::vector<rapid::perception::Object> objects;
 
 	tangible::Program program(tags, objects);
 
-	return program.error().empty() ? program.printInstructionTags() : program.error();			
+	return program.error().empty() ? program.printInstructions() : program.error();			
 }

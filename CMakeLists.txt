@@ -216,24 +216,37 @@ target_link_libraries(system_main
   ${catkin_LIBRARIES}
 )
 
-add_executable(system_test src/system_test.cpp)
-add_dependencies(system_test
-  tangible_frame_transformer
+add_executable(system_test_grouping src/system_test_grouping.cpp)
+add_dependencies(system_test_grouping
   tangible_tag
-  tangible_tag_extractor
-  tangible_scene_parser
   tangible_utils
   tangible_program
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(system_test
-  tangible_frame_transformer
+target_link_libraries(system_test_grouping
   tangible_tag
-  tangible_tag_extractor
+  tangible_utils
+  tangible_program
+  ${catkin_LIBRARIES}
+)
+
+add_executable(system_test_matching src/system_test_matching.cpp)
+add_dependencies(system_test_matching
+  tangible_tag
   tangible_scene_parser
   tangible_utils
   tangible_program
+  tangible_visualizer
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(system_test_matching
+  tangible_tag
+  tangible_scene_parser
+  tangible_utils
+  tangible_program
+  tangible_visualizer
   ${catkin_LIBRARIES}
 )
 

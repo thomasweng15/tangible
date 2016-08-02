@@ -44,17 +44,8 @@ void Visualizer::update(Program p) {
 //TO-DO overload update function for AR tags and scene
 
 void Visualizer::update(std::vector<rapid::perception::Object> objects) {
-	ROS_INFO("found %d objects. Knew about %d objects before.", (int)(objects.size()), latest_object_num);
-	if(objects.size() < latest_object_num) {
-		for(int i = 0; i < latest_object_num; i++) {
-			visualization_msgs::Marker old_box;
-			setNamespace(old_box, "scene_visualization");
-			setID(old_box, i);
-			setAction(old_box, DELETE);
-			ROS_INFO("deleting ID %d", i);
-			scene_pub.publish(old_box);
-		}
-	}
+	if(objects.size() < latest_object_num)
+		clearScene();
 
 	latest_object_num = objects.size();
 	for(int i = 0; i < latest_object_num; i++) {
@@ -140,10 +131,21 @@ void Visualizer::setPoints(visualization_msgs::Marker& marker, Instruction& ins)
 	}
 }
 
+void Visualizer::clearScene() {
+	for(int i = 0; i < latest_object_num; i++) {
+			visualization_msgs::Marker old_box;
+			setNamespace(old_box, "scene_visualization");
+			setID(old_box, i);
+			setAction(old_box, DELETE);
+			scene_pub.publish(old_box);
+		}
+}
+
 void Visualizer::clear() {
 	//TO-DO
 	//DELETE ALL markers
 	//use latest_instruction_num latest_object_num
+	clearScene();
 }
 
 }

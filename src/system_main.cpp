@@ -24,9 +24,6 @@ int main (int argc, char** argv) {
 	//TO-DO change the whole architecture to avoid this race condition
 	//      e.g. use ros::topic::waitForMessage<msg_type>("topic_name", timeOut);
 
-
-
-	
 	std::string err = "error";
 	std::vector<tangible::Tag> tags;
 	std::vector<rapid::perception::Object> objects;
@@ -55,7 +52,6 @@ int main (int argc, char** argv) {
 			vis.update(parser.getObjects());
 		interval.sleep();
 	}
-
 	
 	//TO-DO later on there should be a mechanism for refreshing a program
 	ros::waitForShutdown();
