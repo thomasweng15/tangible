@@ -63,20 +63,19 @@ int main (int argc, char** argv) {
 		objects = parser.getObjects();
 		findOOI(objects, vis);
 		
-		//make_arrow_aligned_below(tags);
-		//output_msg = compileProgram(tags, objects);
-		//std::cout << output_msg << "\n";
-
-		tags.clear();
-		make_arrow_aligned_right(tags);
-		std::cout << printTags(tags);
+		make_arrow_aligned_below(tags);
 		output_msg = compileProgram(tags, objects);
 		std::cout << output_msg << "\n";
 
-		//tags.clear();
-		//make_corner_aligned_above(tags);
-		//output_msg = compileProgram(tags, objects);
-		//std::cout << output_msg << "\n";
+		tags.clear();
+		make_arrow_aligned_right(tags);
+		output_msg = compileProgram(tags, objects);
+		std::cout << output_msg << "\n";
+
+		tags.clear();
+		make_corner_aligned_above(tags);
+		output_msg = compileProgram(tags, objects);
+		std::cout << output_msg << "\n";
 	}
 
 	//ros::Rate interval(3);
@@ -240,6 +239,7 @@ std::string printTags(std::vector<tangible::Tag>& tags) {
 	for(int i = 0; i < tags.size(); i++) {
 		ss << tags[i].printID();
 		ss << tags[i].printCenter();
+		ss << " --- "; 
 		ss << "x(" << tags[i].getXvect().transpose() << ") | ";
 		ss << "y(" << tags[i].getYvect().transpose() << ") | ";
 		ss << "z(" << tags[i].getZvect().transpose() << ")";

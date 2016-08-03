@@ -268,31 +268,31 @@ bool Program::tag2Instruction() {
 	for(int i = action_ind; i < number_ind; i++) {
 		Tag action = tags[i];
 
-		std::cout << "action " 
-		          << action.printID()
-		          << action.printCenter()
-		          << " at " << i 
-		          << " with y-axis " << action.getYvect().transpose() << "\n";
+		//std::cout << "action " 
+		//          << action.printID()
+		//          << action.printCenter()
+		//          << " at " << i 
+		//          << " with y-axis " << action.getYvect().transpose() << "\n";
 
 		double minDist = MAX_WORKSPACE_DIST; int temp_grouped = -1;
 		for(int j = selection_ind; j < selection2nd_ind; j++) {
 			Tag selection = tags[j];
 
-			std::cout << "\tselection " 
-			          << selection.printID()
-			          << selection.printCenter()
-			          << " at " << j << "\n";
+			//std::cout << "\tselection " 
+			//          << selection.printID()
+			//          << selection.printCenter()
+			//          << " at " << j << "\n";
 
 			double distance = action.dist(selection);
 
-			std::cout << "\t\tdistance: " << distance << "\n";
+			//std::cout << "\t\tdistance: " << distance << "\n";
 
 			// normalized center-to-center vector
 			Eigen::Vector3d a2s = action.vect(selection) / distance;
 
 			double quantizedDist = round(distance/Tag::EDGE_SIZE);		
 			
-			std::cout << "\tideal distance: " << quantizedDist*Tag::EDGE_SIZE << "\n";
+			//std::cout << "\tideal distance: " << quantizedDist*Tag::EDGE_SIZE << "\n";
 
 			if(!inRange(quantizedDist*Tag::EDGE_SIZE - DIST_ERR_MARGIN,
 			            quantizedDist*Tag::EDGE_SIZE + DIST_ERR_MARGIN,
@@ -312,7 +312,7 @@ bool Program::tag2Instruction() {
 			}
 		}
 
-		std::cout << "\tmin distance: " << minDist << " with tag at " << temp_grouped << "\n";
+		//std::cout << "\tmin distance: " << minDist << " with tag at " << temp_grouped << "\n";
 
 		if(temp_grouped == -1) {
 			error_msg = "ERROR - TAG GROUPING - dangling action tag.";
@@ -533,13 +533,18 @@ void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selectio
 	//                              << selection.getCenter().y << ", "
 	//                              << selection.getCenter().z << ")\n";
 
-	Eigen::Vector4f min_ (-1, 0, 0, 1);
-	Eigen::Vector4f max_ ( 1, 1, 1, 1);
-	min_ *= OBJECT_SELECTION_BOX_SIZE;
-	max_ *= OBJECT_SELECTION_BOX_SIZE;
+	Eigen::Vector4f min_ (-1, -1, 0, 0);
+	Eigen::Vector4f max_ ( 1,  1, 1, 0);
+	//NOTE the box is symmetric about the origin so half of will be in front of the arrow
+	//     under all transformations
+	min_ *= OBJECT_SELECTION_BOX_SIZE; min_(3) = 1;
+	max_ *= OBJECT_SELECTION_BOX_SIZE; max_(3) = 1;
 
 	cbox.setMin(min_);
 	cbox.setMax(max_);
+
+	//std::cout << "min at (" << min_(0) << ", " << min_(1) << ", " << min_(2) << ")\n";
+	//std::cout << "max at (" << max_(0) << ", " << max_(1) << ", " << max_(2) << ")\n";
 	
 	Eigen::Vector3d x_axis = selection.getXvect();
 	Eigen::Vector3d y_axis = selection.getYvect();
@@ -550,7 +555,6 @@ void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selectio
 	float yaw = atan2(y_axis(0), x_axis(0));
 
 	Eigen::Vector3f box_rotation (roll, pitch, yaw);
-
 	cbox.setRotation(box_rotation);
 
 	Position center = selection.getCenter();
@@ -561,13 +565,18 @@ void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selectio
 	//std::cout << "tip at (" << tip(0) << ", " << tip(1) << ", " << tip(2) << ")\n";
 	
 	cbox.setTranslation(tip);
+
+	min_ = cbox.getMin(); max_ = cbox.getMax();
 	
-	//std::cout << "min at (" << min_(0) << ", " << min_(1) << ", " << min_(2) << ")\n";
-	//std::cout << "max at (" << max_(0) << ", " << max_(1) << ", " << max_(2) << ")\n";
+	//box_rotation = cbox.getRotation(); tip = cbox.getTranslation();
+	//std::cout << "rotated by (" << box_rotation(0) << ", " 
+	//                                   << box_rotation(1) << ", " 
+	//                                   << box_rotation(2) << ")\n";
+	//std::cout << "translated by (" << tip(0) << ", " << tip(1) << ", " << tip(2) << ")\n";
 }
 
 void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox,
-	                           Tag& selection, Tag& selection2nd) {
+	                         Tag& selection, Tag& selection2nd) {
 	Eigen::Vector3d y_axis = selection.getYvect();
 	Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 0);
 
