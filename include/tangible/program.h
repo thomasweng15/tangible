@@ -4,6 +4,9 @@
 #include <vector>
 #include <string>
 
+#include "pcl/filters/crop_box.h"
+#include "pcl/point_types.h"
+
 #include "tangible/tag.h"
 #include "rapid_perception/object.h"
 
@@ -27,6 +30,11 @@ private:
 	bool tag2Instruction();
 	bool matchObjects();
 
+	void setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selection);
+	void setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selection, Tag& selection2nd);
+
+	int filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox, rapid::perception::Object& obj);
+
 public:
 	//TO-DO register these as ros params so you can modify them on the go
 	const static double MAX_WORKSPACE_DIST = 1;
@@ -39,14 +47,12 @@ public:
 	const static double MIN_REGION_OVERLAP_RATIO = 0.5;
 	const static double OBJECT_SELECTION_BOX_SIZE = 0.02;
 
-	//Program(std::vector<Tag>& tgs);
 	Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
 	//Program(std::vector<Tag>& tgs,
 	//	    rapid::perception::HSurface tt,
 	//	    std::vector<rapid::perception::Object> objs);
 	~Program();
 
-	//void refresh(std::vector<Tag>& tgs);
 	void refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
 	//void refresh(std::vector<Tag>& tgs,
 	//	         rapid::perception::HSurface tt,
