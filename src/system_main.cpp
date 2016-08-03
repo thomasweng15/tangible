@@ -34,22 +34,22 @@ int main (int argc, char** argv) {
 		for(int i = 0; i < tags.size(); i++)
 			ROS_INFO("%s%s", tags[i].printID().c_str(), tags[i].printCenter().c_str());
 		
-		if(parser.isSuccessful()) {
-		    objects = parser.getObjects();
-		    vis.update(objects);
+		//if(parser.isSuccessful()) {
+		    //objects = parser.getObjects();
+		    //vis.update(objects);
 			tangible::Program program(tags, objects);
 			err = program.error();
-		}
+		//}
 	//} while(!err.empty());
-	//ROS_INFO("\n%s", program.printInstructionTags().c_str());
+	ROS_INFO("\n%s", program.printInstructions().c_str());
 	
 	ros::Rate interval(3);
 	while(ros::ok()) {
-		//if(err.empty())
-		//	vis.update(program);
+		if(err.empty())
+			vis.update(program);
 		
-		if(parser.isSuccessful())
-			vis.update(parser.getObjects());
+		//if(parser.isSuccessful())
+		//	vis.update(parser.getObjects());
 		interval.sleep();
 	}
 	
