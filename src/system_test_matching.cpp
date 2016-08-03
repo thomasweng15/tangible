@@ -28,6 +28,7 @@ const int Z_AXIS = 2;
 void findOOI(std::vector<rapid::perception::Object> objects, tangible::Visualizer vis);
 
 void make_arrow_aligned_below(std::vector<tangible::Tag>& tags);
+void make_arrow_aligned_right(std::vector<tangible::Tag>& tags);
 void make_corner_aligned_above(std::vector<tangible::Tag>& tags);
 
 tangible::Tag createTag(double x, double y, double z,
@@ -36,6 +37,8 @@ tangible::Tag createTag(double x, double y, double z,
 
 std::string compileProgram(std::vector<tangible::Tag>& tags,
 	                       std::vector<rapid::perception::Object> objects);
+
+std::string printTags(std::vector<tangible::Tag>& tags);
 
 //NOTE make sure to play a rosbag file containing topic cloud_transformed before running this
 int main (int argc, char** argv) {
@@ -60,14 +63,20 @@ int main (int argc, char** argv) {
 		objects = parser.getObjects();
 		findOOI(objects, vis);
 		
-		make_arrow_aligned_below(tags);
+		//make_arrow_aligned_below(tags);
+		//output_msg = compileProgram(tags, objects);
+		//std::cout << output_msg << "\n";
+
+		tags.clear();
+		make_arrow_aligned_right(tags);
+		std::cout << printTags(tags);
 		output_msg = compileProgram(tags, objects);
 		std::cout << output_msg << "\n";
 
-		tags.clear();
-		make_corner_aligned_above(tags);
-		output_msg = compileProgram(tags, objects);
-		std::cout << output_msg << "\n";
+		//tags.clear();
+		//make_corner_aligned_above(tags);
+		//output_msg = compileProgram(tags, objects);
+		//std::cout << output_msg << "\n";
 	}
 
 	//ros::Rate interval(3);
@@ -118,8 +127,8 @@ void make_arrow_aligned_below(std::vector<tangible::Tag>& tags) {
 	x = 0.689311; y = -0.00294057; z = 0.822762;
 
 	tangible::Axis x_axis; x_axis.x = 1; x_axis.y = 0; x_axis.z = 0;
-	tangible::Axis y_axis; y_axis.y = 0; y_axis.y = 1; y_axis.z = 0;
-	tangible::Axis z_axis; z_axis.y = 0; z_axis.y = 0; z_axis.z = 1;
+	tangible::Axis y_axis; y_axis.x = 0; y_axis.y = 1; y_axis.z = 0;
+	tangible::Axis z_axis; z_axis.x = 0; z_axis.y = 0; z_axis.z = 1;
 
 	// selection
 	y -= tangible::Tag::ARROW_SELECTION_LEN;
@@ -131,6 +140,32 @@ void make_arrow_aligned_below(std::vector<tangible::Tag>& tags) {
 
 	// number
 	x -= tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, x_axis, y_axis, z_axis, numberID));
+}
+
+void make_arrow_aligned_right(std::vector<tangible::Tag>& tags) {
+	int selectionID, actionID, numberID;
+	selectionID = tangible::Tag::SELECT_OBJECT_ID;
+	actionID = tangible::Tag::TOP_PICK_ID;
+	numberID = tangible::Tag::NUMBER_ID_MIN;
+
+	double x, y, z;
+	x = 0.689311; y = -0.00294057; z = 0.822762;
+
+	tangible::Axis x_axis; x_axis.x =  0; x_axis.y = 1; x_axis.z = 0;
+	tangible::Axis y_axis; y_axis.x = -1; y_axis.y = 0; y_axis.z = 0;
+	tangible::Axis z_axis; z_axis.x =  0; z_axis.y = 0; z_axis.z = 1;
+
+	// selection
+	x += tangible::Tag::ARROW_SELECTION_LEN;
+	tags.push_back(createTag(x, y, z, x_axis, y_axis, z_axis, selectionID));
+
+	// action
+	x += tangible::Tag::EDGE_SIZE;
+	tags.push_back(createTag(x, y, z, x_axis, y_axis, z_axis, actionID));
+
+	// number
+	y -= tangible::Tag::EDGE_SIZE;
 	tags.push_back(createTag(x, y, z, x_axis, y_axis, z_axis, numberID));
 }
 
@@ -147,8 +182,8 @@ void make_corner_aligned_above(std::vector<tangible::Tag>& tags) {
 	w = 0.05; h = 0.1;
 
 	tangible::Axis x_axis; x_axis.x = 1; x_axis.y = 0; x_axis.z = 0;
-	tangible::Axis y_axis; y_axis.y = 0; y_axis.y = 1; y_axis.z = 0;
-	tangible::Axis z_axis; z_axis.y = 0; z_axis.y = 0; z_axis.z = 1;
+	tangible::Axis y_axis; y_axis.x = 0; y_axis.y = 1; y_axis.z = 0;
+	tangible::Axis z_axis; z_axis.x = 0; z_axis.y = 0; z_axis.z = 1;
 
 	// selection
 	x -= w; y += h;
@@ -198,4 +233,18 @@ std::string compileProgram(std::vector<tangible::Tag>& tags,
 	tangible::Program program(tags, objects);
 
 	return program.error().empty() ? program.printInstructions() : program.error();			
+}
+
+std::string printTags(std::vector<tangible::Tag>& tags) {
+	std::stringstream ss;
+	for(int i = 0; i < tags.size(); i++) {
+		ss << tags[i].printID();
+		ss << tags[i].printCenter();
+		ss << "x(" << tags[i].getXvect().transpose() << ") | ";
+		ss << "y(" << tags[i].getYvect().transpose() << ") | ";
+		ss << "z(" << tags[i].getZvect().transpose() << ")";
+		ss << ", ";
+	}
+	ss << "\n";
+	return ss.str();
 }

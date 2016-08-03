@@ -756,6 +756,14 @@ bool setupTag(tangible::Tag& t,
 	return true;
 }
 
+std::string compileProgram(std::vector<tangible::Tag>& tags) {
+	std::vector<rapid::perception::Object> objects;
+
+	tangible::Program program(tags, objects);
+
+	return program.error().empty() ? program.printInstructions() : program.error();			
+}
+
 std::string printTags(std::vector<tangible::Tag>& tags) {
 	std::stringstream ss;
 	for(int i = 0; i < tags.size(); i++) {
@@ -765,12 +773,4 @@ std::string printTags(std::vector<tangible::Tag>& tags) {
 	}
 	ss << "\n";
 	return ss.str();
-}
-
-std::string compileProgram(std::vector<tangible::Tag>& tags) {
-	std::vector<rapid::perception::Object> objects;
-
-	tangible::Program program(tags, objects);
-
-	return program.error().empty() ? program.printInstructions() : program.error();			
 }
