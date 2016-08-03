@@ -368,6 +368,13 @@ bool Program::tag2Instruction() {
 				return false;
 			}
 
+			//TO-DO return false for the following error cases
+			//   - paired selection and 2ndary selection tags have very different z_axes
+			//   - paired selection and 2ndary selection tags have far from orthogonal y_axes
+			//   - paired selection and 2ndary selection tags have far from orthogonal x_axes
+			//   - paired selection and 2ndary selection tags do not face each other
+			//     (center-2-center vector is in 2nd quandrant)
+
 			if(tags[num1_action_or_2ndary_at].getID() == Tag::SELECTION_2ND_ID) {
 				grouped[num1_action_or_2ndary_at] = grouped[num2_action_or_2ndary_at];
 				grouped[grouped[num2_action_or_2ndary_at]] = num1_action_or_2ndary_at;
@@ -504,8 +511,6 @@ bool Program::matchObjects() {
 				
 				int size_after_crop = filterObject(cbox, objects[j]);
 
-				//std::cout << "cloud size (after crop: " << size_after_crop << ")";
-
 				//std::cout << " ratio = " << (size_after_crop * 1.0 / size_before_crop);
 
 				if((size_after_crop * 1.0 / size_before_crop) < MIN_REGION_OVERLAP_RATIO) {
@@ -550,15 +555,20 @@ void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selectio
 	Eigen::Vector3d y_axis = selection.getYvect();
 	Eigen::Vector3d z_axis = selection.getZvect();
 
-	float roll =  atan2(z_axis(1), z_axis(2));
-	float pitch = asin(-z_axis(0));
-	float yaw = atan2(y_axis(0), x_axis(0));
+	//std::cout << "coordinate at arrow "
+	//          << "x(" << x_axis.transpose() << ") "
+	//          << "y(" << y_axis.transpose() << ") "
+	//          << "z(" << z_axis.transpose() << ")\n";
+
+	float roll =  atan2(y_axis(2), z_axis(2));
+	float pitch = asin(-x_axis(2));
+	float yaw = atan2(x_axis(1), x_axis(0));
 
 	Eigen::Vector3f box_rotation (roll, pitch, yaw);
 	cbox.setRotation(box_rotation);
 
 	Position center = selection.getCenter();
-	Eigen::Vector3f y_axis_eigen(y_axis(0), y_axis(1), y_axis(2));
+	Eigen::Vector3f y_axis_eigen (y_axis(0), y_axis(1), y_axis(2));
 	Eigen::Vector3f tip (center.x, center.y, center.z);
 	tip += y_axis_eigen * Tag::ARROW_SELECTION_LEN;
 
@@ -577,54 +587,90 @@ void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selectio
 
 void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox,
 	                         Tag& selection, Tag& selection2nd) {
-	Eigen::Vector3d y_axis = selection.getYvect();
-	Eigen::Vector4f y_axis_extended(y_axis(0), y_axis(1), y_axis(2), 0);
-
 	//std::cout << "selection at (" << selection.getCenter().x << ", "
 	//                              << selection.getCenter().y << ", "
 	//                              << selection.getCenter().z << ")\n";
 
-	Eigen::Vector4f primary_corner (selection.getCenter().x,
-		                            selection.getCenter().y,
-		                            selection.getCenter().z,
-		                            1);
-	primary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
+	Eigen::Vector3d x_axis = selection.getXvect();
+	Eigen::Vector3d y_axis = selection.getYvect();
+	Eigen::Vector3d z_axis = selection.getZvect();
+
+	Position center = selection.getCenter();
+	Eigen::Vector3f y_axis_eigen (y_axis(0), y_axis(1), y_axis(2));
+	Eigen::Vector3f primary_corner (center.x, center.y, center.z);
+	primary_corner += y_axis_eigen * Tag::CORNER_SELECTION_LEN;
 
 	//std::cout << "primary corner at (" << primary_corner(0) << ", " 
 	//                                   << primary_corner(1) << ", " 
 	//                                   << primary_corner(2) << ")\n";
 
+	Eigen::Vector3f box_x_axis = -y_axis_eigen;
+	Eigen::Vector3f box_y_axis (x_axis(0), x_axis(1), x_axis(2));
+	Eigen::Vector3f box_z_axis (z_axis(0), z_axis(1), z_axis(2));
+	// z_axis should be the same for both primary and secondary
+
+	//std::cout << "coordinate at primary "
+	//          << "x(" << box_x_axis.transpose() << ") "
+	//          << "y(" << box_y_axis.transpose() << ") "
+	//          << "z(" << box_z_axis.transpose() << ")\n";
+
 	//std::cout << "2nd selection at (" << selection2nd.getCenter().x << ", "
 	//                                  << selection2nd.getCenter().y << ", "
-	//                                  << selection2nd.getCenter().z << ")\n";
+	//                                  << selection2nd.getCenter().z << ")\n";	
 
+	center = selection2nd.getCenter();
 	y_axis = selection2nd.getYvect();
-	y_axis_extended(0) = y_axis(0);
-	y_axis_extended(1) = y_axis(1);
-	y_axis_extended(2) = y_axis(2);
-	Eigen::Vector4f secondary_corner (selection2nd.getCenter().x,
-		                              selection2nd.getCenter().y,
-		                              selection2nd.getCenter().z,
-		                              1);
-	
-	secondary_corner += y_axis_extended * Tag::CORNER_SELECTION_LEN;
+
+	//std::cout << "secondary y_axis " << y_axis.transpose() << "\n"; 
+
+	y_axis_eigen(0) = y_axis(0); y_axis_eigen(1) = y_axis(1); y_axis_eigen(2) = y_axis(2);
+	Eigen::Vector3f secondary_corner (center.x, center.y, center.z);
+	secondary_corner += y_axis_eigen * Tag::CORNER_SELECTION_LEN;
 
 	//std::cout << "secondary corner at (" << secondary_corner(0) << ", " 
 	//                                     << secondary_corner(1) << ", " 
 	//                                     << secondary_corner(2) << ")\n";
 
-	Eigen::Vector4f min_, max_;
-	min_(0) = std::min(primary_corner(0), secondary_corner(0));
-	min_(1) = std::min(primary_corner(1), secondary_corner(1));
-	min_(2) = primary_corner(2);
-	//YSS this should almost the same os secondary_corner(2)
+	Eigen::Vector3f primary2secondary_vect (secondary_corner(0) - primary_corner(0),
+		                                    secondary_corner(1) - primary_corner(1),
+		                                    secondary_corner(2) - primary_corner(2));
 
-	max_(0) = std::max(primary_corner(0), secondary_corner(0));
-	max_(1) = std::max(primary_corner(0), secondary_corner(2));
-	max_(2) = primary_corner(2) + MAX_WORKSPACE_HEIGHT;
+	//std::cout << "primary to secondary vector (" << primary2secondary_vect(0) << ", " 
+	//                                             << primary2secondary_vect(1) << ", " 
+	//                                             << primary2secondary_vect(2) << ")\n";
+
+	//NOTE assuming the and y are unit vector. Also, primary2secondary_vect will be in the
+	//     1st quadrant in a valid setting so box_width and height will be > 0.
+	double box_width = box_x_axis.dot(primary2secondary_vect);
+	double box_height = box_y_axis.dot(primary2secondary_vect);
+
+	//std::cout << box_width << " x " << box_height << " box at:\n";
+
+	Eigen::Vector4f min_ (0, 0, 0, 1);
+	Eigen::Vector4f max_ (box_width, box_height, MAX_WORKSPACE_HEIGHT, 1);
+
+	//std::cout << "min at (" << min_(0) << ", " << min_(1) << ", " << min_(2) << ")\n";
+	//std::cout << "max at (" << max_(0) << ", " << max_(1) << ", " << max_(2) << ")\n";
 
 	cbox.setMin(min_);
 	cbox.setMax(max_);
+
+	float roll =  atan2(box_y_axis(2), box_z_axis(2));
+	float pitch = asin(-box_x_axis(2));
+	float yaw = atan2(box_x_axis(1), box_x_axis(0));
+
+	Eigen::Vector3f box_rotation (roll, pitch, yaw);
+	cbox.setRotation(box_rotation);
+
+	cbox.setTranslation(primary_corner);
+
+	//box_rotation = cbox.getRotation(); primary_corner = cbox.getTranslation();
+	//std::cout << "rotated by (" << box_rotation(0) << ", " 
+	//                            << box_rotation(1) << ", " 
+	//                            << box_rotation(2) << ")\n";
+	//std::cout << "translated by (" << primary_corner(0) << ", " 
+	//                               << primary_corner(1) << ", " 
+	//                               << primary_corner(2) << ")\n";
 }
 
 int Program::filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,

@@ -61,7 +61,7 @@ int main (int argc, char** argv) {
 
 	if(parser.isSuccessful()) {
 		objects = parser.getObjects();
-		findOOI(objects, vis);
+		//findOOI(objects, vis);
 		
 		make_arrow_aligned_below(tags);
 		output_msg = compileProgram(tags, objects);
@@ -201,7 +201,7 @@ void make_corner_aligned_above(std::vector<tangible::Tag>& tags) {
 	x += w; y -= h;
 
 	x_axis.x = 0; x_axis.y = -1; x_axis.z = 0;
-	y_axis.y = 1; y_axis.y = 0; y_axis.z = 0;
+	y_axis.x = 1; y_axis.y = 0; y_axis.z = 0;
 
 	tags.push_back(createTag(x, y, z, x_axis, y_axis, z_axis, tangible::Tag::SELECTION_2ND_ID));
 
