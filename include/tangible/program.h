@@ -27,8 +27,9 @@ private:
 	std::vector<Instruction> instructions;
 	std::string error_msg;
 
-	bool tag2Instruction();
-	bool matchObjects();
+	bool tags2Instructions();
+	bool instructionsWithObjects();
+	bool matchObjects(Instruction ins, std::vector<rapid::perception::Object>& matched);
 
 	void setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selection);
 	void setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, Tag& selection, Tag& selection2nd);

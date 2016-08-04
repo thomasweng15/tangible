@@ -15,9 +15,9 @@ namespace tangible {
 Program::Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs) { 
 	tags = tgs;
 	objects = objs;
-	tag2Instruction();
-	if(tag2Instruction())
-		matchObjects();
+	tags2Instructions();
+	if(tags2Instructions())
+		instructionsWithObjects();
 }
 
 Program::~Program() {}
@@ -25,8 +25,8 @@ Program::~Program() {}
 void Program::refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs) {
 	tags = tgs;
 	objects = objs;
-	if(!tag2Instruction()) return;
-	matchObjects();
+	if(!tags2Instructions()) return;
+	instructionsWithObjects();
 }
 
 //grouping tags to form instructions:
@@ -44,7 +44,7 @@ void Program::refresh(std::vector<Tag>& tgs, std::vector<rapid::perception::Obje
 //      center-2-center distance and should check alignment with y-axis
 //  - number tags with equal id's are selection and secondary selection that should be grouped
 //  - instructions are formed based on the tags grouped together
-bool Program::tag2Instruction() {
+bool Program::tags2Instructions() {
 	instructions.clear();
 	error_msg.clear();
 	//NOTE: this ensures no instruction is formed for invalid tag settings
@@ -464,72 +464,81 @@ bool Program::tag2Instruction() {
 //    - if SELECT_OBJECTS_ID, for each object
 //        - test if point cloud is fully within the ROI (crop objects against the ROI crop box)
 //        - if little is lost after cropping, assign the object to the instruction 
-bool Program::matchObjects() {
+bool Program::instructionsWithObjects() {
 	for(int i = 0; i < instructions.size(); i++) {
-		Tag selection = instructions[i].selection;
-
-		if(selection.getID() == Tag::SELECT_OBJECT_ID) {	
-			pcl::CropBox<pcl::PointXYZRGB> cbox;
-			setupFilterBox(cbox, selection);
-
-			int max_overlap = -1; int max_overlap_index = -1;
-			for(int j = 0; j < objects.size(); j++) {
-				//std::cout << "object \\" << j;
-
-			    int cloud_size = filterObject(cbox, objects[j]);
-				
-				//std::cout << " pass min_overlap? (" << MIN_POINT_OVERLAP << ") " << (cloud_size >= MIN_POINT_OVERLAP);
-				//std::cout << " pass max_so_far? (" << max_overlap << ") " << (cloud_size > max_overlap);
-				
-				if(cloud_size >= MIN_POINT_OVERLAP &&
-				   cloud_size > max_overlap) {
-					max_overlap = cloud_size;
-					max_overlap_index = j;
-					
-					//std::cout << " <--- new max. ";
-				}
-
-				//std::cout << "\n";
-			}
-
-			if(max_overlap_index == -1) {
-				error_msg = "ERROR - TAG GROUPING - no object to select.";
-				return false;
-			}
-
-			instructions[i].objects.push_back(objects[max_overlap_index]);
-		} else if (instructions.at(i).selection.getID() == Tag::SELECT_OBJECTS_ID){
-			Tag selection2nd = instructions[i].selection2nd;
-
-			pcl::CropBox<pcl::PointXYZRGB> cbox;
-			setupFilterBox(cbox, selection, selection2nd);
-			
-			for(int j = 0; j < objects.size(); j++) {
-				//std::cout << "object \\" << j;
-
-				int size_before_crop = objects[j].GetCloud()->points.size();
-				
-				int size_after_crop = filterObject(cbox, objects[j]);
-
-				//std::cout << " ratio = " << (size_after_crop * 1.0 / size_before_crop);
-
-				if((size_after_crop * 1.0 / size_before_crop) < MIN_REGION_OVERLAP_RATIO) {
-					//std::cout << "\n";
-					continue;
-				}
-				//TO-DO this check does not address oversized segments
-
-				//std::cout << " <--- within the region\n";
-
-				instructions[i].objects.push_back(objects[j]);
-			}
-
-			if(instructions[i].objects.size() == 0) {
-				error_msg = "ERROR - TAG GROUPING - no object in region to select.";
-				return false;
-			}
+		if(!matchObjects(instructions[i], instructions[i].objects)){
+			instructions.clear();
+			return false;
 		}
 	}
+	return true;
+}
+
+bool Program::matchObjects(Instruction ins, std::vector<rapid::perception::Object>& matched) {
+	Tag selection = ins.selection;
+
+	if(selection.getID() == Tag::SELECT_OBJECT_ID) {	
+		pcl::CropBox<pcl::PointXYZRGB> cbox;
+		setupFilterBox(cbox, selection);
+
+		int max_overlap = -1; int max_overlap_index = -1;
+		for(int i = 0; i < objects.size(); i++) {
+			//std::cout << "object \\" << i;
+
+		    int cloud_size = filterObject(cbox, objects[i]);
+			
+			//std::cout << " pass min_overlap? (" << MIN_POINT_OVERLAP << ") " << (cloud_size >= MIN_POINT_OVERLAP);
+			//std::cout << " pass max_so_far? (" << max_overlap << ") " << (cloud_size > max_overlap);
+			
+			if(cloud_size >= MIN_POINT_OVERLAP &&
+			   cloud_size > max_overlap) {
+				max_overlap = cloud_size;
+				max_overlap_index = i;
+				
+				//std::cout << " <--- new max. ";
+			}
+
+			//std::cout << "\n";
+		}
+
+		if(max_overlap_index == -1) {
+			error_msg = "ERROR - TAG GROUPING - no object to select.";
+			return false;
+		}
+
+		matched.push_back(objects[max_overlap_index]);
+	} else if (selection.getID() == Tag::SELECT_OBJECTS_ID){
+		Tag selection2nd = ins.selection2nd;
+
+		pcl::CropBox<pcl::PointXYZRGB> cbox;
+		setupFilterBox(cbox, selection, selection2nd);
+		
+		for(int i = 0; i < objects.size(); i++) {
+			//std::cout << "object \\" << i;
+
+			int size_before_crop = objects[i].GetCloud()->points.size();
+			
+			int size_after_crop = filterObject(cbox, objects[i]);
+
+			//std::cout << " ratio = " << (size_after_crop * 1.0 / size_before_crop);
+
+			if((size_after_crop * 1.0 / size_before_crop) < MIN_REGION_OVERLAP_RATIO) {
+				//std::cout << "\n";
+				continue;
+			}
+			//TO-DO this check does not address oversized segments
+
+			//std::cout << " <--- within the region\n";
+
+			matched.push_back(objects[i]);
+		}
+
+		if(matched.size() == 0) {
+			error_msg = "ERROR - TAG GROUPING - no object in region to select.";
+			return false;
+		}
+	}
+	
 	return true;
 }
 
