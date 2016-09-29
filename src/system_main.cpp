@@ -27,29 +27,33 @@ int main (int argc, char** argv) {
 	std::string err = "error";
 	std::vector<tangible::Tag> tags;
 	std::vector<rapid::perception::Object> objects;
-
-	//do {		
+	
+	ros::Rate interval(10);
+	while(ros::ok()) {
+		err = "error";
 		tags = tagext.get_tags();
-		ROS_INFO("the following tags are detected:");
-		for(int i = 0; i < tags.size(); i++)
-			ROS_INFO("%s%s", tags[i].printID().c_str(), tags[i].printCenter().c_str());
-		
-		//if(parser.isSuccessful()) {
-		    //objects = parser.getObjects();
-		    //vis.update(objects);
+		//ROS_INFO("the following tags are detected:");
+		//for(int i = 0; i < tags.size(); i++)
+		//	ROS_INFO("%s%s", tags[i].printID().c_str(), tags[i].printCenter().c_str());
+
+		if(parser.isSuccessful()) {
+			objects = parser.getObjects();
+			
 			tangible::Program program(tags, objects);
 			err = program.error();
-		//}
-	//} while(!err.empty());
-	ROS_INFO("\n%s", program.printInstructions().c_str());
-	
-	ros::Rate interval(3);
-	while(ros::ok()) {
-		if(err.empty())
-			vis.update(program);
+
+			if(err.empty()) {
+				vis.update(program);
+				ROS_INFO("\nprogram successfully compiled as\n%s", program.printInstructions().c_str());
+			} else {
+				ROS_INFO("\nprogram compilation failed with error\n%s", err.c_str());
+				vis.clearProgram();
+			}
+
+			//ROS_INFO("\n%d objects found", (int)objects.size());
+			vis.update(objects);
+		}
 		
-		//if(parser.isSuccessful())
-		//	vis.update(parser.getObjects());
 		interval.sleep();
 	}
 	
