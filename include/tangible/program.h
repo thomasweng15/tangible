@@ -46,7 +46,7 @@ public:
 
 	const static int MIN_POINT_OVERLAP = 15;
 	const static double MIN_REGION_OVERLAP_RATIO = 0.5;
-	const static double OBJECT_SELECTION_BOX_SIZE = 0.02;
+	const static double OBJECT_SELECTION_BOX_SIZE = 0.05;
 
 	Program(std::vector<Tag>& tgs, std::vector<rapid::perception::Object> objs);
 	//Program(std::vector<Tag>& tgs,
