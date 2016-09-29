@@ -93,7 +93,7 @@ void Visualizer::update(std::vector<rapid::perception::Object> objects) {
 	        rapid::viz::Marker::Box(NULL, objects[i].pose(), objects[i].scale()).marker();
 		setNamespace(box, "scene_visualization");
 		setID(box, i+1);
-		setColor(box, 0.5, 0, 0.5, 0.45);
+		setColor(box, 0.2, 0.2, 0.2, 0.35);
 		scene_elements.push_back(box);
 		scene_pub.publish(box);
 	}
@@ -118,10 +118,11 @@ void Visualizer::fillLabelMarker(visualization_msgs::Marker& marker, Tag& tag) {
 	marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	setAction(marker, ADD);
 	setPose(marker, tag);
+	marker.pose.position.z += LABEL_POSITION_OFFSET;
 	geometry_msgs::Vector3 scale;
-	scale.z = 0.03;
+	scale.z = 0.01;
 	setScale(marker, scale);
-	setColor(marker, 0, 0, 1, 1);
+	setColor(marker, 0, 0.75, 0, 1);
 	marker.text = LABELS_TXT[tag.getID()];
 }
 
@@ -228,6 +229,7 @@ void Visualizer::clear() {
 	//TO-DO
 	//DELETE ALL markers
 	clearScene();
+	clearProgram();
 }
 
 }
