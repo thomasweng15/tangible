@@ -7,7 +7,7 @@
   <node pkg="tf" type="static_transform_publisher" name="$(arg camera)_base_world_link"
     args="0 0 0 0 0 0 base_link base_footprint 100" />
   <node pkg="tf" type="static_transform_publisher" name="$(arg camera)_world_link"
-    args="0 0 1.35 0 0.385 0 base_footprint $(arg tf_prefix)/$(arg camera)_link 100" />
+    args="0 0 1.35 0 1.047 0 base_footprint $(arg tf_prefix)/$(arg camera)_link 100" />
   <node pkg="tf" type="static_transform_publisher" name="$(arg camera)_base_link"
     args="0 -0.02  0 0 0 0 $(arg tf_prefix)/$(arg camera)_link $(arg tf_prefix)/$(arg camera)_depth_frame 100" />
   <node pkg="tf" type="static_transform_publisher" name="$(arg camera)_base_link1"
