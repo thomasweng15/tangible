@@ -8,6 +8,8 @@
 
 #include "pcl/point_cloud.h"
 
+//#include "ros/ros.h"
+
 #include "tangible/utils.h"
 
 namespace tangible {
@@ -478,17 +480,24 @@ bool Program::matchObjects(Instruction ins, std::vector<rapid::perception::Objec
 	Tag selection = ins.selection;
 
 	if(selection.getID() == Tag::SELECT_OBJECT_ID) {	
+		//std::stringstream ss;
+
 		pcl::CropBox<pcl::PointXYZRGB> cbox;
 		setupFilterBox(cbox, selection);
 
 		int max_overlap = -1; int max_overlap_index = -1;
 		for(int i = 0; i < objects.size(); i++) {
 			//std::cout << "object \\" << i;
+			//ss << "object \\" << i;
 
 		    int cloud_size = filterObject(cbox, objects[i]);
+
+		    //ss << " filtered cloud size: " << cloud_size << " | "; 
 			
 			//std::cout << " pass min_overlap? (" << MIN_POINT_OVERLAP << ") " << (cloud_size >= MIN_POINT_OVERLAP);
+			//ss << " pass min_overlap? (" << MIN_POINT_OVERLAP << ") " << (cloud_size >= MIN_POINT_OVERLAP);
 			//std::cout << " pass max_so_far? (" << max_overlap << ") " << (cloud_size > max_overlap);
+			//ss << " pass max_so_far? (" << max_overlap << ") " << (cloud_size > max_overlap);
 			
 			if(cloud_size >= MIN_POINT_OVERLAP &&
 			   cloud_size > max_overlap) {
@@ -496,10 +505,14 @@ bool Program::matchObjects(Instruction ins, std::vector<rapid::perception::Objec
 				max_overlap_index = i;
 				
 				//std::cout << " <--- new max. ";
+				//ss << " <--- new max. ";
 			}
 
 			//std::cout << "\n";
+			//ss << "\n";
 		}
+
+		//ROS_INFO("\n%s", ss.str().c_str());
 
 		if(max_overlap_index == -1) {
 			error_msg = "ERROR - TAG GROUPING - no object to select.";
@@ -684,7 +697,12 @@ void Program::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox,
 
 int Program::filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,
 	                      rapid::perception::Object& obj) {
+	std::stringstream ss;
+
 	//std::cout << "(" << obj.pose().pose.position.x << ", "
+    //                 << obj.pose().pose.position.y << ", "
+    //                 << obj.pose().pose.position.z << ") ";
+    //ss << "object (" << obj.pose().pose.position.x << ", "
     //                 << obj.pose().pose.position.y << ", "
     //                 << obj.pose().pose.position.z << ") ";
 
@@ -695,6 +713,7 @@ int Program::filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,
 	int cloud_size = cloud->points.size();
 
     //std::cout << "cloud size (before crop: " << cloud_size << ") ";
+    //ss << "cloud size (before crop: " << cloud_size << ") ";
 	
 	cbox.setInputCloud(cloud);
 	cbox.filter(*cloud);
@@ -702,6 +721,9 @@ int Program::filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,
 	cloud_size = cloud->points.size();
 
 	//std::cout << "cloud size (after crop: " << cloud_size << ")";
+	//ss << "cloud size (after crop: " << cloud_size << ")";
+
+	//ROS_INFO("\nfiltering info:\n%s", ss.str().c_str());
 
 	return cloud_size;
 }
