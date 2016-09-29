@@ -19,6 +19,6 @@
     </include>
 
     <!-- RViz -->
-	<node pkg="rviz" type="rviz" name="visualization" />
+	<node pkg="rviz" type="rviz" name="visualization" args="-d /home/yasaman/.rviz/visualization.rviz"/>
 
 </launch>
