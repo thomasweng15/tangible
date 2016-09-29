@@ -15,9 +15,9 @@ Visualizer::Visualizer(ros::NodeHandle& n, std::string id) {
 	scene_pub = n.advertise<visualization_msgs::Marker>("scene_viz", 10);
 	program_pub = n.advertise<visualization_msgs::Marker>("program_viz", 10);
 
-	LABELS_TXT[0] = "@ POINT";
-	LABELS_TXT[1] = "THE OBJECT";
-	LABELS_TXT[2] = "IN REGION";
+	LABELS_TXT[0] = "AT POINT";
+	LABELS_TXT[1] = "IN REGION";
+	LABELS_TXT[2] = "THE OBJECT";
 	LABELS_TXT[3] = "THE OBJECTS";
 	LABELS_TXT[4] = "PAIRED";
 	LABELS_TXT[5] = "PICK SIDE";
@@ -78,6 +78,19 @@ void Visualizer::update(Program p) {
 			marker_count++;
 			program_elements.push_back(label_marker_selection2nd);
 			program_pub.publish(label_marker_selection2nd);
+		}
+
+		for(int j = 0; j < instructions[i].objects.size(); j++) {
+			visualization_msgs::Marker box =
+	        rapid::viz::Marker::Box(NULL,
+	        	                    instructions[i].objects[j].pose(),
+	        	                    instructions[i].objects[j].scale()).marker();
+	        setNamespace(box, "tag_grouping");
+	        setID(box, marker_count);
+	        marker_count++;
+	        setColor(box, 0.5, 0, 0.5, 0.50);
+	        program_elements.push_back(box);
+	        program_pub.publish(box);   
 		}
 
 	}
