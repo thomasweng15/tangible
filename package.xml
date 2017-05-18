@@ -43,9 +43,17 @@
   <build_depend>rapid_perception</build_depend>
   <build_depend>ar_track_alvar_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
   <run_depend>rapid_perception</run_depend>
   <run_depend>ar_track_alvar_msgs</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>moveit_msgs</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
