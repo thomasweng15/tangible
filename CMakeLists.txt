@@ -51,7 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Program.msg
-  Location.msg
+  ActAt.msg
   Operation.msg
   Instruction.msg
   Block.msg
