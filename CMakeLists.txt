@@ -148,21 +148,19 @@ add_dependencies(tangible_frame_transformer
 )
 target_link_libraries(tangible_frame_transformer ${catkin_LIBRARIES})
 
-add_library(tangible_tag src/tag.cpp)
-add_dependencies(tangible_tag
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_tag ${catkin_LIBRARIES})
+#add_library(tangible_tag src/tag.cpp)
+#add_dependencies(tangible_tag
+#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#  ${catkin_EXPORTED_TARGETS}
+#)
+#target_link_libraries(tangible_tag ${catkin_LIBRARIES})
 
 add_library(tangible_tag_extractor src/tag_extractor.cpp)
 add_dependencies(tangible_tag_extractor
-  tangible_tag
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(tangible_tag_extractor 
-  tangible_tag
   ${catkin_LIBRARIES}
 )
 
@@ -173,36 +171,34 @@ add_dependencies(tangible_scene_parser
 )
 target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
 
-add_library(tangible_utils src/utils.cpp)
-add_dependencies(tangible_utils
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_utils ${catkin_LIBRARIES})
+# add_library(tangible_utils src/utils.cpp)
+# add_dependencies(tangible_utils
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(tangible_utils ${catkin_LIBRARIES})
 
-add_library(tangible_program src/program.cpp)
-add_dependencies(tangible_program
-  tangible_tag
-  tangible_utils
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_program
-  tangible_tag
-  tangible_utils
-  ${catkin_LIBRARIES}
-)
+# add_library(tangible_program src/program.cpp)
+# add_dependencies(tangible_program
+#   tangible_utils
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(tangible_program
+#   tangible_utils
+#   ${catkin_LIBRARIES}
+# )
 
-add_library(tangible_visualizer src/visualizer.cpp)
-add_dependencies(tangible_visualizer
-  tangible_program
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_visualizer
-  tangible_program
-  ${catkin_LIBRARIES}
-)
+# add_library(tangible_visualizer src/visualizer.cpp)
+# add_dependencies(tangible_visualizer
+#   tangible_program
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(tangible_visualizer
+#   tangible_program
+#   ${catkin_LIBRARIES}
+# )
 
 ## Executable files
 ## ----------------
@@ -210,69 +206,91 @@ target_link_libraries(tangible_visualizer
 ## Add cmake target dependencies of the executable (same as for the library above)
 ## Specify libraries to link a library or executable target against
 
-add_executable(system_main src/system_main.cpp)
-add_dependencies(system_main
-  tangible_frame_transformer
-  tangible_tag
+# add_executable(system_main src/system_main.cpp)
+# add_dependencies(system_main
+#   tangible_frame_transformer
+#   tangible_tag
+#   tangible_tag_extractor
+#   tangible_scene_parser
+#   tangible_utils
+#   tangible_program
+#   tangible_visualizer
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(system_main
+#   tangible_frame_transformer
+#   tangible_tag
+#   tangible_tag_extractor
+#   tangible_scene_parser
+#   tangible_utils
+#   tangible_program
+#   tangible_visualizer
+#   ${catkin_LIBRARIES}
+# )
+
+# add_executable(system_test_grouping src/system_test_grouping.cpp)
+# add_dependencies(system_test_grouping
+#   tangible_tag
+#   tangible_utils
+#   tangible_program
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(system_test_grouping
+#   tangible_tag
+#   tangible_utils
+#   tangible_program
+#   ${catkin_LIBRARIES}
+# )
+
+# add_executable(system_test_matching src/system_test_matching.cpp)
+# add_dependencies(system_test_matching
+#   tangible_tag
+#   tangible_scene_parser
+#   tangible_utils
+#   tangible_program
+#   tangible_visualizer
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(system_test_matching
+#   tangible_tag
+#   tangible_scene_parser
+#   tangible_utils
+#   tangible_program
+#   tangible_visualizer
+#   ${catkin_LIBRARIES}
+# )
+
+#add_executable(scene_visualization_main src/scene_visualization_main.cpp)
+#add_dependencies(scene_visualization_main
+#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#  ${catkin_EXPORTED_TARGETS}
+#)
+#target_link_libraries(scene_visualization_main ${catkin_LIBRARIES})
+
+add_executable(object_processing_node src/object_processing_node.cpp)
+add_dependencies(object_processing_node
+  tangible_scene_parser
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(object_processing_node 
+  tangible_scene_parser
+  ${catkin_LIBRARIES}
+)
+
+add_executable(block_parsing_node src/block_parsing_node.cpp)
+add_dependencies(block_parsing_node
   tangible_tag_extractor
-  tangible_scene_parser
-  tangible_utils
-  tangible_program
-  tangible_visualizer
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(system_main
-  tangible_frame_transformer
-  tangible_tag
+target_link_libraries(block_parsing_node 
   tangible_tag_extractor
-  tangible_scene_parser
-  tangible_utils
-  tangible_program
-  tangible_visualizer
   ${catkin_LIBRARIES}
 )
-
-add_executable(system_test_grouping src/system_test_grouping.cpp)
-add_dependencies(system_test_grouping
-  tangible_tag
-  tangible_utils
-  tangible_program
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(system_test_grouping
-  tangible_tag
-  tangible_utils
-  tangible_program
-  ${catkin_LIBRARIES}
-)
-
-add_executable(system_test_matching src/system_test_matching.cpp)
-add_dependencies(system_test_matching
-  tangible_tag
-  tangible_scene_parser
-  tangible_utils
-  tangible_program
-  tangible_visualizer
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(system_test_matching
-  tangible_tag
-  tangible_scene_parser
-  tangible_utils
-  tangible_program
-  tangible_visualizer
-  ${catkin_LIBRARIES}
-)
-
-add_executable(scene_visualization_main src/scene_visualization_main.cpp)
-add_dependencies(scene_visualization_main
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(scene_visualization_main ${catkin_LIBRARIES})
 
 #############
 ## Install ##

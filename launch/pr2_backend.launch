@@ -1,0 +1,42 @@
+<launch>
+  <!-- Kinect -->
+  <arg name="camera" default="head_mount_kinect" />
+  <arg name="scene_output_frame" default="/base_footprint" />
+  <arg name="cloud_topic" default="$(arg camera)/depth_registered/points" />
+
+  <!-- Turn on the Kinect -->
+  <include file="$(find freenect_launch)/launch/freenect.launch">
+    <arg name="depth_registration" value="true"/>
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="depth_frame_id" value="head_mount_kinect_ir_optical_frame" />
+    <arg name="publish_tf" value="false"/>
+  </include>
+
+  <!-- TF Frames -->
+  <!-- I don't think we need this if using with real robot -->
+  <!-- <include file="$(find tangible)/launch/userdefined_frame.launch" >
+    <arg name="camera" value="$(arg camera)" />
+  </include> --> 
+
+  <!-- AR Tracking -->
+  <!-- Changes for real robot -->
+  <include file="$(find ar_track_alvar)/launch/pr2_indiv.launch" >
+    <arg name="output_frame" default="$(arg scene_output_frame)" />
+    <arg name="cam_image_topic" default="$(arg cloud_topic)" />
+    <arg name="cam_info_topic" default="$(arg camera)/rgb/camera_info" />
+  </include>
+
+  <!-- Object Processing -->
+  <!-- <node pkg="tangible" type="object_processing_node" name="object_processing_node">
+    <param name="output_frame" type="string" value="$(arg scene_output_frame)" />
+  </node> -->
+
+  <!-- Block Parsing -->
+  <!-- <node pkg="tangible" type="block_parsing_node" name="block_parsing_node">
+  </node> -->
+
+  <!-- RViz -->
+  <!-- If we want to use an rviz config, we need to add it to the package and launch with frontend -->
+	<!-- <node pkg="rviz" type="rviz" name="visualization" args="-d /home/yasaman/.rviz/visualization.rviz"/> -->
+
+</launch>
