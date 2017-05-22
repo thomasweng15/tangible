@@ -22,11 +22,17 @@
   <!-- Changes for real robot -->
   <include file="$(find ar_track_alvar)/launch/pr2_indiv.launch" >
     <arg name="output_frame" default="$(arg scene_output_frame)" />
+    <arg name="cam_image_topic" default="$(arg cloud_topic)" />
+    <arg name="cam_info_topic" default="$(arg camera)/rgb/camera_info" />
   </include>
 
   <!-- Object Processing -->
   <!-- <node pkg="tangible" type="object_processing_node" name="object_processing_node">
     <param name="output_frame" type="string" value="$(arg scene_output_frame)" />
+  </node> -->
+
+  <!-- Block Parsing -->
+  <!-- <node pkg="tangible" type="block_parsing_node" name="block_parsing_node">
   </node> -->
 
   <!-- RViz -->

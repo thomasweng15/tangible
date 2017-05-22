@@ -148,21 +148,19 @@ add_dependencies(tangible_frame_transformer
 )
 target_link_libraries(tangible_frame_transformer ${catkin_LIBRARIES})
 
-add_library(tangible_tag src/tag.cpp)
-add_dependencies(tangible_tag
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_tag ${catkin_LIBRARIES})
+#add_library(tangible_tag src/tag.cpp)
+#add_dependencies(tangible_tag
+#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#  ${catkin_EXPORTED_TARGETS}
+#)
+#target_link_libraries(tangible_tag ${catkin_LIBRARIES})
 
 add_library(tangible_tag_extractor src/tag_extractor.cpp)
 add_dependencies(tangible_tag_extractor
-  tangible_tag
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(tangible_tag_extractor 
-  tangible_tag
   ${catkin_LIBRARIES}
 )
 
@@ -173,36 +171,34 @@ add_dependencies(tangible_scene_parser
 )
 target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
 
-add_library(tangible_utils src/utils.cpp)
-add_dependencies(tangible_utils
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_utils ${catkin_LIBRARIES})
+# add_library(tangible_utils src/utils.cpp)
+# add_dependencies(tangible_utils
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(tangible_utils ${catkin_LIBRARIES})
 
-add_library(tangible_program src/program.cpp)
-add_dependencies(tangible_program
-  tangible_tag
-  tangible_utils
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_program
-  tangible_tag
-  tangible_utils
-  ${catkin_LIBRARIES}
-)
+# add_library(tangible_program src/program.cpp)
+# add_dependencies(tangible_program
+#   tangible_utils
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(tangible_program
+#   tangible_utils
+#   ${catkin_LIBRARIES}
+# )
 
-add_library(tangible_visualizer src/visualizer.cpp)
-add_dependencies(tangible_visualizer
-  tangible_program
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(tangible_visualizer
-  tangible_program
-  ${catkin_LIBRARIES}
-)
+# add_library(tangible_visualizer src/visualizer.cpp)
+# add_dependencies(tangible_visualizer
+#   tangible_program
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(tangible_visualizer
+#   tangible_program
+#   ${catkin_LIBRARIES}
+# )
 
 ## Executable files
 ## ----------------
@@ -282,6 +278,17 @@ add_dependencies(object_processing_node
 )
 target_link_libraries(object_processing_node 
   tangible_scene_parser
+  ${catkin_LIBRARIES}
+)
+
+add_executable(block_parsing_node src/block_parsing_node.cpp)
+add_dependencies(block_parsing_node
+  tangible_tag_extractor
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(block_parsing_node 
+  tangible_tag_extractor
   ${catkin_LIBRARIES}
 )
 
