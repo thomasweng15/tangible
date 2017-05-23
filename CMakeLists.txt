@@ -69,6 +69,7 @@ add_service_files(
   GetBlocks.srv
   GetProgram.srv
   GetGrasps.srv
+# GetRelease.srv TO-DO 
 )
 
 ## Generate actions in the 'action' folder
@@ -200,6 +201,13 @@ target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
 #   ${catkin_LIBRARIES}
 # )
 
+add_library(tangible_execution_manager src/execution_manager.cpp)
+add_dependencies(tangible_execution_manager
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_execution_manager ${catkin_LIBRARIES})
+
 ## Executable files
 ## ----------------
 ## Declare a C++ executable
@@ -289,6 +297,17 @@ add_dependencies(block_parsing_node
 )
 target_link_libraries(block_parsing_node 
   tangible_tag_extractor
+  ${catkin_LIBRARIES}
+)
+
+add_executable(program_execution_node src/execution_manager_node.cpp)
+add_dependencies(program_execution_node
+  tangible_execution_manager
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(program_execution_node 
+  tangible_execution_manager
   ${catkin_LIBRARIES}
 )
 
