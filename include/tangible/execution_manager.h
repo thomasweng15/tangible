@@ -5,23 +5,28 @@
 
 #include "ros/ros.h"
 #include "tangible/Mode.h"
+#include "tangible/GetProgram.h"
+#include "tangible/Operation.h"
 
 namespace tangible {
 
 class ExecutionManager {
 private:
 	ros::NodeHandle node_handle;
+	ros::Subscriber exec_mode;
 
 	int mode;
-	//std::vector<tangible::Operation> program;
-	std::vector<int> program;
+	tangible::Program program;
 
+	bool executing;
 
-	void get_program();
-	void get_scene();
+	bool get_program();
+	bool get_scene();
 
 	void start_execution();
 	void stop_execution();
+
+	std::string get_private_param(std::string param_name);
 	
 public:
 	ExecutionManager(ros::NodeHandle& n);

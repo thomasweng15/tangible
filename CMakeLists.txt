@@ -311,6 +311,15 @@ target_link_libraries(program_execution_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(fake_compilation_node src/program_srv.cpp)
+add_dependencies(fake_compilation_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(fake_compilation_node 
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############

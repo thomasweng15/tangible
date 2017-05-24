@@ -4,8 +4,15 @@ namespace tangible {
 
 ExecutionManager::ExecutionManager(ros::NodeHandle& n)
 {
-	ROS_INFO("execution node instantiated...");
 	node_handle = n;
+
+	std::string system_mode_topic = get_private_param("system_mode_topic");
+	exec_mode = node_handle.subscribe(system_mode_topic, 1000, &tangible::ExecutionManager::mode_callback, this);
+
+	executing = false;
+
+	ROS_INFO("Execution node is instantiated and listens to %s topic.", system_mode_topic.c_str());
+	// NOTE: system_mode_topic is tpbd_mode
 }
 
 ExecutionManager::~ExecutionManager() {}
@@ -18,6 +25,7 @@ void ExecutionManager::mode_callback(const tangible::Mode::ConstPtr& mode_msg)
 	{
 		case tangible::Mode::IDLE:
 			ROS_INFO("Idle Mode");
+			executing = false;
 
 			// stop all movements
 			stop_execution();
@@ -26,51 +34,78 @@ void ExecutionManager::mode_callback(const tangible::Mode::ConstPtr& mode_msg)
 
 		case tangible::Mode::EDIT:
 			ROS_INFO("Edit Mode");
+			executing = false;
 
-			// clear the program. A new program should be obtained after the edit
+			// stop all movements
 			stop_execution();
-			program.clear();
+			
+			// clear the program. A new program should be obtained after the edit
+			program.operations.clear();
 
 			break;
 
 		case tangible::Mode::EXECUTE:
 			ROS_INFO("Execution Mode");
+			executing = true;
 
 			// if the program is not defined, obtain the program
-			// else resume program execution from the first incompelete instruction.
+			// else resume its execution from the first incompelete instruction.
 			// NOTE: instructions are the atomic units of normal program execution.
-			if(program.empty())
-				get_program();
+			if(program.operations.empty())
+				executing = get_program();
 
 			start_execution();
 
 			break;
 
 		default:
-			ROS_INFO("Invalid Mode");
+			ROS_ERROR("Invalid Mode");
 	}
 }
 
-void ExecutionManager::get_program() 
+std::string ExecutionManager::get_private_param(std::string param_name)
 {
-	ros::NodeHandle private_parameters("~");
-	std::string program_service = 
-	ros::ServiceClient program_acquisition_client = node_handle<tangible::Program>();
+	ros::NodeHandle private_params("~");
+	std::string param;
+	private_params.getParam(param_name, param);
+	return param;
 }
 
-void ExecutionManager::get_scene()
+bool ExecutionManager::get_program() 
 {
+	std::string get_program_srv = get_private_param("program_acquisition_service");
+	ros::ServiceClient program_acquisition_client = node_handle.serviceClient<tangible::GetProgram>(get_program_srv);
 
+	tangible::GetProgram program_srv;
+	bool success = program_acquisition_client.call(program_srv);
+	if(success)
+	{
+		ROS_INFO("program received");
+		program = program_srv.response.program;
+	}
+	else
+	{
+		ROS_ERROR("Failed to call service %s to obtain the compiled program.", get_program_srv.c_str());
+	}
+
+	return success;
+}
+
+bool ExecutionManager::get_scene()
+{
+	ROS_INFO("request scene");
+	return true;
 }
 
 void ExecutionManager::start_execution()
 {
-
+	ROS_INFO("start moving the robot");
+	// should always condition on executing
 }
 
 void ExecutionManager::stop_execution()
 {
-
+	ROS_INFO("stop moving the robot");
 }
 
 }
