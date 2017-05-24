@@ -10,8 +10,11 @@ namespace tangible {
 
 class ExecutionManager {
 private:
+	ros::NodeHandle node_handle;
+
 	int mode;
-	std::vector<tangible::Operation> program;
+	//std::vector<tangible::Operation> program;
+	std::vector<int> program;
 
 
 	void get_program();

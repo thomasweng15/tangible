@@ -5,17 +5,18 @@ namespace tangible {
 ExecutionManager::ExecutionManager(ros::NodeHandle& n)
 {
 	ROS_INFO("execution node instantiated...");
-
+	node_handle = n;
 }
 
 ExecutionManager::~ExecutionManager() {}
 
 void ExecutionManager::mode_callback(const tangible::Mode::ConstPtr& mode_msg) 
 {
-	mode = *(mode_msg);
+	mode = mode_msg->mode;
+	
 	switch(mode)
 	{
-		case *(mode_msg).IDLE:
+		case tangible::Mode::IDLE:
 			ROS_INFO("Idle Mode");
 
 			// stop all movements
@@ -23,7 +24,7 @@ void ExecutionManager::mode_callback(const tangible::Mode::ConstPtr& mode_msg)
 
 			break;
 
-		case *(mode_msg).EDIT:
+		case tangible::Mode::EDIT:
 			ROS_INFO("Edit Mode");
 
 			// clear the program. A new program should be obtained after the edit
@@ -32,7 +33,7 @@ void ExecutionManager::mode_callback(const tangible::Mode::ConstPtr& mode_msg)
 
 			break;
 
-		case *(mode_msg).EXECUTE:
+		case tangible::Mode::EXECUTE:
 			ROS_INFO("Execution Mode");
 
 			// if the program is not defined, obtain the program
@@ -52,7 +53,9 @@ void ExecutionManager::mode_callback(const tangible::Mode::ConstPtr& mode_msg)
 
 void ExecutionManager::get_program() 
 {
-
+	ros::NodeHandle private_parameters("~");
+	std::string program_service = 
+	ros::ServiceClient program_acquisition_client = node_handle<tangible::Program>();
 }
 
 void ExecutionManager::get_scene()
