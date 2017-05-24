@@ -1,23 +1,30 @@
 #ifndef TANGIBLE_EXECUTION_MANAGER
 #define TANGIBLE_EXECUTION_MANAGER
 
+#include <vector>
+
 #include "ros/ros.h"
+#include "tangible/Mode.h"
 
 namespace tangible {
 
 class ExecutionManager {
 private:
 	int mode;
-	// TO-DO
-	// fields to store
-	//   - program to execute
-	//   - progress in executing the program.
+	std::vector<tangible::Operation> program;
+
+
+	void get_program();
+	void get_scene();
+
+	void start_execution();
+	void stop_execution();
 	
 public:
 	ExecutionManager(ros::NodeHandle& n);
 	~ExecutionManager();
 
-	// TO-DO: subscribe to mode topic
+	void mode_callback(const tangible::Mode::ConstPtr& mode_msg);
 };
 
 };
