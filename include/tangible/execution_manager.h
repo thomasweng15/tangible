@@ -4,19 +4,31 @@
 #include <vector>
 
 #include "ros/ros.h"
+
+// user-defined classes
+
+
+// msg's and srv's
 #include "tangible/Mode.h"
+#include "tangible/Program.h"
 #include "tangible/GetProgram.h"
-#include "tangible/Operation.h"
 
-namespace tangible {
+namespace tangible
+{
 
-class ExecutionManager {
+class ExecutionManager
+{
 private:
 	ros::NodeHandle node_handle;
 	ros::Subscriber exec_mode;
 
 	int mode;
 	tangible::Program program;
+	//QUESTION: how is tangible::Program recognized without including tanigble/Program.h 
+	//          BUT tangible::Mode is not recognized without including tangible/Mode.h?
+	// I suspect it's because Program.h is available as GetProgam includes it
+	//TO-DO: this should be std::vector<tangible::Operation> program
+	//       and should be populated based on the program message for each program acquisition
 
 	bool executing;
 

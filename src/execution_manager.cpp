@@ -1,6 +1,7 @@
 #include "tangible/execution_manager.h"
 
-namespace tangible {
+namespace tangible
+{
 
 ExecutionManager::ExecutionManager(ros::NodeHandle& n)
 {
@@ -82,6 +83,8 @@ bool ExecutionManager::get_program()
 	{
 		ROS_INFO("program received");
 		program = program_srv.response.program;
+		//TO-DO: program should be a std::vector<tangible::Operation>
+		//       that is populated based on the program message.
 	}
 	else
 	{
