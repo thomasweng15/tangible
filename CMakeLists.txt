@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tangible)
-
+# set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -171,6 +171,13 @@ add_dependencies(tangible_scene_parser
 )
 target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
 
+add_library(tangible_compiler src/compiler.cpp)
+add_dependencies(tangible_compiler
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_compiler ${catkin_LIBRARIES})
+
 # add_library(tangible_utils src/utils.cpp)
 # add_dependencies(tangible_utils
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -289,6 +296,17 @@ add_dependencies(block_parsing_node
 )
 target_link_libraries(block_parsing_node 
   tangible_tag_extractor
+  ${catkin_LIBRARIES}
+)
+
+add_executable(compiler_node src/compiler_node.cpp)
+add_dependencies(compiler_node
+  tangible_compiler
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(compiler_node 
+  tangible_compiler
   ${catkin_LIBRARIES}
 )
 

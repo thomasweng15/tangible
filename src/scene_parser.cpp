@@ -228,7 +228,7 @@ rapid::perception::ParseParams SceneParser::retrieveParams() {
 	ros::param::param("parse/scene/min_z", params.scene.min_z, 0.3);
 	ros::param::param("parse/scene/max_z", params.scene.max_z, 1.7);
 	ros::param::param("parse/hsurface/distance_threshold",
-		               params.hsurface.distance_threshold, 0.05);
+		               params.hsurface.distance_threshold, 0.015);
 	ros::param::param("parse/hsurface/eps_angle",
 		               params.hsurface.eps_angle, rapid::utils::DegreesToRadians(5));
 	ros::param::param("parse/objects/distance_threshold",
