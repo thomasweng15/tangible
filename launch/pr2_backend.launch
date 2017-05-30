@@ -35,23 +35,23 @@
   </include>
 
   <!-- Object Processing -->
-  <!-- <node pkg="tangible" type="object_processing_node" name="object_processing_node">
+  <node pkg="tangible" type="object_processing_node" name="object_processing_node">
     <param name="output_frame" type="string" value="$(arg scene_output_frame)" />
     <param name="scene_service_name" type="string" value="$(arg scene_service_name)" />
     <param name="cloud_topic" type="string" value="$(arg cloud_topic)" />
-  </node> -->
+  </node>
 
   <!-- Block Parsing -->
-  <!-- <node pkg="tangible" type="block_parsing_node" name="block_parsing_node">
+  <node pkg="tangible" type="block_parsing_node" name="block_parsing_node">
     <param name="mode_change_topic" type="string" value="$(arg mode_change_topic)" />
     <param name="block_service_name" type="string" value="$(arg block_service_name)" />
     <param name="run_id" type="int" value="$(arg run_id)" />
     <param name="edit_id" type="int" value="$(arg edit_id)" />
     <param name="idle_id" type="int" value="$(arg idle_id)" />
-  </node> -->
+  </node> 
 
   <!-- Compiler -->
-  <!-- <node pkg="tangible" type="compiler_node" name="compiler_node">
+  <node pkg="tangible" type="compiler_node" name="compiler_node">
     <param name="mode_change_topic" type="string" value="$(arg mode_change_topic)" />
     <param name="block_service_name" type="string" value="$(arg block_service_name)" />
     <param name="scene_service_name" type="string" value="$(arg scene_service_name)" />
@@ -59,10 +59,10 @@
     <param name="run_id" type="int" value="$(arg run_id)" />
     <param name="edit_id" type="int" value="$(arg edit_id)" />
     <param name="idle_id" type="int" value="$(arg idle_id)" />
-  </node> -->
+  </node>
 
   <!-- RViz -->
   <!-- If we want to use an rviz config, we need to add it to the package and launch with frontend -->
-	<!-- <node pkg="rviz" type="rviz" name="visualization" args="-d /home/yasaman/.rviz/visualization.rviz"/> -->
+  <node pkg="rviz" type="rviz" name="visualization" args="-d /home/yasaman/.rviz/visualization.rviz"/>
 
 </launch>
