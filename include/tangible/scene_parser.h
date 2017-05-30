@@ -15,9 +15,6 @@
 
 #include <tf/transform_listener.h>
 
-#include "pcl/point_cloud.h"
-#include "pcl_conversions/pcl_conversions.h"
-
 #include "rapid_perception/scene.h"
 #include "rapid_perception/scene_parsing.h"
 
@@ -29,6 +26,8 @@
 #include "tangible/Surface.h"
 #include "tangible/GetScene.h"
 
+#include "pcl/point_cloud.h"
+#include "pcl_conversions/pcl_conversions.h"
 #include "pcl/point_types.h"
 #include "pcl/filters/filter.h"
 #include "pcl/common/centroid.h"
