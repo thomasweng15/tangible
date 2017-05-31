@@ -47,7 +47,9 @@ bool Compiler::programCallback(tangible::GetProgram::Request& req,
 {
     // TODO(sarah): return error if called when editing
     ROS_INFO("Got service call!");
-  	res.program = program;
+    if (edit_state != true) {
+  	 res.program = working_program;
+    }
   	return true;
 }
 
