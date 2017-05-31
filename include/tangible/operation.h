@@ -17,7 +17,7 @@ namespace tangible
 //          if they both use the same name
 class Operation
 {
-private:
+protected:
 	bool done;
 	std::vactor<tangible::Instruction> instructions;
 	//NOTE: tangible::Instruction is not a message, it's the interface I have defined
@@ -27,7 +27,7 @@ public:
 	//TO-DO: initialize done to false
 	~Operation();
 
-	bool execute();
+	virtual bool execute() = 0;
 
 	void reset();
 	//TO-DO: mark as undone all the instructions of an operation, and the operation itself

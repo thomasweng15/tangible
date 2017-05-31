@@ -82,6 +82,7 @@ bool ExecutionManager::get_program()
 	if(success)
 	{
 		ROS_INFO("program received");
+		//TO-DO: make sure the program in the message is not empty before modifying the exiting program
 		program = program_srv.response.program;
 		//TO-DO: program should be a std::vector<tangible::Operation>
 		//       that is populated based on the program message.
@@ -97,18 +98,21 @@ bool ExecutionManager::get_program()
 bool ExecutionManager::get_scene()
 {
 	ROS_INFO("request scene");
+	//TO-DO
 	return true;
 }
 
 void ExecutionManager::start_execution()
 {
 	ROS_INFO("start moving the robot");
+	//TO-DO
 	// should always condition on executing
 }
 
 void ExecutionManager::stop_execution()
 {
 	ROS_INFO("stop moving the robot");
+	//TO-DO
 }
 
 }

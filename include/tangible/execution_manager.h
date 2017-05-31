@@ -26,7 +26,7 @@ private:
 	tangible::Program program;
 	//QUESTION: how is tangible::Program recognized without including tanigble/Program.h 
 	//          BUT tangible::Mode is not recognized without including tangible/Mode.h?
-	// I suspect it's because Program.h is available as GetProgam includes it
+	// I suspect it's because Program.h is available as GetProgram includes it
 	//TO-DO: this should be std::vector<tangible::Operation> program
 	//       and should be populated based on the program message for each program acquisition
 
