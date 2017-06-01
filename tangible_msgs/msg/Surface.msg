@@ -1,0 +1,1 @@
+tangible_msgs/BoundingBox bounding_box
