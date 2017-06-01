@@ -5,6 +5,7 @@
   <arg name="scene_service_name" default="get_scene" />
   <arg name="block_service_name" default="get_blocks" />
   <arg name="program_service_name" default="get_program" />
+  <arg name="grasp_service_name" default="get_grasps" />
   <arg name="cloud_topic" default="$(arg camera)/depth_registered/points" />
 
   <arg name="idle_id" default="0"/>
@@ -60,6 +61,11 @@
     <param name="edit_id" type="int" value="$(arg edit_id)" />
     <param name="idle_id" type="int" value="$(arg idle_id)" />
   </node>
+
+  <!-- Object Processing -->
+  <!-- <node pkg="tangible" type="grasp_generator_node" name="grasp_generator_node">
+    <param name="grasp_service_name" type="string" value="$(arg grasp_service_name)" />
+  </node> -->
 
   <!-- RViz -->
   <!-- If we want to use an rviz config, we need to add it to the package and launch with frontend -->
