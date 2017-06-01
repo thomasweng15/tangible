@@ -1,12 +1,12 @@
-#ifndef TANGIBLE_OBJECT
-#define TANGIBLE_OBJECT
+#ifndef TANGIBLE_REGION
+#define TANGIBLE_REGION
 
 #include "tangible/action_target.h"
 
 namespace tangible
 {
 
-class Object : ActionTarget
+class Region : ActionTarget
 {
 
 };

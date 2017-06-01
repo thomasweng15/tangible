@@ -12,7 +12,7 @@ protected:
 
 public:
 	Instruction();
-	~Instruction();
+	virtual ~Instruction() = 0;
 
 	virtual bool execute() = 0;
 }

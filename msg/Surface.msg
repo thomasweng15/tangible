@@ -1,1 +1,0 @@
-tangible/BoundingBox bounding_box

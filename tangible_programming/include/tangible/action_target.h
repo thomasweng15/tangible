@@ -6,10 +6,9 @@ namespace tangible
 
 class ActionTarget
 {
-protected:
 public:
 	ActionTarget();
-	~ActionTarget();
+	virtual ~ActionTarget();
 
 	virtual bool match() = 0;
 };
