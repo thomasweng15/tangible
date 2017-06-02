@@ -3,11 +3,9 @@
 
 #include "ros/ros.h"
 
-// user-defined classes
-#include "tangible/instruction.h"
 
 // msg's and srv's
-#include "tangible_msgs/Operation.h"
+#include "tangible_msgs/Instruction.h"
 
 namespace tangible
 {
@@ -19,18 +17,21 @@ class Operation
 {
 protected:
 	bool done;
-	std::vactor<tangible::Instruction> instructions;
+	std::vector<tangible_msgs::Instruction> instructions;
 	//NOTE: tangible::Instruction is not a message, it's the interface I have defined
 
 public:
-	Operation(tangible::Operation op);
+	Operation(std::vector<tangible_msgs::Instruction> ins);
 	//TO-DO: initialize done to false
-	~Operation();
+	virtual ~Operation() = 0;
 
 	virtual bool execute() = 0;
 
+	virtual void stop() = 0;
+
+	bool is_done();
+
 	void reset();
-	//TO-DO: mark as undone all the instructions of an operation, and the operation itself
 };
 
 };

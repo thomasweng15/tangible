@@ -14,25 +14,25 @@ bool program_callback (tangible_msgs::GetProgram::Request& req, tangible_msgs::G
 
 	// pick
 	ins.type = tangible_msgs::Instruction::PICK;
-	ins.act_at.type = tangible_msgs::ActAt::POINT_LOCATION;
-	ins.act_at.specified_point.point.x = 0;
-	ins.act_at.specified_point.point.y = 0;
-	ins.act_at.specified_point.point.z = 0;
+	ins.target.type = tangible_msgs::Target::POINT_LOCATION;
+	ins.target.specified_point.point.x = 0;
+	ins.target.specified_point.point.y = 0;
+	ins.target.specified_point.point.z = 0;
 	op.instructions.push_back(ins);
 
-
+	// place
 	ins.type = tangible_msgs::Instruction::PLACE;
-	ins.act_at.type = tangible_msgs::ActAt::POINT_LOCATION;
-	ins.act_at.specified_point.point.x = 1;
-	ins.act_at.specified_point.point.y = 1;
-	ins.act_at.specified_point.point.z = 1;
+	ins.target.type = tangible_msgs::Target::POINT_LOCATION;
+	ins.target.specified_point.point.x = 1;
+	ins.target.specified_point.point.y = 1;
+	ins.target.specified_point.point.z = 1;
 	op.instructions.push_back(ins);
 
 	prg.operations.push_back(op);
 
 	res.program = prg;
 	
-	ROS_INFO("service callback finished");
+	ROS_INFO("program service callback finished");
 	return true;
 }
 

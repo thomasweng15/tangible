@@ -6,7 +6,7 @@
 #include "ros/ros.h"
 
 // user-defined classes
-
+#include "tangible/operation.h"
 
 // msg's and srv's
 #include "tangible_msgs/Mode.h"
@@ -23,19 +23,20 @@ private:
 	ros::Subscriber exec_mode;
 
 	int mode;
-	tangible_msgs::Program program;
-	//TO-DO: this should be std::vector<tangible::Operation> program
-	//       and should be populated based on the program message for each program acquisition
+	std::vector<tangible::Operation*> program;
 
 	bool executing;
+	int current_operation_index;
+
+	std::string get_private_param(std::string param_name);
+
+	void setup_program(tangible_msgs::Program p);
+	void clear_program();
 
 	bool get_program();
-	bool get_scene();
 
 	void start_execution();
 	void stop_execution();
-
-	std::string get_private_param(std::string param_name);
 	
 public:
 	ExecutionManager(ros::NodeHandle& n);

@@ -1,5 +1,7 @@
 #include "tangible/execution_manager.h"
 
+#include "tangible/pick_and_place.h"
+
 namespace tangible
 {
 
@@ -41,7 +43,7 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 			stop_execution();
 			
 			// clear the program. A new program should be obtained after the edit
-			program.operations.clear();
+			clear_program();
 
 			break;
 
@@ -49,10 +51,10 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 			ROS_INFO("Execution Mode");
 			executing = true;
 
-			// if the program is not defined, obtain the program
-			// else resume its execution from the first incompelete instruction.
+			// a program is a sequence of operations. If the program is not defined, obtain 
+			// the program. Else, resume its execution from the first incompelete instruction.
 			// NOTE: instructions are the atomic units of normal program execution.
-			if(program.operations.empty())
+			if(program.empty())
 				executing = get_program();
 
 			start_execution();
@@ -72,6 +74,35 @@ std::string ExecutionManager::get_private_param(std::string param_name)
 	return param;
 }
 
+void ExecutionManager::setup_program(tangible_msgs::Program p)
+{
+	ROS_INFO("Setting up the program operations.");
+
+	for(int i = 0; i < p.operations.size(); i++)
+	{
+		tangible_msgs::Operation op = p.operations[i];
+		if (op.instructions.size() == 2 &&
+			op.instructions[0].type == tangible_msgs::Instruction::PICK &&
+			(op.instructions[1].type == tangible_msgs::Instruction::PLACE ||
+			 op.instructions[1].type == tangible_msgs::Instruction::DROP))
+			program.push_back(new PickAndPlace(op.instructions));
+	}
+}
+
+void ExecutionManager::clear_program()
+{
+	ROS_INFO("Deleting the current program operations.");
+	
+	Operation* op_ptr;
+	for(int i = 0; i < program.size(); i++)
+	{
+		op_ptr = program[i];
+		delete op_ptr;
+	}
+
+	program.clear();
+}
+
 bool ExecutionManager::get_program() 
 {
 	std::string get_program_srv = get_private_param("program_acquisition_service");
@@ -83,9 +114,14 @@ bool ExecutionManager::get_program()
 	{
 		ROS_INFO("program received");
 		//TO-DO: make sure the program in the message is not empty before modifying the exiting program
-		program = program_srv.response.program;
-		//TO-DO: program should be a std::vector<tangible::Operation>
-		//       that is populated based on the program message.
+		if(program_srv.response.program.operations.empty())
+		{
+			success = false;
+			ROS_ERROR("Empty program received and discarded.");
+		}
+		else
+			setup_program(program_srv.response.program);
+		
 	}
 	else
 	{
@@ -95,23 +131,27 @@ bool ExecutionManager::get_program()
 	return success;
 }
 
-bool ExecutionManager::get_scene()
-{
-	ROS_INFO("request scene");
-	//TO-DO
-	return true;
-}
-
 void ExecutionManager::start_execution()
 {
-	ROS_INFO("start moving the robot");
+	ROS_INFO("executing the program");
+	for(int i = 0; i < program.size(); i++)
+	{
+		if(program[i] -> is_done())
+			continue;
+		current_operation_index = i;
+		if(executing)
+			program[i] -> execute();
+	}
 	//TO-DO
-	// should always condition on executing
+	//NOTE:
+	//   - should always condition on executing
+	//   - while (!program[i]->done) i++; to resume where it was left off
 }
 
 void ExecutionManager::stop_execution()
 {
 	ROS_INFO("stop moving the robot");
+	program[current_operation_index] -> stop();
 	//TO-DO
 }
 
