@@ -20,12 +20,12 @@
 
 #include "rapid_utils/math.h"
 
-#include "tangible/BoundingBox.h"
-#include "tangible/Scene.h"
-#include "tangible/SceneObject.h"
-#include "tangible/Surface.h"
-#include "tangible/GetScene.h"
-#include "tangible/GetGrasps.h"
+#include "tangible_msgs/BoundingBox.h"
+#include "tangible_msgs/Scene.h"
+#include "tangible_msgs/SceneObject.h"
+#include "tangible_msgs/Surface.h"
+#include "tangible_msgs/GetScene.h"
+#include "tangible_msgs/GetGrasps.h"
 
 #include "moveit_msgs/Grasp.h"
 
@@ -36,11 +36,11 @@ class GraspGenerator {
 private:
 
 	ros::NodeHandle node_handle;
-	void publishMarkers(tangible::Scene scene);
+	void publishMarkers(tangible_msgs::Scene scene);
 
 	ros::Publisher marker_pub;
 	std::vector<moveit_msgs::Grasp> grasps;
-	tangible::Scene scene;
+	tangible_msgs::Scene scene;
 	//distance from wrist to gripper on PR2
   	const static double palm_dist = 0.12;
   	const static double pre_grasp_dist = 0.15;
@@ -52,8 +52,8 @@ public:
 	GraspGenerator(ros::NodeHandle& n);
 	~GraspGenerator();
 
-	bool graspCallback(tangible::GetGrasps::Request& req,
-                 tangible::GetGrasps::Response& res);
+	bool graspCallback(tangible_msgs::GetGrasps::Request& req,
+                 tangible_msgs::GetGrasps::Response& res);
 
 };
 

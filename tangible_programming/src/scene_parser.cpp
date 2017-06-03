@@ -30,21 +30,21 @@ void SceneParser::cloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
 	successful = rapid::perception::ParseScene(cloud, retrieveParams(), &scene);
 }
 
-bool SceneParser::parseCallback(tangible::GetScene::Request& req,
-                 tangible::GetScene::Response& res)
+bool SceneParser::parseCallback(tangible_msgs::GetScene::Request& req,
+                 tangible_msgs::GetScene::Response& res)
 {
     ROS_INFO("Got service call!");
-	 tangible::Scene scene_msg;
+	 tangible_msgs::Scene scene_msg;
     scene_msg = sceneToMsg(scene);
   	res.scene = scene_msg;
     publishMarkers(scene_msg);
   	return true;
 }
 
-void SceneParser::publishMarkers(tangible::Scene scene_msg){
+void SceneParser::publishMarkers(tangible_msgs::Scene scene_msg){
   for (int i = 0; i < scene_msg.objects.size(); i++){
 
-    tangible::SceneObject obj = scene_msg.objects[i];
+    tangible_msgs::SceneObject obj = scene_msg.objects[i];
 
     cloud_marker_pub.publish(obj.point_cloud);
 
@@ -119,16 +119,16 @@ visualization_msgs::Marker marker;
 
 }
 
-tangible::Scene SceneParser::sceneToMsg(rapid::perception::Scene scene){
-	tangible::Scene scene_msg;
-	tangible::Surface surface_msg;
+tangible_msgs::Scene SceneParser::sceneToMsg(rapid::perception::Scene scene){
+	tangible_msgs::Scene scene_msg;
+	tangible_msgs::Surface surface_msg;
 	std::vector<rapid::perception::Object> objects = getObjects();
 	for (int i = 0; i < objects.size(); i++){
-		tangible::SceneObject obj_msg;
+		tangible_msgs::SceneObject obj_msg;
 		sensor_msgs::PointCloud2 pc2;
 		pcl::PointCloud<pcl::PointXYZRGB> pc_filtered;
   		std::vector<int> index;
-		tangible::BoundingBox bbox;
+		tangible_msgs::BoundingBox bbox;
   		
   		rapid::perception::Object obj = objects[i];
   		pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc = obj.GetCloud();
@@ -146,7 +146,7 @@ tangible::Scene SceneParser::sceneToMsg(rapid::perception::Scene scene){
 	return scene_msg;
 }
 
-void SceneParser::getBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB> pc, tangible::BoundingBox* bbox){
+void SceneParser::getBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB> pc, tangible_msgs::BoundingBox* bbox){
 
 	// Get planar bounding box.
 	geometry_msgs::Pose planar_bbox_midpoint;

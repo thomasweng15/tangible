@@ -20,11 +20,11 @@
 
 #include "rapid_utils/math.h"
 
-#include "tangible/BoundingBox.h"
-#include "tangible/Scene.h"
-#include "tangible/SceneObject.h"
-#include "tangible/Surface.h"
-#include "tangible/GetScene.h"
+#include "tangible_msgs/BoundingBox.h"
+#include "tangible_msgs/Scene.h"
+#include "tangible_msgs/SceneObject.h"
+#include "tangible_msgs/Surface.h"
+#include "tangible_msgs/GetScene.h"
 
 #include "pcl/point_cloud.h"
 #include "pcl_conversions/pcl_conversions.h"
@@ -84,8 +84,8 @@ private:
 	std::string output_frame;
 
 	rapid::perception::ParseParams retrieveParams();
-	tangible::Scene sceneToMsg(rapid::perception::Scene scene);
-	void getBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB> pc, tangible::BoundingBox* bbox);
+	tangible_msgs::Scene sceneToMsg(rapid::perception::Scene scene);
+	void getBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB> pc, tangible_msgs::BoundingBox* bbox);
 	void getPlanarBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB>& cloud,
                           geometry_msgs::Pose* midpoint,
                           geometry_msgs::Vector3* dimensions);
@@ -93,7 +93,7 @@ private:
 	ros::Publisher cloud_marker_pub;
 	ros::Publisher box_marker_pub;
 	ros::NodeHandle node_handle;
-	void publishMarkers(tangible::Scene scene_msg);
+	void publishMarkers(tangible_msgs::Scene scene_msg);
 
 
 
@@ -104,8 +104,8 @@ public:
 	bool isSuccessful();
 	rapid::perception::HSurface getTableTop() const; // valid when isSuccessful is true
 	std::vector<rapid::perception::Object> getObjects() const; // valid when isSuccessful is true
-	bool parseCallback(tangible::GetScene::Request& req,
-                 tangible::GetScene::Response& res);
+	bool parseCallback(tangible_msgs::GetScene::Request& req,
+                 tangible_msgs::GetScene::Response& res);
 	void cloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg);
 
 };

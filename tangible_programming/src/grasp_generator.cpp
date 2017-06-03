@@ -10,8 +10,8 @@ GraspGenerator::GraspGenerator(ros::NodeHandle& n){
 
 GraspGenerator::~GraspGenerator() {}
 
-bool GraspGenerator::graspCallback(tangible::GetGrasps::Request& req,
-                 tangible::GetGrasps::Response& res)
+bool GraspGenerator::graspCallback(tangible_msgs::GetGrasps::Request& req,
+                 tangible_msgs::GetGrasps::Response& res)
 {
   ROS_INFO("Got service call!");
   scene = req.scene;
@@ -28,7 +28,7 @@ void GraspGenerator::getGrasps(){
     return;
   }
 
-  tangible::SceneObject obj = scene.objects[0];
+  tangible_msgs::SceneObject obj = scene.objects[0];
 
   //pose of bounding box gives x,y position for grasp. 
   geometry_msgs::PoseStamped grasp_pose;
@@ -88,7 +88,7 @@ void GraspGenerator::getGrasps(){
 
 }
 
-void GraspGenerator::publishMarkers(tangible::Scene scene_msg){
+void GraspGenerator::publishMarkers(tangible_msgs::Scene scene_msg){
   ;
 }
 
