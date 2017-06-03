@@ -1,0 +1,3 @@
+tangible_msgs/Scene scene
+---
+tangible_msgs/SceneObject[] objects #potentially in some order?
