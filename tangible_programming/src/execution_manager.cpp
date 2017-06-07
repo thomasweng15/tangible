@@ -85,7 +85,7 @@ void ExecutionManager::setup_program(tangible_msgs::Program p)
 			op.instructions[0].type == tangible_msgs::Instruction::PICK &&
 			(op.instructions[1].type == tangible_msgs::Instruction::PLACE ||
 			 op.instructions[1].type == tangible_msgs::Instruction::DROP))
-			program.push_back(new PickAndPlace(op.instructions));
+			program.push_back(new PickAndPlace(node_handle, op.instructions));
 	}
 }
 
@@ -113,7 +113,6 @@ bool ExecutionManager::get_program()
 	if(success)
 	{
 		ROS_INFO("program received");
-		//TO-DO: make sure the program in the message is not empty before modifying the exiting program
 		if(program_srv.response.program.operations.empty())
 		{
 			success = false;

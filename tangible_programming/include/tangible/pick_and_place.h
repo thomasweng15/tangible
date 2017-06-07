@@ -11,11 +11,13 @@ namespace tangible
 class PickAndPlace : public Operation
 {
 private:
-	tangible_msgs::Instruction pick;
-	tangible_msgs::Instruction place;
+	const static int PICK = 0;
+	const static int PLACE = 1;
+
+	bool once;
 
 public:
-	PickAndPlace(std::vector<tangible_msgs::Instruction> ins);
+	PickAndPlace(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction> ins);
 	~PickAndPlace();
 
 	bool execute();
