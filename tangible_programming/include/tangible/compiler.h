@@ -6,14 +6,14 @@
 #include "ros/ros.h"
 #include "ar_track_alvar_msgs/AlvarMarkers.h"
 
-#include "tangible/GetProgram.h"
-#include "tangible/GetBlocks.h"
-#include "tangible/GetScene.h"
-#include "tangible/ActAt.h"
-#include "tangible/Block.h"
-#include "tangible/Instruction.h"
-#include "tangible/Program.h"
-#include "tangible/Mode.h"
+#include "tangible_msgs/GetProgram.h"
+#include "tangible_msgs/GetBlocks.h"
+#include "tangible_msgs/GetScene.h"
+#include "tangible_msgs/Target.h"
+#include "tangible_msgs/Block.h"
+#include "tangible_msgs/Instruction.h"
+#include "tangible_msgs/Program.h"
+#include "tangible_msgs/Mode.h"
 #include "Eigen/Geometry"
 #include "geometry_msgs/PoseStamped.h"
 #include "sensor_msgs/PointCloud2.h"
@@ -75,8 +75,8 @@ private:
 	bool edit_state;
 	bool idle_state;
 	bool run_state;
-	tangible::Program program;
-	tangible::Program working_program;
+	tangible_msgs::Program program;
+	tangible_msgs::Program working_program;
 	ros::ServiceClient block_client;
 	ros::ServiceClient scene_client;
 	std::string error_msg;
@@ -84,21 +84,21 @@ private:
 
 	bool inRange(double LB, double UB, double number);
 
-	Eigen::Vector3d getXvect(const tangible::Block &a);
+	Eigen::Vector3d getXvect(const tangible_msgs::Block &a);
 
-	Eigen::Vector3d getYvect(const tangible::Block &a);
+	Eigen::Vector3d getYvect(const tangible_msgs::Block &a);
 
-	Eigen::Vector3d getZvect(const tangible::Block &a);
+	Eigen::Vector3d getZvect(const tangible_msgs::Block &a);
 
-	Eigen::Vector3d vect(const tangible::Block &a, const tangible::Block &b);
+	Eigen::Vector3d vect(const tangible_msgs::Block &a, const tangible_msgs::Block &b);
 
-	int blockToType(const tangible::Block &a);
+	int blockToType(const tangible_msgs::Block &a);
 
-	// bool blockLessThan(const tangible::Block &a, const tangible::Block &b);
+	// bool blockLessThan(const tangible_msgs::Block &a, const tangible_msgs::Block &b);
 
-	double blockDist(const tangible::Block &a, const tangible::Block &b );
+	double blockDist(const tangible_msgs::Block &a, const tangible_msgs::Block &b );
 
-	std::vector<geometry_msgs::PointStamped> getRegionCorners(const tangible::Block &a, const tangible::Block &b );
+	std::vector<geometry_msgs::PointStamped> getRegionCorners(const tangible_msgs::Block &a, const tangible_msgs::Block &b );
 	bool getIntersection(std::vector<geometry_msgs::Point> line1, 
                               std::vector<geometry_msgs::Point> line2,
                               geometry_msgs::Point* p);
@@ -106,13 +106,13 @@ private:
 	double getQuadArea(geometry_msgs::Point p1, geometry_msgs::Point p2, 
                             geometry_msgs::Point p3, geometry_msgs::Point p4);
 
-	geometry_msgs::PointStamped getPoint(const tangible::Block &a);
-	bool tags2program(std::vector<tangible::Block> blocks);
-	bool addObjects(tangible::Scene scene);
-	void setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, tangible::Instruction* instruction);
+	geometry_msgs::PointStamped getPoint(const tangible_msgs::Block &a);
+	bool tags2program(std::vector<tangible_msgs::Block> blocks);
+	bool addObjects(tangible_msgs::Scene scene);
+	void setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, tangible_msgs::Instruction* instruction);
 	int filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,
-                        tangible::SceneObject& obj);
-	bool addObject(tangible::Scene scene, tangible::Instruction* instruction);
+                        tangible_msgs::SceneObject& obj);
+	bool addObject(tangible_msgs::Scene scene, tangible_msgs::Instruction* instruction);
 	const static double MAX_WORKSPACE_DIST = 1;
 	const static double MAX_WORKSPACE_HEIGHT = 0.3;
 
@@ -131,9 +131,9 @@ public:
 	Compiler(ros::NodeHandle& n, int i_id, int r_id, int e_id, 
 				std::string block_service_name, std::string scene_service_name);
 	~Compiler();
-	void modeCallback(const tangible::Mode::ConstPtr msg);
-	bool programCallback(tangible::GetProgram::Request& req,
-                 tangible::GetProgram::Response& res);
+	void modeCallback(const tangible_msgs::Mode::ConstPtr msg);
+	bool programCallback(tangible_msgs::GetProgram::Request& req,
+                 tangible_msgs::GetProgram::Response& res);
 	void compile();
 
 };

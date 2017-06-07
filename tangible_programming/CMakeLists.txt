@@ -144,21 +144,21 @@ include_directories(
 #)
 #target_link_libraries(tangible_tag ${catkin_LIBRARIES})
 
-#add_library(tangible_tag_extractor src/tag_extractor.cpp)
-#add_dependencies(tangible_tag_extractor
-#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#  ${catkin_EXPORTED_TARGETS}
-#)
-#target_link_libraries(tangible_tag_extractor 
-#  ${catkin_LIBRARIES}
-#)
+add_library(tangible_tag_extractor src/tag_extractor.cpp)
+add_dependencies(tangible_tag_extractor
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_tag_extractor 
+  ${catkin_LIBRARIES}
+)
 
-#add_library(tangible_scene_parser src/scene_parser.cpp)
-#add_dependencies(tangible_scene_parser
-#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#  ${catkin_EXPORTED_TARGETS}
-#)
-#target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
+add_library(tangible_scene_parser src/scene_parser.cpp)
+add_dependencies(tangible_scene_parser
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_scene_parser ${catkin_LIBRARIES})
 
 add_library(tangible_compiler src/compiler.cpp)
 add_dependencies(tangible_compiler
@@ -169,6 +169,13 @@ target_link_libraries(tangible_compiler ${catkin_LIBRARIES})
 
 add_library(tangible_grasp_generator src/grasp_generator.cpp)
 add_dependencies(tangible_grasp_generator
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_grasp_generator ${catkin_LIBRARIES})
+
+add_library(tangible_object_matching src/object_matching.cpp)
+add_dependencies(tangible_object_matching
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
@@ -304,27 +311,27 @@ target_link_libraries(tangible_execution_manager
 #)
 #target_link_libraries(scene_visualization_main ${catkin_LIBRARIES})
 
-#add_executable(object_processing_node src/object_processing_node.cpp)
-#add_dependencies(object_processing_node
-#  tangible_scene_parser
-#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#  ${catkin_EXPORTED_TARGETS}
-#)
-#target_link_libraries(object_processing_node 
-#  tangible_scene_parser
-#  ${catkin_LIBRARIES}
-#)
+add_executable(object_processing_node src/object_processing_node.cpp)
+add_dependencies(object_processing_node
+  tangible_scene_parser
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(object_processing_node 
+  tangible_scene_parser
+  ${catkin_LIBRARIES}
+)
 
-#add_executable(block_parsing_node src/block_parsing_node.cpp)
-#add_dependencies(block_parsing_node
-#  tangible_tag_extractor
-#  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#  ${catkin_EXPORTED_TARGETS}
-#)
-#target_link_libraries(block_parsing_node 
-#  tangible_tag_extractor
-#  ${catkin_LIBRARIES}
-#)
+add_executable(block_parsing_node src/block_parsing_node.cpp)
+add_dependencies(block_parsing_node
+  tangible_tag_extractor
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(block_parsing_node 
+  tangible_tag_extractor
+  ${catkin_LIBRARIES}
+)
 
 add_executable(program_execution_node src/execution_manager_node.cpp)
 add_dependencies(program_execution_node
@@ -338,6 +345,17 @@ target_link_libraries(program_execution_node
   tangible_operation
   tangible_pick_and_place 
   tangible_execution_manager
+  ${catkin_LIBRARIES}
+)
+
+add_executable(object_matching_node src/object_matching_node.cpp)
+add_dependencies(block_parsing_node
+  tangible_object_matching
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(object_matching_node 
+  tangible_object_matching
   ${catkin_LIBRARIES}
 )
 
