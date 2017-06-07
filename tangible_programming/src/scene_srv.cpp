@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 
 #include "tangible_msgs/GetScene.h"
+#include "tangible_msgs/BoundingBox.h"
 
 bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetScene::Response& res)
 {

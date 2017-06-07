@@ -32,10 +32,13 @@ tangible_msgs::Scene Operation::get_scene()
 
 	tangible_msgs::Scene scene_info;
 
-	if(scene_info_client.call(scene_info))
-		scene_info = scene_info.response.scene;
+	tangible_msgs::GetScene scene_srv;
+	bool success = scene_info_client.call(scene_srv);
+
+	if(success)
+		scene_info = scene_srv.response.scene;
 	else
-		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", scene_info_service);
+		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", scene_info_service.c_str());
 
 	return scene_info;
 }

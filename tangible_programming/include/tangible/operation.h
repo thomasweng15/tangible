@@ -1,12 +1,14 @@
 #ifndef TANGIBLE_OPERATION
 #define TANGIBLE_OPERATION
 
-#include "ros/ros.h"
+#include <vector>
 
+#include "ros/ros.h"
 
 // msg's and srv's
 #include "tangible_msgs/Scene.h"
 #include "tangible_msgs/Instruction.h"
+#include "tangible_msgs/GetScene.h"
 
 namespace tangible
 {
