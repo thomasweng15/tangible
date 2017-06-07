@@ -174,6 +174,13 @@ add_dependencies(tangible_grasp_generator
 )
 target_link_libraries(tangible_grasp_generator ${catkin_LIBRARIES})
 
+add_library(tangible_object_matching src/object_matching.cpp)
+add_dependencies(tangible_object_matching
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_grasp_generator ${catkin_LIBRARIES})
+
 # add_library(tangible_utils src/utils.cpp)
 # add_dependencies(tangible_utils
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -338,6 +345,17 @@ target_link_libraries(program_execution_node
   tangible_operation
   tangible_pick_and_place 
   tangible_execution_manager
+  ${catkin_LIBRARIES}
+)
+
+add_executable(object_matching_node src/object_matching_node.cpp)
+add_dependencies(block_parsing_node
+  tangible_object_matching
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(object_matching_node 
+  tangible_object_matching
   ${catkin_LIBRARIES}
 )
 
