@@ -6,9 +6,9 @@
 #include "ros/ros.h"
 #include "ar_track_alvar_msgs/AlvarMarkers.h"
 
-#include "tangible/GetBlocks.h"
-#include "tangible/Block.h"
-#include "tangible/Mode.h"
+#include "tangible_msgs/GetBlocks.h"
+#include "tangible_msgs/Block.h"
+#include "tangible_msgs/Mode.h"
 #include "Eigen/Geometry"
 #include "geometry_msgs/PoseStamped.h"
 #include <tf/transform_broadcaster.h>
@@ -19,9 +19,9 @@ class TagExtractor {
 private:
 	ros::NodeHandle node_handle;
 
-	std::vector<tangible::Block> blocks;
-	void initBlock(geometry_msgs::PoseStamped& p, int _id, tangible::Block* block);
-	void setAxes(geometry_msgs::PoseStamped& p, tangible::Block* block);
+	std::vector<tangible_msgs::Block> blocks;
+	void initBlock(geometry_msgs::PoseStamped& p, int _id, tangible_msgs::Block* block);
+	void setAxes(geometry_msgs::PoseStamped& p, tangible_msgs::Block* block);
 	ros::Publisher mode_pub;
 	int edit_id;
 	int idle_id;
@@ -34,8 +34,8 @@ public:
 	TagExtractor(ros::NodeHandle& n, int i_id, int r_id, int e_id, std::string mode_change_topic);
 	~TagExtractor();
 	void tagCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr msg);
-	bool parseCallback(tangible::GetBlocks::Request& req,
-                 tangible::GetBlocks::Response& res);
+	bool parseCallback(tangible_msgs::GetBlocks::Request& req,
+                 tangible_msgs::GetBlocks::Response& res);
 };
 
 }

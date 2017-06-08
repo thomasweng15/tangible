@@ -68,7 +68,8 @@ add_service_files(
   GetBlocks.srv
   GetProgram.srv
   GetGrasps.srv
-# GetRelease.srv TO-DO 
+  GetMatchingObjects.srv
+  GetReleases.srv
 )
 
 ## Generate actions in the 'action' folder

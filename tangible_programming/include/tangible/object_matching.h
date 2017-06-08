@@ -14,7 +14,6 @@
 #include "visualization_msgs/Marker.h"
 
 #include <tf/transform_listener.h>
-#include <tf/transform_broadcaster.h>
 
 #include "rapid_perception/scene.h"
 #include "rapid_perception/scene_parsing.h"
@@ -25,8 +24,8 @@
 #include "tangible_msgs/Scene.h"
 #include "tangible_msgs/SceneObject.h"
 #include "tangible_msgs/Surface.h"
-#include "tangible_msgs/GetScene.h"
-#include "tangible_msgs/GetGrasps.h"
+#include "tangible_msgs/Target.h"
+#include "tangible_msgs/GetMatchingObjects.h"
 
 #include "pcl/point_cloud.h"
 #include "pcl_conversions/pcl_conversions.h"
@@ -68,62 +67,41 @@
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/conditional_removal.h>
 #include <pcl/console/parse.h>
+// #include <pcl_ros/point_cloud.h>
 
-#include "moveit_msgs/Grasp.h"
-
+#include "tf/transform_listener.h"
+#include <Eigen/Dense>
+#include <algorithm>
+#include <math.h>
+#include <vector>
 
 namespace tangible {
 
-struct Box {
-	double min_x;
-	double min_y;
-	double min_z;
-	double max_x;
-	double max_y;
-	double max_z;
-};
-
-class GraspGenerator {
+class ObjectMatching {
 private:
 
+	ros::Publisher cloud_marker_pub;
+	ros::Publisher box_marker_pub;
 	ros::NodeHandle node_handle;
-	void publishMarkers(tangible_msgs::Scene scene);
-
-	ros::Publisher marker_pub;
-	std::vector<moveit_msgs::Grasp> grasps;
-	tangible_msgs::SceneObject obj;
-	//distance from wrist to gripper on PR2
-  	const static double palm_dist = 0.12;
-  	const static double pre_grasp_dist = 0.15;
-  	const static double post_grasp_dist = 0.15;
-  	const static int min_points_in_gripper = 50;
-    // max number of points in cluster that can intersect with fingers
-    const static int max_finger_collision_points = 7;
-    const static int max_palm_collision_points = 6;
-    // approximately half hand thickness
-    const static double half_gripper_height = 0.03;
-    // approximate distance from palm frame origin to palm surface
-    const static double dist_to_palm = 0.12;
-    // approximate distance from palm frame origin to fingertip with gripper closed
-    const static double dist_to_fingertips = 0.20;
-    // approx dist between fingers when gripper open
-    const static double gripper_palm_width = 0.08;
-    // approx height of pads of fingertips
-    const static double gripper_finger_height = 0.03;
-
-    const static double y_offset = 0.005;
-  	void getGrasps();
-	bool hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCloud2 pc2);
-	int findPointsInBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, Box box, std::string frame);
-
+	void publishMarkers(); // TODO
+	double point_location_threshold;
+	double box_dimension_threshold;
+	bool matchesPointLocation(tangible_msgs::SceneObject obj, tangible_msgs::Target target);
+	int orientation(geometry_msgs::Point p, geometry_msgs::Point q, geometry_msgs::Point r);
+	bool doIntersect(geometry_msgs::Point p1, geometry_msgs::Point q1, 
+		geometry_msgs::Point p2, geometry_msgs::Point q2);
+	bool isInside(std::vector<geometry_msgs::PointStamped> corners, geometry_msgs::PoseStamped pose);
+	bool matchesRegion(tangible_msgs::SceneObject obj, tangible_msgs::Target target);
+	bool matchesObjSelector (tangible_msgs::SceneObject obj, tangible_msgs::Target target);
+	bool onSegment(geometry_msgs::Point p, geometry_msgs::Point q, geometry_msgs::Point r);
 
 
 public:
-	GraspGenerator(ros::NodeHandle& n);
-	~GraspGenerator();
+	ObjectMatching(ros::NodeHandle& n, double point_location_thresh, double box_dimension_thresh);
+	~ObjectMatching();
 
-	bool graspCallback(tangible_msgs::GetGrasps::Request& req,
-                 tangible_msgs::GetGrasps::Response& res);
+	bool matchCallback(tangible_msgs::GetMatchingObjects::Request& req,
+                 tangible_msgs::GetMatchingObjects::Response& res);
 
 };
 

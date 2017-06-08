@@ -2,7 +2,7 @@
 
 namespace tangible {
 
-bool blockLessThan(const tangible::Block &a, const tangible::Block &b){
+bool blockLessThan(const tangible_msgs::Block &a, const tangible_msgs::Block &b){
   return a.id < b.id;
 }
 
@@ -16,34 +16,34 @@ Compiler::Compiler(ros::NodeHandle& n, int i_id, int r_id, int e_id,
   edit_state = false;
   run_state = false;
   idle_state = true;
-  block_client = node_handle.serviceClient<tangible::GetBlocks>(block_service_name);
-  scene_client = node_handle.serviceClient<tangible::GetScene>(scene_service_name);
+  block_client = node_handle.serviceClient<tangible_msgs::GetBlocks>(block_service_name);
+  scene_client = node_handle.serviceClient<tangible_msgs::GetScene>(scene_service_name);
   box_marker_pub = node_handle.advertise<visualization_msgs::Marker>("region_markers", 20);
   cloud_marker_pub = node_handle.advertise<sensor_msgs::PointCloud2>("selected_cloud_markers", 20);
 }
 
 Compiler::~Compiler() {}
 
-void Compiler::modeCallback(const tangible::Mode::ConstPtr msg) {
-  if (msg->mode == tangible::Mode::IDLE){
+void Compiler::modeCallback(const tangible_msgs::Mode::ConstPtr msg) {
+  if (msg->mode == tangible_msgs::Mode::IDLE){
     idle_state = true;
     run_state = false;
     edit_state = false;
   }
-  else if (msg->mode == tangible::Mode::EXECUTE){
+  else if (msg->mode == tangible_msgs::Mode::EXECUTE){
     idle_state = false;
     run_state = true;
     edit_state = false;
   }
-  else if (msg->mode == tangible::Mode::EDIT){
+  else if (msg->mode == tangible_msgs::Mode::EDIT){
     idle_state = false;
     run_state = false;
     edit_state = true;
   }
 }
 
-bool Compiler::programCallback(tangible::GetProgram::Request& req,
-                 tangible::GetProgram::Response& res)
+bool Compiler::programCallback(tangible_msgs::GetProgram::Request& req,
+                 tangible_msgs::GetProgram::Response& res)
 {
     // TODO(sarah): return error if called when editing
     ROS_INFO("Got service call!");
@@ -58,7 +58,7 @@ void Compiler::compile(){
 
   while (ros::ok()){
     if (edit_state == true) {
-      tangible::GetScene scene_srv;
+      tangible_msgs::GetScene scene_srv;
       if (scene_client.call(scene_srv))
       {
         //scene_srv.response;
@@ -69,7 +69,7 @@ void Compiler::compile(){
         continue;
       }
 
-      tangible::GetBlocks block_srv;
+      tangible_msgs::GetBlocks block_srv;
       if (block_client.call(block_srv))
       {
         //block_srv.response;
@@ -80,8 +80,8 @@ void Compiler::compile(){
         continue;
       }
 
-      tangible::Scene scene = scene_srv.response.scene;
-      std::vector<tangible::Block> blocks = block_srv.response.blocks;
+      tangible_msgs::Scene scene = scene_srv.response.scene;
+      std::vector<tangible_msgs::Block> blocks = block_srv.response.blocks;
 
       if (tags2program(blocks)){
         if (addObjects(scene)){
@@ -100,30 +100,30 @@ void Compiler::compile(){
 void Compiler::publishMarkers(){
   for(int i = 0; i < program.operations.size(); i++) {
     for (int j = 0; j < program.operations[i].instructions.size(); j++) {
-      if (program.operations[i].instructions[j].type == tangible::Instruction::PICK){
-        sensor_msgs::PointCloud2 pc2 = program.operations[i].instructions[j].act_at.selected_object.point_cloud;
+      if (program.operations[i].instructions[j].type == tangible_msgs::Instruction::PICK){
+        sensor_msgs::PointCloud2 pc2 = program.operations[i].instructions[j].target.selected_object.point_cloud;
           cloud_marker_pub.publish(pc2);
           ROS_INFO("CLoud size: %d", pc2.width*pc2.height);
           ROS_INFO("Published cloud");
 
       }
-      else if (program.operations[i].instructions[j].type == tangible::Instruction::DROP
-                || program.operations[i].instructions[j].type == tangible::Instruction::PLACE){
+      else if (program.operations[i].instructions[j].type == tangible_msgs::Instruction::DROP
+                || program.operations[i].instructions[j].type == tangible_msgs::Instruction::PLACE){
           ROS_INFO("It's a release");
 
-        if (program.operations[i].instructions[j].act_at.type == tangible::ActAt::REGION){
+        if (program.operations[i].instructions[j].target.type == tangible_msgs::Target::REGION){
           ROS_INFO("It's a region");
-            if (program.operations[i].instructions[j].act_at.region_corners.size() == 4){
-            publishCorner(program.operations[i].instructions[j].act_at.region_corners[0], 10);
-            publishCorner(program.operations[i].instructions[j].act_at.region_corners[1], 11);
-            publishCorner(program.operations[i].instructions[j].act_at.region_corners[2], 12);
-            publishCorner(program.operations[i].instructions[j].act_at.region_corners[3], 13);
+            if (program.operations[i].instructions[j].target.region_corners.size() == 4){
+            publishCorner(program.operations[i].instructions[j].target.region_corners[0], 10);
+            publishCorner(program.operations[i].instructions[j].target.region_corners[1], 11);
+            publishCorner(program.operations[i].instructions[j].target.region_corners[2], 12);
+            publishCorner(program.operations[i].instructions[j].target.region_corners[3], 13);
             ROS_INFO("Published corners");
           }
 
         }
-        else if (program.operations[i].instructions[j].act_at.type == tangible::ActAt::POINT_LOCATION){
-          publishCorner(program.operations[i].instructions[j].act_at.specified_point, 10);
+        else if (program.operations[i].instructions[j].target.type == tangible_msgs::Target::POINT_LOCATION){
+          publishCorner(program.operations[i].instructions[j].target.specified_point, 10);
         }
 
       }
@@ -173,7 +173,7 @@ void Compiler::publishCorner(geometry_msgs::PointStamped point, int id){
           box_marker_pub.publish(marker);
 }
 
-bool Compiler::addObjects(tangible::Scene scene){
+bool Compiler::addObjects(tangible_msgs::Scene scene){
   for(int i = 0; i < program.operations.size(); i++) {
     for (int j = 0; j < program.operations[i].instructions.size(); j++) {
       if (!addObject(scene, &program.operations[i].instructions[j])){
@@ -184,7 +184,7 @@ bool Compiler::addObjects(tangible::Scene scene){
   return true;
 }
 
-void Compiler::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, tangible::Instruction* instruction) {
+void Compiler::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, tangible_msgs::Instruction* instruction) {
   //std::cout << "selection at (" << selection.getCenter().x << ", "
   //                              << selection.getCenter().y << ", "
   //                              << selection.getCenter().z << ")\n";
@@ -220,9 +220,9 @@ void Compiler::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, tangible::In
 
   // Position center = selection.getCenter();
   // Eigen::Vector3f y_axis_eigen (y_axis(0), y_axis(1), y_axis(2));
-  Eigen::Vector3f tip (instruction->act_at.specified_point.point.x, 
-                instruction->act_at.specified_point.point.y,
-                instruction->act_at.specified_point.point.z);
+  Eigen::Vector3f tip (instruction->target.specified_point.point.x, 
+                instruction->target.specified_point.point.y,
+                instruction->target.specified_point.point.z);
   // tip += y_axis_eigen * Tag::ARROW_SELECTION_LEN;
 
 
@@ -241,7 +241,7 @@ void Compiler::setupFilterBox(pcl::CropBox<pcl::PointXYZRGB>& cbox, tangible::In
 }
 
 int Compiler::filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,
-                        tangible::SceneObject& obj) {
+                        tangible_msgs::SceneObject& obj) {
   // std::stringstream ss;
 
   //std::cout << "(" << obj.pose().pose.position.x << ", "
@@ -277,8 +277,8 @@ int Compiler::filterObject(pcl::CropBox<pcl::PointXYZRGB>& cbox,
   return cloud_size;
 }
 
-bool Compiler::addObject(tangible::Scene scene, tangible::Instruction* instruction){
-  if(instruction->act_at.type == tangible::ActAt::OBJECT_SELECTOR) {  
+bool Compiler::addObject(tangible_msgs::Scene scene, tangible_msgs::Instruction* instruction){
+  if(instruction->target.type == tangible_msgs::Target::OBJECT_SELECTOR) {  
 
     pcl::CropBox<pcl::PointXYZRGB> cbox;
     setupFilterBox(cbox, instruction);
@@ -318,7 +318,7 @@ bool Compiler::addObject(tangible::Scene scene, tangible::Instruction* instructi
       return false;
 
     }
-    instruction->act_at.selected_object = scene.objects[max_overlap_index];
+    instruction->target.selected_object = scene.objects[max_overlap_index];
     // matched.push_back(objects[max_overlap_index]);
   }
   return true;
@@ -369,25 +369,25 @@ bool Compiler::inRange(double LB, double UB, double number) {
   return true;
 }
 
-Eigen::Vector3d Compiler::getXvect(const tangible::Block &a) {
+Eigen::Vector3d Compiler::getXvect(const tangible_msgs::Block &a) {
   Eigen::Vector3d v;
   v << a.x_axis.x, a.x_axis.y, a.x_axis.z;
   return v;
 }
 
-Eigen::Vector3d Compiler::getYvect(const tangible::Block &a) {
+Eigen::Vector3d Compiler::getYvect(const tangible_msgs::Block &a) {
   Eigen::Vector3d v;
   v << a.y_axis.x, a.y_axis.y, a.y_axis.z;
   return v;
 }
 
-Eigen::Vector3d Compiler::getZvect(const tangible::Block &a) {
+Eigen::Vector3d Compiler::getZvect(const tangible_msgs::Block &a) {
   Eigen::Vector3d v;
   v << a.z_axis.x, a.z_axis.y, a.z_axis.z;
   return v;
 }
 
-Eigen::Vector3d Compiler::vect(const tangible::Block &a, const tangible::Block &b) {
+Eigen::Vector3d Compiler::vect(const tangible_msgs::Block &a, const tangible_msgs::Block &b) {
   Eigen::Vector3d out;
   out << b.pose.pose.position.x - a.pose.pose.position.x,
         b.pose.pose.position.y - a.pose.pose.position.y,
@@ -395,19 +395,19 @@ Eigen::Vector3d Compiler::vect(const tangible::Block &a, const tangible::Block &
   return out;
 }
 
-int Compiler::blockToType(const tangible::Block &a){
-  if (a.id == tangible::Block::SIDE_PICK_ID || a.id == tangible::Block::TOP_PICK_ID){
-    return tangible::Instruction::PICK;    
+int Compiler::blockToType(const tangible_msgs::Block &a){
+  if (a.id == tangible_msgs::Block::SIDE_PICK_ID || a.id == tangible_msgs::Block::TOP_PICK_ID){
+    return tangible_msgs::Instruction::PICK;    
   }
-  else if (a.id == tangible::Block::DROP_ID){
-    return tangible::Instruction::DROP;
+  else if (a.id == tangible_msgs::Block::DROP_ID){
+    return tangible_msgs::Instruction::DROP;
   }
   else {
-    return tangible::Instruction::PLACE;
+    return tangible_msgs::Instruction::PLACE;
   }
 }
 
-double Compiler::blockDist(const tangible::Block &a, const tangible::Block &b ){
+double Compiler::blockDist(const tangible_msgs::Block &a, const tangible_msgs::Block &b ){
   return vect(a,b).norm();
 }
 
@@ -477,7 +477,7 @@ double Compiler::getQuadArea(geometry_msgs::Point p1, geometry_msgs::Point p2,
   return fabs(area < 0 ? -area : area);
 }
 
-std::vector<geometry_msgs::PointStamped> Compiler::getRegionCorners(const tangible::Block &a, const tangible::Block &b ){
+std::vector<geometry_msgs::PointStamped> Compiler::getRegionCorners(const tangible_msgs::Block &a, const tangible_msgs::Block &b ){
   std::vector<geometry_msgs::PointStamped> corners;
 
   std::vector<geometry_msgs::Point> a_line_1_points;
@@ -571,12 +571,12 @@ std::vector<geometry_msgs::PointStamped> Compiler::getRegionCorners(const tangib
   return corners;
 }
 
-geometry_msgs::PointStamped Compiler::getPoint(const tangible::Block &a){
+geometry_msgs::PointStamped Compiler::getPoint(const tangible_msgs::Block &a){
   geometry_msgs::PointStamped point;
   // Position center = selection.getCenter();
   Eigen::Vector3f y_axis_eigen (a.y_axis.x, a.y_axis.y, a.y_axis.z);
   Eigen::Vector3f tip (a.pose.pose.position.x, a.pose.pose.position.y, a.pose.pose.position.z);
-  tip += y_axis_eigen * tangible::Block::ARROW_SELECTION_LEN;
+  tip += y_axis_eigen * tangible_msgs::Block::ARROW_SELECTION_LEN;
   point.header.frame_id = a.pose.header.frame_id;
   point.point.x = tip(0);
   point.point.y = tip(1);
@@ -584,7 +584,7 @@ geometry_msgs::PointStamped Compiler::getPoint(const tangible::Block &a){
   return point;
 }
 
-bool Compiler::tags2program(std::vector<tangible::Block> blocks){
+bool Compiler::tags2program(std::vector<tangible_msgs::Block> blocks){
   program.operations.clear();
   error_msg.clear();
   //NOTE: this ensures no instruction is formed for invalid tag settings
@@ -601,9 +601,9 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
   for (int i=0; i < blocks.size(); i ++){
     ROS_INFO("sorted tag: %d", blocks[i].id);
   }
-  // std::sort(blocks.begin(), blocks.end(), [](tangible::Block const &a, tangible::Block const &b) { return a.id < b.id; });
+  // std::sort(blocks.begin(), blocks.end(), [](tangible_msgs::Block const &a, tangible_msgs::Block const &b) { return a.id < b.id; });
   // std::sort(blocks.begin(), blocks.end(), blockLess{});
-  // std::sort(blocks.begin(), blocks.end(), tangible::Compiler::blockLessThan);
+  // std::sort(blocks.begin(), blocks.end(), tangible_msgs::Compiler::blockLessThan);
 
   int selection_count = 0;
   int selection2nd_count = 0;
@@ -613,19 +613,19 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
   int regionID_count = 0;
   int grouped[num_blocks];
   for(int i = 0; i < num_blocks; i++) {
-    if(inRange(tangible::Block::SELECTION_ID_MIN, tangible::Block::SELECTION_ID_MAX, blocks[i].id))
+    if(inRange(tangible_msgs::Block::SELECTION_ID_MIN, tangible_msgs::Block::SELECTION_ID_MAX, blocks[i].id))
       selection_count++;
-    else if(blocks[i].id == tangible::Block::SELECTION_2ND_ID)
+    else if(blocks[i].id == tangible_msgs::Block::SELECTION_2ND_ID)
       selection2nd_count++;
-    else if(inRange(tangible::Block::ACTION_ID_MIN, tangible::Block::ACTION_ID_MAX, blocks[i].id))
+    else if(inRange(tangible_msgs::Block::ACTION_ID_MIN, tangible_msgs::Block::ACTION_ID_MAX, blocks[i].id))
       action_count++;
-    else if(inRange(tangible::Block::NUMBER_ID_MIN, tangible::Block::NUMBER_ID_MAX, blocks[i].id))
+    else if(inRange(tangible_msgs::Block::NUMBER_ID_MIN, tangible_msgs::Block::NUMBER_ID_MAX, blocks[i].id))
       number_count++;
-    else if(blocks[i].id > tangible::Block::NUMBER_ID_MAX)
+    else if(blocks[i].id > tangible_msgs::Block::NUMBER_ID_MAX)
       other_count++;
 
-    if(blocks[i].id == tangible::Block::SELECT_REGION_ID ||
-       blocks[i].id == tangible::Block::SELECT_OBJECTS_ID)
+    if(blocks[i].id == tangible_msgs::Block::SELECT_REGION_ID ||
+       blocks[i].id == tangible_msgs::Block::SELECT_OBJECTS_ID)
       regionID_count++;
     
     grouped[i] = -1;
@@ -708,20 +708,20 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
 
 
   for(int i = number_ind; i < other_ind; i++) {
-    tangible::Block number = blocks[i];
+    tangible_msgs::Block number = blocks[i];
         
     for(int j = selection2nd_ind; j < number_ind; j++) {
       if(grouped[j] > -1) // action/secondary selection tag is already grouped
         continue;
 
-      tangible::Block action_or_2ndary = blocks[j];
+      tangible_msgs::Block action_or_2ndary = blocks[j];
       
      
       double distance = blockDist(number, action_or_2ndary);
       
       
-      if(!inRange(tangible::Block::EDGE_SIZE - DIST_ERR_MARGIN,
-                tangible::Block::EDGE_SIZE + DIST_ERR_MARGIN,
+      if(!inRange(tangible_msgs::Block::EDGE_SIZE - DIST_ERR_MARGIN,
+                tangible_msgs::Block::EDGE_SIZE + DIST_ERR_MARGIN,
                 distance)) {// action/secondary selection tag is too close/far
         if (blocks[i].id == 10 && blocks[j].id == 7){
           ROS_ERROR("too close or far");
@@ -771,18 +771,18 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
     //TO-DO once decided to support nested blocks should remove this check
 
     if(number.id%2 == 1 && 
-       (blocks[grouped[i]].id != tangible::Block::TOP_PICK_ID &&
-        blocks[grouped[i]].id != tangible::Block::SIDE_PICK_ID &&
-        blocks[grouped[i]].id != tangible::Block::SELECTION_2ND_ID)) {
+       (blocks[grouped[i]].id != tangible_msgs::Block::TOP_PICK_ID &&
+        blocks[grouped[i]].id != tangible_msgs::Block::SIDE_PICK_ID &&
+        blocks[grouped[i]].id != tangible_msgs::Block::SELECTION_2ND_ID)) {
       error_msg = "ERROR - TAG GROUPING - expected a pick action." ;
     ROS_ERROR_STREAM(error_msg);
       return false;
     }
 
     if(number.id%2 == 0 && 
-       (blocks[grouped[i]].id != tangible::Block::POSITION_ID &&
-        blocks[grouped[i]].id != tangible::Block::DROP_ID &&
-        blocks[grouped[i]].id != tangible::Block::SELECTION_2ND_ID)) {
+       (blocks[grouped[i]].id != tangible_msgs::Block::POSITION_ID &&
+        blocks[grouped[i]].id != tangible_msgs::Block::DROP_ID &&
+        blocks[grouped[i]].id != tangible_msgs::Block::SELECTION_2ND_ID)) {
       error_msg = "ERROR - TAG GROUPING - expected a place action." ;
     ROS_ERROR_STREAM(error_msg);
       return false;
@@ -816,20 +816,20 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
     }
 
   for(int i = action_ind; i < number_ind; i++) {
-    tangible::Block action = blocks[i];
+    tangible_msgs::Block action = blocks[i];
 
     double minDist = MAX_WORKSPACE_DIST; int temp_grouped = -1;
     for(int j = selection_ind; j < selection2nd_ind; j++) {
-      tangible::Block selection = blocks[j];
+      tangible_msgs::Block selection = blocks[j];
 
       double distance = blockDist(action, selection);
 
       Eigen::Vector3d a2s = vect(action, selection) / distance;
 
-      double quantizedDist = round(distance/tangible::Block::EDGE_SIZE);    
+      double quantizedDist = round(distance/tangible_msgs::Block::EDGE_SIZE);    
       
-      if(!inRange(quantizedDist*tangible::Block::EDGE_SIZE - DIST_ERR_MARGIN,
-                  quantizedDist*tangible::Block::EDGE_SIZE + DIST_ERR_MARGIN,
+      if(!inRange(quantizedDist*tangible_msgs::Block::EDGE_SIZE - DIST_ERR_MARGIN,
+                  quantizedDist*tangible_msgs::Block::EDGE_SIZE + DIST_ERR_MARGIN,
                   distance)){ // distance of selection tag is not a multiple of EDGE_SIZE
       if (j==0){
           ROS_ERROR("distance not multiple of edge size");
@@ -886,9 +886,9 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
 
 
   for(int i = number_ind; i < other_ind-1; i++) {
-    tangible::Block num1 = blocks[i]; 
+    tangible_msgs::Block num1 = blocks[i]; 
     int num1_action_or_2ndary_at = grouped[i];
-    tangible::Block num2 = blocks[i+1]; 
+    tangible_msgs::Block num2 = blocks[i+1]; 
     int num2_action_or_2ndary_at = grouped[i+1];
     if(num1.id == num2.id) {
       
@@ -902,14 +902,14 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
       // of two successive number tags with the same id, one is grouped with an action
           // and another with a secondary selection tool. The action is grouped with a
           // region selection tool
-      if((blocks[num1_action_or_2ndary_at].id == tangible::Block::SELECTION_2ND_ID &&
-          blocks[num2_action_or_2ndary_at].id == tangible::Block::SELECTION_2ND_ID) ||
-         (blocks[num1_action_or_2ndary_at].id != tangible::Block::SELECTION_2ND_ID &&
-          blocks[num2_action_or_2ndary_at].id != tangible::Block::SELECTION_2ND_ID) ||
-         blocks[grouped[num1_action_or_2ndary_at]].id == tangible::Block::SELECT_POSITION_ID ||
-         blocks[grouped[num1_action_or_2ndary_at]].id == tangible::Block::SELECT_OBJECT_ID ||
-         blocks[grouped[num2_action_or_2ndary_at]].id == tangible::Block::SELECT_POSITION_ID ||
-         blocks[grouped[num2_action_or_2ndary_at]].id == tangible::Block::SELECT_OBJECT_ID) {
+      if((blocks[num1_action_or_2ndary_at].id == tangible_msgs::Block::SELECTION_2ND_ID &&
+          blocks[num2_action_or_2ndary_at].id == tangible_msgs::Block::SELECTION_2ND_ID) ||
+         (blocks[num1_action_or_2ndary_at].id != tangible_msgs::Block::SELECTION_2ND_ID &&
+          blocks[num2_action_or_2ndary_at].id != tangible_msgs::Block::SELECTION_2ND_ID) ||
+         blocks[grouped[num1_action_or_2ndary_at]].id == tangible_msgs::Block::SELECT_POSITION_ID ||
+         blocks[grouped[num1_action_or_2ndary_at]].id == tangible_msgs::Block::SELECT_OBJECT_ID ||
+         blocks[grouped[num2_action_or_2ndary_at]].id == tangible_msgs::Block::SELECT_POSITION_ID ||
+         blocks[grouped[num2_action_or_2ndary_at]].id == tangible_msgs::Block::SELECT_OBJECT_ID) {
         error_msg = "ERROR - TAG GROUPING - tags inavlidly paired.";
     ROS_ERROR_STREAM(error_msg);
         return false;
@@ -922,7 +922,7 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
       //   - paired selection and 2ndary selection tags do not face each other
       //     (center-2-center vector is in 2nd quandrant)
 
-      if(blocks[num1_action_or_2ndary_at].id == tangible::Block::SELECTION_2ND_ID) {
+      if(blocks[num1_action_or_2ndary_at].id == tangible_msgs::Block::SELECTION_2ND_ID) {
         grouped[num1_action_or_2ndary_at] = grouped[num2_action_or_2ndary_at];
         grouped[grouped[num2_action_or_2ndary_at]] = num1_action_or_2ndary_at;
         //std::cout << "secondary selection at " << i 
@@ -939,10 +939,10 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
   //TO-DO return false for the following error cases
   //   - the number grouped w/ the secondary selection tag is not equal to the smallest
   //     number grouped w/ an action grouped with the primary selection
-  std::vector<tangible::Instruction> instructions;
+  std::vector<tangible_msgs::Instruction> instructions;
   int instruction_num = action_count;
   for(int i = 0; i < instruction_num; i++) {
-    tangible::Instruction instruction;
+    tangible_msgs::Instruction instruction;
     instructions.push_back(instruction);
   }
   // iterating through tags 
@@ -950,16 +950,16 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
 
   for(int i = number_ind; i < other_ind; i++) {
     int index, action_at, selection_at;
-    index = blocks[i].id - tangible::Block::NUMBER_ID_MIN;
+    index = blocks[i].id - tangible_msgs::Block::NUMBER_ID_MIN;
     if (instructions.size() <= index){
       return false;
     }
-    tangible::Instruction instruction = instructions[index];
+    tangible_msgs::Instruction instruction = instructions[index];
 
     action_at = grouped[i];
     selection_at = grouped[action_at];
 
-    if(blocks[action_at].id == tangible::Block::SELECTION_2ND_ID) {
+    if(blocks[action_at].id == tangible_msgs::Block::SELECTION_2ND_ID) {
       
       ;
       
@@ -967,33 +967,33 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
       // instruction.number = blocks[i];
       instruction.type = blockToType(blocks[action_at]);
       // instruction.selection = blocks[selection_at]; 
-      // if(blocks[selection_at].id == tangible::Block::SELECT_REGION_ID ||
-      //    blocks[selection_at].id == tangible::Block::SELECT_OBJECTS_ID) {
+      // if(blocks[selection_at].id == tangible_msgs::Block::SELECT_REGION_ID ||
+      //    blocks[selection_at].id == tangible_msgs::Block::SELECT_OBJECTS_ID) {
       //   int selection2nd_at = grouped[selection_at];
       //   instruction.selection2nd = blocks[selection2nd_at];
       // }
-      if (blocks[selection_at].id == tangible::Block::SELECT_REGION_ID){
-        tangible::Block other_region_block = blocks[grouped[selection_at]];
-        instruction.act_at.region_corners = getRegionCorners(blocks[selection_at], other_region_block);
-        instruction.act_at.type = tangible::ActAt::REGION;
+      if (blocks[selection_at].id == tangible_msgs::Block::SELECT_REGION_ID){
+        tangible_msgs::Block other_region_block = blocks[grouped[selection_at]];
+        instruction.target.region_corners = getRegionCorners(blocks[selection_at], other_region_block);
+        instruction.target.type = tangible_msgs::Target::REGION;
         ROS_INFO("Region:");
-        for (int f=0; f<instruction.act_at.region_corners.size(); f++){
-          geometry_msgs::PointStamped corner = instruction.act_at.region_corners[f];
+        for (int f=0; f<instruction.target.region_corners.size(); f++){
+          geometry_msgs::PointStamped corner = instruction.target.region_corners[f];
           ROS_INFO("corner x: %f", corner.point.x);
           ROS_INFO("corner y: %f", corner.point.y);
         }
       }
-      else if (blocks[selection_at].id == tangible::Block::SELECT_OBJECT_ID){
-        instruction.act_at.type = tangible::ActAt::OBJECT_SELECTOR;
-        instruction.act_at.specified_point = getPoint(blocks[selection_at]);
+      else if (blocks[selection_at].id == tangible_msgs::Block::SELECT_OBJECT_ID){
+        instruction.target.type = tangible_msgs::Target::OBJECT_SELECTOR;
+        instruction.target.specified_point = getPoint(blocks[selection_at]);
         ROS_INFO("specified point:");
-        ROS_INFO("x: %f", instruction.act_at.specified_point.point.x);
-        ROS_INFO("y: %f", instruction.act_at.specified_point.point.y);
+        ROS_INFO("x: %f", instruction.target.specified_point.point.x);
+        ROS_INFO("y: %f", instruction.target.specified_point.point.y);
 
       }
-      else if (blocks[selection_at].id == tangible::Block::SELECT_POSITION_ID){
-        instruction.act_at.type = tangible::ActAt::POINT_LOCATION;
-        instruction.act_at.specified_point = getPoint(blocks[selection_at]);
+      else if (blocks[selection_at].id == tangible_msgs::Block::SELECT_POSITION_ID){
+        instruction.target.type = tangible_msgs::Target::POINT_LOCATION;
+        instruction.target.specified_point = getPoint(blocks[selection_at]);
       }
 
 
@@ -1008,7 +1008,7 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
   for(int i=0; i < instructions.size(); i++){
     ROS_INFO("About to add operation");
 
-    tangible::Operation operation;
+    tangible_msgs::Operation operation;
     operation.instructions.push_back(instructions[i]);
     i++;
     operation.instructions.push_back(instructions[i]);
@@ -1017,16 +1017,16 @@ bool Compiler::tags2program(std::vector<tangible::Block> blocks){
   }
   ROS_INFO("Done adding");
   // //YSS this is already enforced by requiring all picks be on even steps
-  // if(instructions[0].action.id != tangible::Block::SIDE_PICK_ID &&
-  //    instructions[0].action.id != tangible::Block::TOP_PICK_ID) {
+  // if(instructions[0].action.id != tangible_msgs::Block::SIDE_PICK_ID &&
+  //    instructions[0].action.id != tangible_msgs::Block::TOP_PICK_ID) {
   //   error_msg = "ERROR - TAG GROUPING - invalid first action (not a pick).";
   //   instructions.clear();
   //   return false;
   // }
 
   // for(int i = 0; i < instructions.size(); i++) {
-  //   if((instructions[i].selection.id == tangible::Block::SELECT_REGION_ID ||
-  //       instructions[i].selection.id == tangible::Block::SELECT_OBJECTS_ID) &&
+  //   if((instructions[i].selection.id == tangible_msgs::Block::SELECT_REGION_ID ||
+  //       instructions[i].selection.id == tangible_msgs::Block::SELECT_OBJECTS_ID) &&
   //      instructions[i].selection2nd.id == -1) {
   //       error_msg = "ERROR - TAG GROUPING - missing secondary selection tag.";
   //     instructions.clear();

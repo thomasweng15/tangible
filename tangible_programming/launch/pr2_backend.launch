@@ -6,6 +6,9 @@
   <arg name="block_service_name" default="get_blocks" />
   <arg name="program_service_name" default="get_program" />
   <arg name="grasp_service_name" default="get_grasps" />
+  <arg name="object_matching_service_name" default="match_objects" />
+  <arg name="point_location_threshold" default="0.02" />
+  <arg name="box_dimension_threshold" default="0.02" />
   <arg name="cloud_topic" default="$(arg camera)/depth_registered/points" />
 
   <arg name="idle_id" default="0"/>
@@ -62,9 +65,17 @@
     <param name="idle_id" type="int" value="$(arg idle_id)" />
   </node>
 
-  <!-- Object Processing -->
+  <!-- Grasp Generation -->
   <!-- <node pkg="tangible" type="grasp_generator_node" name="grasp_generator_node">
     <param name="grasp_service_name" type="string" value="$(arg grasp_service_name)" />
+  </node> -->
+
+  <!-- Object Matching -->
+  <!-- <node pkg="tangible" type="object_matching_node" name="object_matching_node">
+    <param name="object_matching_service_name" type="string" value="$(arg object_matching_service_name)"
+    <param name="point_location_threshold" type="double" value="$(arg point_location_threshold)"
+    <param name="box_dimension_threshold" type="double" value="$(arg box_dimension_threshold)"
+     />
   </node> -->
 
   <!-- RViz -->

@@ -4,7 +4,7 @@ namespace tangible {
 
 TagExtractor::TagExtractor(ros::NodeHandle& n, int i_id, int r_id, int e_id, std::string mode_change_topic) {
 	node_handle = n;
-	mode_pub = node_handle.advertise<tangible::Mode>(mode_change_topic, 20);
+	mode_pub = node_handle.advertise<tangible_msgs::Mode>(mode_change_topic, 20);
 	edit_id = e_id;
 	run_id = r_id;
 	idle_id = i_id;
@@ -19,7 +19,7 @@ void TagExtractor::tagCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr
 	blocks.clear();
 	for(int i = 0; i < msg->markers.size(); i++) {
 		geometry_msgs::PoseStamped p = msg->markers[i].pose;
-		tangible::Block block;
+		tangible_msgs::Block block;
 		int id = msg->markers[i].id;
 		initBlock(p, id, &block);
 		//ROS_INFO("\n*** ID = %1d: X(%2.3lf, %2.3lf, %2.3lf) Y(%2.3lf, %2.3lf, %2.3lf) Z(%2.3lf, %2.3lf, %2.3lf) ***",
@@ -27,13 +27,13 @@ void TagExtractor::tagCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr
 		//	                t.getY().x, t.getY().y, t.getY().z,
 		//	                t.getZ().x, t.getZ().y, t.getZ().z);
 		blocks.push_back(block);
-		tangible::Mode mode_msg;
+		tangible_msgs::Mode mode_msg;
 		if (id == idle_id){
         	if (!idle_state){
         		idle_state = true;
         		run_state = false;
         		edit_state = false;
-        		mode_msg.mode = tangible::Mode::IDLE;
+        		mode_msg.mode = tangible_msgs::Mode::IDLE;
         		mode_pub.publish(mode_msg);
         	}
         }
@@ -42,7 +42,7 @@ void TagExtractor::tagCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr
         		run_state = true;
         		idle_state = false;
         		edit_state = false;
-        		mode_msg.mode = tangible::Mode::EXECUTE;
+        		mode_msg.mode = tangible_msgs::Mode::EXECUTE;
         		mode_pub.publish(mode_msg);
         	}
         }
@@ -51,7 +51,7 @@ void TagExtractor::tagCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr
         		edit_state = true;
         		run_state = false;
         		idle_state = false;
-        		mode_msg.mode = tangible::Mode::EDIT;
+        		mode_msg.mode = tangible_msgs::Mode::EDIT;
         		mode_pub.publish(mode_msg);
         	}
     	}
@@ -59,12 +59,12 @@ void TagExtractor::tagCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr
 	}
 }
 
-bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
-                 tangible::GetBlocks::Response& res){
+bool TagExtractor::parseCallback(tangible_msgs::GetBlocks::Request& req,
+                 tangible_msgs::GetBlocks::Response& res){
 
 //fake blocks
 // 	//number
-// 	tangible::Block block1;
+// 	tangible_msgs::Block block1;
 // 	int id = 9;
 // 	geometry_msgs::PoseStamped pose;
 // 	pose.header.frame_id = "base_footprint";
@@ -81,7 +81,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block1);
 
 // 	//pick
-// 	tangible::Block block2;
+// 	tangible_msgs::Block block2;
 // 	id = 6;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  0.523317205906;
@@ -97,7 +97,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block2);
 
 // 	// location
-// 	tangible::Block block3;
+// 	tangible_msgs::Block block3;
 // 	id = 2;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  0.573317205906;
@@ -112,7 +112,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block3);
 
 // 	//number 
-// 	tangible::Block block4;
+// 	tangible_msgs::Block block4;
 // 	id = 10;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  0.93317205906;
@@ -128,7 +128,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block4);
 
 // 	// place
-// 	tangible::Block block5;
+// 	tangible_msgs::Block block5;
 // 	id = 8;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  0.93817205906;
@@ -147,7 +147,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block5);
 
 // 	// location 
-// 	tangible::Block block6;
+// 	tangible_msgs::Block block6;
 // 	id = 1;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  0.9817205906;
@@ -163,7 +163,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block6);
 
 // 	// number
-// 	tangible::Block block7;
+// 	tangible_msgs::Block block7;
 // 	id = 10;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  1.18317205906;
@@ -179,7 +179,7 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 // 	blocks.push_back(block7);
 
 // 	//location
-// 	tangible::Block block8;
+// 	tangible_msgs::Block block8;
 // 	id = 4;
 // 	pose.header.frame_id = "base_footprint";
 // 	pose.pose.position.x =  1.18317205906;
@@ -198,14 +198,14 @@ bool TagExtractor::parseCallback(tangible::GetBlocks::Request& req,
 	res.blocks = blocks;
 }
 
-void TagExtractor::initBlock(geometry_msgs::PoseStamped& p, int _id, tangible::Block* block){
+void TagExtractor::initBlock(geometry_msgs::PoseStamped& p, int _id, tangible_msgs::Block* block){
 	block->pose = p;
 	block->id = _id;
 
 	setAxes(p, block);
 }
 
-void TagExtractor::setAxes(geometry_msgs::PoseStamped& p, tangible::Block* block) {
+void TagExtractor::setAxes(geometry_msgs::PoseStamped& p, tangible_msgs::Block* block) {
 	Eigen::Quaterniond q(p.pose.orientation.w,
 		                 p.pose.orientation.x, 
 		                 p.pose.orientation.y,
