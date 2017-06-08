@@ -8,6 +8,7 @@ Operation::Operation(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction>
 	node_handle = n;
 
 	instructions = ins; // NOTE that operator= does a deep copy
+
 	for(int i = 0; i < ins.size(); i++)
 		done.push_back(false);
 
@@ -30,11 +31,11 @@ tangible_msgs::Scene Operation::get_scene()
 	std::string scene_info_service = get_private_param("scene_information_service");
 	ros::ServiceClient scene_info_client = node_handle.serviceClient<tangible_msgs::GetScene>(scene_info_service);
 
-	tangible_msgs::Scene scene_info;
-
 	tangible_msgs::GetScene scene_srv;
+	
 	bool success = scene_info_client.call(scene_srv);
 
+	tangible_msgs::Scene scene_info;
 	if(success)
 		scene_info = scene_srv.response.scene;
 	else
@@ -69,11 +70,12 @@ bool Operation::is_done()
 
 void Operation::reset() 
 {
-	ROS_INFO("reset operation.");
-
 	for(int i = 0; i < done.size(); i++)
 		done[i] = false;
+
 	all_done = false;
+	
+	ROS_INFO("operation reset.");
 }
 
 }

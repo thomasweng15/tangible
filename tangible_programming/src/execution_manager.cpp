@@ -114,7 +114,9 @@ bool ExecutionManager::get_program()
 	ros::ServiceClient program_acquisition_client = node_handle.serviceClient<tangible_msgs::GetProgram>(get_program_srv);
 
 	tangible_msgs::GetProgram program_srv;
+
 	bool success = program_acquisition_client.call(program_srv);
+	
 	if(success)
 	{
 		ROS_INFO("program received");
