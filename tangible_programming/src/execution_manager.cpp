@@ -13,12 +13,16 @@ ExecutionManager::ExecutionManager(ros::NodeHandle& n)
 	exec_mode = node_handle.subscribe(system_mode_topic, 1000, &tangible::ExecutionManager::mode_callback, this);
 
 	executing = false;
+	current_operation_index = -1;
 
 	ROS_INFO("Execution node is instantiated and listens to %s topic.", system_mode_topic.c_str());
 	// NOTE: system_mode_topic is tpbd_mode
 }
 
-ExecutionManager::~ExecutionManager() {}
+ExecutionManager::~ExecutionManager()
+{
+	clear_program();
+}
 
 void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_msg) 
 {
@@ -43,6 +47,7 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 			stop_execution();
 			
 			// clear the program. A new program should be obtained after the edit
+			// TO-DO this requires the compilation node to always hold on to the last valid program
 			clear_program();
 
 			break;
@@ -85,7 +90,7 @@ void ExecutionManager::setup_program(tangible_msgs::Program p)
 			op.instructions[0].type == tangible_msgs::Instruction::PICK &&
 			(op.instructions[1].type == tangible_msgs::Instruction::PLACE ||
 			 op.instructions[1].type == tangible_msgs::Instruction::DROP))
-			program.push_back(new PickAndPlace(op.instructions));
+			program.push_back(new PickAndPlace(node_handle, op.instructions));
 	}
 }
 
@@ -109,18 +114,23 @@ bool ExecutionManager::get_program()
 	ros::ServiceClient program_acquisition_client = node_handle.serviceClient<tangible_msgs::GetProgram>(get_program_srv);
 
 	tangible_msgs::GetProgram program_srv;
+
 	bool success = program_acquisition_client.call(program_srv);
+	
 	if(success)
 	{
 		ROS_INFO("program received");
-		//TO-DO: make sure the program in the message is not empty before modifying the exiting program
+		
 		if(program_srv.response.program.operations.empty())
 		{
 			success = false;
 			ROS_ERROR("Empty program received and discarded.");
 		}
 		else
+		{
 			setup_program(program_srv.response.program);
+			current_operation_index = 0;
+		}
 		
 	}
 	else
@@ -134,6 +144,7 @@ bool ExecutionManager::get_program()
 void ExecutionManager::start_execution()
 {
 	ROS_INFO("executing the program");
+	
 	for(int i = 0; i < program.size(); i++)
 	{
 		if(program[i] -> is_done())
@@ -142,17 +153,21 @@ void ExecutionManager::start_execution()
 		if(executing)
 			program[i] -> execute();
 	}
-	//TO-DO
-	//NOTE:
-	//   - should always condition on executing
-	//   - while (!program[i]->done) i++; to resume where it was left off
+
+	
+	for(int i = 0; i < program.size(); i++)
+	{
+		program[i] -> reset();
+	}
 }
 
 void ExecutionManager::stop_execution()
 {
 	ROS_INFO("stop moving the robot");
-	program[current_operation_index] -> stop();
-	//TO-DO
+
+	if(!program.empty())
+		program[current_operation_index] -> stop();
+	current_operation_index = -1;
 }
 
 }

@@ -4,6 +4,8 @@
 #include "tangible/operation.h"
 
 #include "tangible_msgs/Instruction.h"
+#include "tangible_msgs/Scene.h"
+#include "tangible_msgs/SceneObject.h"
 
 namespace tangible
 {
@@ -11,16 +13,23 @@ namespace tangible
 class PickAndPlace : public Operation
 {
 private:
-	tangible_msgs::Instruction pick;
-	tangible_msgs::Instruction place;
+	const static int PICK = 0;
+	const static int PLACE = 1;
+
+	bool once;
+
+	bool attempt_pick();
+	bool attempt_place();
+
+	bool match_obj2criteria(tangible_msgs::SceneObject obj, tangible_msgs::Target trg);
 
 public:
-	PickAndPlace(std::vector<tangible_msgs::Instruction> ins);
+	PickAndPlace(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction> ins);
 	~PickAndPlace();
 
 	bool execute();
-
 	void stop();
+	void reset();
 
 };
 
