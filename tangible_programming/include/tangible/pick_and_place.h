@@ -4,6 +4,7 @@
 #include "tangible/operation.h"
 
 #include "tangible_msgs/Instruction.h"
+#include "tangible_msgs/Scene.h"
 
 namespace tangible
 {

@@ -26,6 +26,9 @@ protected:
 
 	tangible_msgs::Scene get_scene();
 
+	// for testing --- should be removed afterwards
+	void print_scene(tangible_msgs::Scene scene);
+
 public:
 	Operation(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction> ins);
 	virtual ~Operation() = 0;

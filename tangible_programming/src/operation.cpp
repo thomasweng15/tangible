@@ -43,6 +43,25 @@ tangible_msgs::Scene Operation::get_scene()
 	return scene_info;
 }
 
+void Operation::print_scene(tangible_msgs::Scene scene)
+{
+	ROS_INFO("surface bounding box at (%f, %f, %f) of size (%f, %f, %f)", scene.surface.bounding_box.pose.pose.position.x, 
+		                                                                  scene.surface.bounding_box.pose.pose.position.y, 
+		                                                                  scene.surface.bounding_box.pose.pose.position.z, 
+		                                                                  scene.surface.bounding_box.dimensions.x,
+		                                                                  scene.surface.bounding_box.dimensions.y, 
+		                                                                  scene.surface.bounding_box.dimensions.z);
+
+	ROS_INFO(" and the following objects: ");
+	for(int i = 0; i < scene.objects.size(); i++)
+		ROS_INFO("object %d at (%f, %f, %f) of size (%f, %f, %f)", i, scene.objects[i].bounding_box.pose.pose.position.x, 
+																	  scene.objects[i].bounding_box.pose.pose.position.y, 
+																	  scene.objects[i].bounding_box.pose.pose.position.z, 
+																	  scene.objects[i].bounding_box.dimensions.x,
+																	  scene.objects[i].bounding_box.dimensions.y, 
+																	  scene.objects[i].bounding_box.dimensions.z);
+}
+
 bool Operation::is_done()
 {
 	return all_done;
@@ -50,6 +69,8 @@ bool Operation::is_done()
 
 void Operation::reset() 
 {
+	ROS_INFO("reset operation.");
+
 	for(int i = 0; i < done.size(); i++)
 		done[i] = false;
 	all_done = false;
