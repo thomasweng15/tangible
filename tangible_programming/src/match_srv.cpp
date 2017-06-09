@@ -20,12 +20,12 @@ bool match_callback(tangible_msgs::GetMatchingObjects::Request& req, tangible_ms
 		switch(target.type)
 		{
 			case tangible_msgs::Target::POINT_LOCATION:
-				ROS_INFO("matching object at (%f, %f, %f) to location (%f, %f, %f)", objs_in[i].bounding_box.pose.pose.position.x,
-																				 	 objs_in[i].bounding_box.pose.pose.position.y,
-																				 	 objs_in[i].bounding_box.pose.pose.position.z,
-																				 	 target.specified_point.point.x,
-																				 	 target.specified_point.point.y,
-																				 	 target.specified_point.point.z);
+				// ROS_INFO("matching object at (%f, %f, %f) to location (%f, %f, %f)", objs_in[i].bounding_box.pose.pose.position.x,
+				// 																 	 objs_in[i].bounding_box.pose.pose.position.y,
+				// 																 	 objs_in[i].bounding_box.pose.pose.position.z,
+				// 																 	 target.specified_point.point.x,
+				// 																 	 target.specified_point.point.y,
+				// 																 	 target.specified_point.point.z);
 				if(target.specified_point.point.x == objs_in[i].bounding_box.pose.pose.position.x &&
 				   target.specified_point.point.y == objs_in[i].bounding_box.pose.pose.position.y &&
 				   target.specified_point.point.z == objs_in[i].bounding_box.pose.pose.position.z)
@@ -35,12 +35,12 @@ bool match_callback(tangible_msgs::GetMatchingObjects::Request& req, tangible_ms
 				// TO-DO
 				break;
 			case tangible_msgs::Target::OBJECT_SELECTOR: // TO-DO rename to OBJECT_LOCATION
-				ROS_INFO("matching object bb(%f, %f, %f) to object bb(%f, %f, %f)", objs_in[i].bounding_box.dimensions.x,
-																				objs_in[i].bounding_box.dimensions.y,
-																				objs_in[i].bounding_box.dimensions.z,
-																				target.selected_object.bounding_box.dimensions.x,
-																				target.selected_object.bounding_box.dimensions.y,
-																				target.selected_object.bounding_box.dimensions.z);
+				// ROS_INFO("matching object bb(%f, %f, %f) to object bb(%f, %f, %f)", objs_in[i].bounding_box.dimensions.x,
+				// 																objs_in[i].bounding_box.dimensions.y,
+				// 																objs_in[i].bounding_box.dimensions.z,
+				// 																target.selected_object.bounding_box.dimensions.x,
+				// 																target.selected_object.bounding_box.dimensions.y,
+				// 																target.selected_object.bounding_box.dimensions.z);
 				if(target.selected_object.bounding_box.dimensions.x == objs_in[i].bounding_box.dimensions.x &&
 				   target.selected_object.bounding_box.dimensions.y == objs_in[i].bounding_box.dimensions.y &&
 				   target.selected_object.bounding_box.dimensions.z == objs_in[i].bounding_box.dimensions.z)
@@ -55,6 +55,7 @@ bool match_callback(tangible_msgs::GetMatchingObjects::Request& req, tangible_ms
 	}
 
 	res.objects = objs_out;
+	return true;
 }
 
 int main(int argc, char** argv)

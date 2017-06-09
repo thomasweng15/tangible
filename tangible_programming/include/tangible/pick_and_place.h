@@ -12,6 +12,7 @@
 #include "tangible_msgs/GetMatchingObjects.h"
 #include "tangible_msgs/GetGrasps.h"
 #include "tangible_msgs/GetReleases.h"
+#include "tangible_msgs/GetMovements.h"
 #include "moveit_msgs/Grasp.h"
 
 namespace tangible

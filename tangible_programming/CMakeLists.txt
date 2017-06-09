@@ -386,6 +386,33 @@ target_link_libraries(fake_instruction_matching_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(fake_grasp_generation_node src/grasp_srv.cpp)
+add_dependencies(fake_grasp_generation_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(fake_grasp_generation_node 
+  ${catkin_LIBRARIES}
+)
+
+add_executable(fake_release_generation_node src/release_srv.cpp)
+add_dependencies(fake_release_generation_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(fake_release_generation_node 
+  ${catkin_LIBRARIES}
+)
+
+add_executable(fake_move_arm_node src/move_srv.cpp)
+add_dependencies(fake_move_arm_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(fake_move_arm_node 
+  ${catkin_LIBRARIES}
+)
+
 add_executable(compiler_node src/compiler_node.cpp)
 add_dependencies(compiler_node
   tangible_compiler

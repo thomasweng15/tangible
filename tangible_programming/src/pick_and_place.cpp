@@ -39,7 +39,7 @@ bool PickAndPlace::execute()
 	while(!done[PLACE] && attempt <= OPERATION_MAX_ATTEMPTS)
 	{
 		
-		// ROS_INFO("attempt #%d", attempt+1);
+		ROS_INFO("attempt #%d", attempt+1);
 
 		if(!done[PICK])
 			done[PICK] = attempt_pick();
@@ -61,9 +61,13 @@ bool PickAndPlace::execute()
 				done[PICK] = false;
 				done[PLACE] = false;
 				attempt = 0;
+				ROS_INFO("moving to the next object of operation...");
 			}
 			else if(!done[PICK] && once)
+			{
 				done[PLACE] = true;
+				ROS_INFO("no more objects for operation.");
+			}
 		}
 
 	}
@@ -77,17 +81,25 @@ bool PickAndPlace::execute()
 
 bool PickAndPlace::attempt_pick()
 {
-	ROS_INFO("   pick");
+	ROS_INFO("   pick...");
 
 	tangible_msgs::Scene scene = get_scene();
 	//print_scene(scene);
 	
 	for(int i = 0; i < scene.objects.size(); i++)
 	{
+		ROS_INFO("   object %d bb(%f, %f, %f) at (%f, %f, %f):", i,
+															  	 scene.objects[i].bounding_box.dimensions.x,
+															  	 scene.objects[i].bounding_box.dimensions.y,
+															  	 scene.objects[i].bounding_box.dimensions.z,
+															  	 scene.objects[i].bounding_box.pose.pose.position.x,
+															  	 scene.objects[i].bounding_box.pose.pose.position.y,
+															  	 scene.objects[i].bounding_box.pose.pose.position.z);
 
 		if(!match_obj2criteria(scene.objects[i], instructions[PICK].target))
 			continue;
-		
+		ROS_INFO("      matched pick criteria");
+
 		bool already_placed = false;
 
 		if(instructions[PLACE].target.type == tangible_msgs::Target::REGION ||  
@@ -119,6 +131,7 @@ bool PickAndPlace::attempt_pick()
 
 		if(already_placed)
 			continue;
+		ROS_INFO("      is not already at place target");
 
 		int pick_attempt = 0;
 		std::vector<moveit_msgs::Grasp> grasps;
@@ -132,11 +145,17 @@ bool PickAndPlace::attempt_pick()
 
 		pick_attempt = pick_attempt > INSTRUCTION_MAX_ATTEMPTS ? pick_attempt : 0;
 
+		if(pick_attempt == 0)
+			ROS_INFO("      has a grasp sequence.");
+
 		while(pick_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
 			// if here, there has been a grasp
 			if(move(grasps))
+			{
+				ROS_INFO("      is successfully picked.");
 				return true;
+			}
 			pick_attempt++; 
 		}
 
@@ -147,7 +166,7 @@ bool PickAndPlace::attempt_pick()
 
 bool PickAndPlace::attempt_place()
 {
-	// ROS_INFO("   place");
+	ROS_INFO("   place...");
 
 	tangible_msgs::Scene scene = get_scene();
 
@@ -190,11 +209,17 @@ bool PickAndPlace::attempt_place()
 
 		place_attempt = place_attempt > INSTRUCTION_MAX_ATTEMPTS ? place_attempt : 0;
 
+		if(place_attempt == 0)
+			ROS_INFO("      has a release sequence");
+
 		while(place_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
 			// if here, there has been a release
 			if(move(releases))
+			{
+				ROS_INFO("      is successfully released.");
 				return true;
+			}
 			place_attempt++;
 		}
 
@@ -230,7 +255,7 @@ bool PickAndPlace::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_m
 		objs_checked = criteria_srv.response.objects;
 	else
 	{
-		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", ins_check_service.c_str());
+		ROS_ERROR("failed to call service %s to check instruction criteria.", ins_check_service.c_str());
 		return false;
 	}
 
@@ -257,7 +282,7 @@ std::vector<moveit_msgs::Grasp> PickAndPlace::get_grasp(tangible_msgs::SceneObje
 	if(success)
 		grasps = grasp_srv.response.grasps;
 	else
-		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", grasp_service.c_str());
+		ROS_ERROR("failed to call service %s to obtain grasp poses.", grasp_service.c_str());
 
 	return grasps;
 }
@@ -278,16 +303,28 @@ std::vector<moveit_msgs::Grasp> PickAndPlace::get_release(tangible_msgs::Target 
 	if(success)
 		releases = release_srv.response.releases;
 	else
-		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", release_service.c_str());
+		ROS_ERROR("failed to call service %s to obtain release poses.", release_service.c_str());
 
 	return releases;
 }
 
 bool PickAndPlace::move(std::vector<moveit_msgs::Grasp> poses)
 {
-	ROS_INFO("moving the arm");
-	// TO-DO
-	return true;
+	std::string move_service = get_private_param("arm_movement_service");
+	ros::ServiceClient move_client = node_handle.serviceClient<tangible_msgs::GetMovements>(move_service);
+
+	tangible_msgs::GetMovements move_srv;
+	move_srv.request.poses = poses;
+
+	bool success = move_client.call(move_srv);
+
+	bool movement_success = false;
+	if(success)
+		movement_success = move_srv.response.success;
+	else
+		ROS_ERROR("failed to call service %s to move the arm.", move_service.c_str());
+
+	return movement_success;
 }
 
 void PickAndPlace::stop()
