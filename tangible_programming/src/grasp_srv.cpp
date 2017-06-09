@@ -16,8 +16,8 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle n;
 	ros::ServiceServer srv = n.advertiseService("get_grasp", grasp_callback);
-	ros::spin();
 	ROS_INFO("fake service to generate grasps");
+	ros::spin();
 
 	return 0;
 }

@@ -14,8 +14,8 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle n;
 	ros::ServiceServer srv = n.advertiseService("move_arm", move_callback);
-	ros::spin();
 	ROS_INFO("fake service to move the arm");
+	ros::spin();
 
 	return 0;
 }
