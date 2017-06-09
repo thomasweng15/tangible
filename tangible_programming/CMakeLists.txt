@@ -384,14 +384,12 @@ target_link_libraries(fake_compilation_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(compiler_node src/compiler_node.cpp)
-add_dependencies(compiler_node
-  tangible_compiler
+add_executable(fake_scene_processing_node src/scene_srv.cpp)
+add_dependencies(fake_scene_processing_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(compiler_node 
-  tangible_compiler
+target_link_libraries(fake_scene_processing_node 
   ${catkin_LIBRARIES}
 )
 
@@ -407,6 +405,17 @@ target_link_libraries(grasp_generator_node
   tangible_grasp_generator
   ${catkin_LIBRARIES}
 )
+add_executable(compiler_node src/compiler_node.cpp)
+add_dependencies(compiler_node
+  tangible_compiler
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(compiler_node 
+  tangible_compiler
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##

@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "get_program_server");
 
 	ros::NodeHandle n;
-	ros::ServiceServer srv = n.advertiseService("get_program", program_callback);
+	ros::ServiceServer server = n.advertiseService("get_program", program_callback);
 	ROS_INFO("fake service to provide compiled programs");
 	ros::spin();
 
