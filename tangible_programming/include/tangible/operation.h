@@ -40,7 +40,7 @@ public:
 
 	virtual bool execute() = 0;
 	virtual void stop() = 0;
-	void reset();
+	virtual void reset() = 0;
 };
 
 };
