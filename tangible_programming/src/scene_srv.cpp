@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "ros/ros.h"
 
 #include "tangible_msgs/GetScene.h"
@@ -65,6 +67,7 @@ int main (int argc, char** argv)
 	ros::NodeHandle n;
 	ros::ServiceServer server = n.advertiseService("get_scene", scene_callback);
 	ROS_INFO("fake service to provide scene information");
+	
 	ros::spin();
 
 	return 0;

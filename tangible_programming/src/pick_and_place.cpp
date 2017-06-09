@@ -22,6 +22,7 @@ PickAndPlace::PickAndPlace(ros::NodeHandle& n, std::vector<tangible_msgs::Instru
 	// 			break;
 	// 		default:
 	// 			ROS_ERROR("invalid instruction");
+	//			break;
 	// 	}
 
 	once = false; 
@@ -38,6 +39,8 @@ bool PickAndPlace::execute()
 	while(!done[PLACE] && attempt <= OPERATION_MAX_ATTEMPTS)
 	{
 		
+		// ROS_INFO("attempt #%d", attempt+1);
+
 		if(!done[PICK])
 			done[PICK] = attempt_pick();
 
@@ -74,6 +77,8 @@ bool PickAndPlace::execute()
 
 bool PickAndPlace::attempt_pick()
 {
+	ROS_INFO("   pick");
+
 	tangible_msgs::Scene scene = get_scene();
 	//print_scene(scene);
 	
@@ -116,10 +121,12 @@ bool PickAndPlace::attempt_pick()
 			continue;
 
 		int pick_attempt = 0;
+		std::vector<moveit_msgs::Grasp> grasps;
 		while(pick_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
-			// TO-DO generate grasp
-			// if non empty break
+			grasps = get_grasp(scene.objects[i], scene);
+			if(!grasps.empty())
+				break;
 			pick_attempt++;
 		}
 
@@ -128,9 +135,8 @@ bool PickAndPlace::attempt_pick()
 		while(pick_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
 			// if here, there has been a grasp
-
-			// TO-DO move the arm
-			// if succeeded (done[PICK] = true and break) --> return true
+			if(move(grasps))
+				return true;
 			pick_attempt++; 
 		}
 
@@ -141,6 +147,8 @@ bool PickAndPlace::attempt_pick()
 
 bool PickAndPlace::attempt_place()
 {
+	// ROS_INFO("   place");
+
 	tangible_msgs::Scene scene = get_scene();
 
 	std::vector<tangible_msgs::Target> place_target;
@@ -170,11 +178,13 @@ bool PickAndPlace::attempt_place()
 	for(int i = 0; i < place_target.size(); i++)
 	{
 		
+		std::vector<moveit_msgs::Grasp> releases;
 		int place_attempt = 0;
 		while(place_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
-			// TO-DO generate release
-			// if not empty break
+			releases = get_release(place_target[i], scene);
+			if(!releases.empty())
+				break;
 			place_attempt++;
 		}
 
@@ -183,9 +193,8 @@ bool PickAndPlace::attempt_place()
 		while(place_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
 			// if here, there has been a release
-
-			// TO-DO move the arm
-			// if succeeded (done[PLACE] = true and break) --> return true;
+			if(move(releases))
+				return true;
 			place_attempt++;
 		}
 
@@ -206,6 +215,14 @@ bool PickAndPlace::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_m
 	criteria_srv.request.objects = objs_to_check;
 	criteria_srv.request.target = trg;
 
+	// ROS_INFO("      object (%f, %f, %f) at (%f, %f, %f) matched target %d?", obj.bounding_box.dimensions.x,
+	// 					   												     obj.bounding_box.dimensions.y,
+	// 																   		 obj.bounding_box.dimensions.z, 
+	// 																   		 obj.bounding_box.pose.pose.position.x, 
+	// 																   		 obj.bounding_box.pose.pose.position.y, 
+	// 																   		 obj.bounding_box.pose.pose.position.z,
+	// 																   		 trg.type);
+
 	bool success = ins_check_client.call(criteria_srv);
 
 	std::vector<tangible_msgs::SceneObject> objs_checked;
@@ -213,11 +230,64 @@ bool PickAndPlace::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_m
 		objs_checked = criteria_srv.response.objects;
 	else
 	{
-		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", scene_info_service.c_str());
+		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", ins_check_service.c_str());
 		return false;
 	}
 
+	// if(objs_checked.empty())
+	// 	ROS_INFO("      - NO");
+	// else
+	// 	ROS_INFO("      - YES");
+
 	return !objs_checked.empty();
+}
+
+std::vector<moveit_msgs::Grasp> PickAndPlace::get_grasp(tangible_msgs::SceneObject obj, tangible_msgs::Scene scene)
+{
+	std::string grasp_service = get_private_param("grasp_acquisition_service");
+	ros::ServiceClient grasp_acquisition_client = node_handle.serviceClient<tangible_msgs::GetGrasps>(grasp_service);
+
+	tangible_msgs::GetGrasps grasp_srv;
+	grasp_srv.request.object = obj;
+	// TO-DO also add scene information to the grasp request
+
+	bool success = grasp_acquisition_client.call(grasp_srv);
+
+	std::vector<moveit_msgs::Grasp> grasps;
+	if(success)
+		grasps = grasp_srv.response.grasps;
+	else
+		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", grasp_service.c_str());
+
+	return grasps;
+}
+
+std::vector<moveit_msgs::Grasp> PickAndPlace::get_release(tangible_msgs::Target target, tangible_msgs::Scene scene)
+{
+	std::string release_service = get_private_param("release_acquisition_service");
+	ros::ServiceClient release_acquisition_client = node_handle.serviceClient<tangible_msgs::GetReleases>(release_service);
+
+	tangible_msgs::GetReleases release_srv;
+	release_srv.request.target = target;
+	release_srv.request.scene = scene;
+	// TO-DO also add information about the picked up object?
+
+	bool success = release_acquisition_client.call(release_srv);
+
+	std::vector<moveit_msgs::Grasp> releases;
+	if(success)
+		releases = release_srv.response.releases;
+	else
+		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", release_service.c_str());
+
+	return releases;
+}
+
+bool PickAndPlace::move(std::vector<moveit_msgs::Grasp> poses)
+{
+	ROS_INFO("moving the arm");
+	// TO-DO
+	return true;
 }
 
 void PickAndPlace::stop()
@@ -228,11 +298,14 @@ void PickAndPlace::stop()
 
 void PickAndPlace::reset()
 {
-	Operation::reset();
-	
 	once = false;
+
+	for(int i = 0; i < done.size(); i++)
+		done[i] = false;
+
+	all_done = false;
 	
-	ROS_INFO("pick_and_place reset.")
+	ROS_INFO("pick_and_place reset.");
 }
 
 }

@@ -68,14 +68,4 @@ bool Operation::is_done()
 	return all_done;
 }
 
-void Operation::reset() 
-{
-	for(int i = 0; i < done.size(); i++)
-		done[i] = false;
-
-	all_done = false;
-	
-	ROS_INFO("operation reset.");
-}
-
 }
