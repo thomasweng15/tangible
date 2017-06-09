@@ -6,6 +6,7 @@
 #include "tangible_msgs/Instruction.h"
 #include "tangible_msgs/Scene.h"
 #include "tangible_msgs/SceneObject.h"
+#include "tangible_msgs/GetMatchingObjects.h"
 
 namespace tangible
 {
