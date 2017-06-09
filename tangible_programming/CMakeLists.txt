@@ -241,6 +241,17 @@ target_link_libraries(program_execution_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(compiler_node src/compiler_node.cpp)
+add_dependencies(compiler_node
+  tangible_compiler
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(compiler_node 
+  tangible_compiler
+  ${catkin_LIBRARIES}
+)
+
 add_executable(object_matching_node src/object_matching_node.cpp)
 add_dependencies(block_parsing_node
   tangible_object_matching
@@ -249,6 +260,17 @@ add_dependencies(block_parsing_node
 )
 target_link_libraries(object_matching_node 
   tangible_object_matching
+  ${catkin_LIBRARIES}
+)
+
+add_executable(grasp_generator_node src/grasp_generator_node.cpp)
+add_dependencies(grasp_generator_node
+  tangible_grasp_generator
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(grasp_generator_node 
+  tangible_grasp_generator
   ${catkin_LIBRARIES}
 )
 
@@ -303,28 +325,6 @@ add_dependencies(fake_move_arm_node
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(fake_move_arm_node 
-  ${catkin_LIBRARIES}
-)
-
-add_executable(compiler_node src/compiler_node.cpp)
-add_dependencies(compiler_node
-  tangible_compiler
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(compiler_node 
-  tangible_compiler
-  ${catkin_LIBRARIES}
-)
-
-add_executable(grasp_generator_node src/grasp_generator_node.cpp)
-add_dependencies(grasp_generator_node
-  tangible_grasp_generator
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(grasp_generator_node 
-  tangible_grasp_generator
   ${catkin_LIBRARIES}
 )
 
