@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   moveit_msgs
   tangible_msgs
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -153,12 +154,25 @@ add_dependencies(tangible_compiler
 )
 target_link_libraries(tangible_compiler ${catkin_LIBRARIES})
 
-add_library(tangible_grasp_generator src/grasp_generator.cpp)
-add_dependencies(tangible_grasp_generator
+add_library(tangible_gripper_marker src/gripper_marker.cpp)
+add_dependencies(tangible_gripper_marker
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(tangible_grasp_generator ${catkin_LIBRARIES})
+target_link_libraries(tangible_gripper_marker
+  ${catkin_LIBRARIES}
+)
+
+add_library(tangible_grasp_generator src/grasp_generator.cpp)
+add_dependencies(tangible_grasp_generator
+  tangible_gripper_marker
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_grasp_generator 
+  tangible_gripper_marker
+  ${catkin_LIBRARIES}
+)
 
 add_library(tangible_object_matching src/object_matching.cpp)
 add_dependencies(tangible_object_matching
@@ -197,6 +211,8 @@ target_link_libraries(tangible_execution_manager
   tangible_pick_and_place  
   ${catkin_LIBRARIES}
 )
+
+
 
 ## Executable files
 ## ----------------
@@ -266,10 +282,12 @@ target_link_libraries(object_matching_node
 add_executable(grasp_generator_node src/grasp_generator_node.cpp)
 add_dependencies(grasp_generator_node
   tangible_grasp_generator
+  tangible_gripper_marker
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(grasp_generator_node 
+  tangible_gripper_marker
   tangible_grasp_generator
   ${catkin_LIBRARIES}
 )
