@@ -213,7 +213,8 @@ bool PickAndPlace::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_m
 		objs_checked = criteria_srv.response.objects;
 	else
 	{
-		ROS_ERROR("failed to call service %s to obtain scene information (table top and objects)", scene_info_service.c_str());
+		// Edited by Sarah to make it compile, but may want to change back
+		ROS_ERROR("failed to call service %s to obtain matching object information", ins_check_service.c_str());
 		return false;
 	}
 
@@ -232,7 +233,7 @@ void PickAndPlace::reset()
 	
 	once = false;
 	
-	ROS_INFO("pick_and_place reset.")
+	ROS_INFO("pick_and_place reset.");
 }
 
 }

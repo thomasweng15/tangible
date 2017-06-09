@@ -1,4 +1,6 @@
 #include "tangible/grasp_generator.h"
+#include "tangible/gripper_marker.h"
+
 
 namespace tangible {
 
@@ -17,7 +19,7 @@ bool GraspGenerator::graspCallback(tangible_msgs::GetGrasps::Request& req,
   obj = req.object;
   getGrasps();
 	res.grasps = grasps;
-  // publishMarkers(scene);
+  publishMarkers();
 	return true;
 }
 
@@ -62,15 +64,16 @@ void GraspGenerator::getGrasps(){
   geometry_msgs::Vector3 pre_vec;
   pre_vec.x = 0.0;
   pre_vec.y = 0.0;
-  pre_vec.z = -1.0;
+  pre_vec.z = 1.0; //above grasp
   grasp.pre_grasp_approach.direction.vector = pre_vec;
+
   grasp.post_grasp_retreat.desired_distance = post_grasp_dist;
   grasp.post_grasp_retreat.direction.header.frame_id = obj.bounding_box.pose.header.frame_id;
   geometry_msgs::Vector3 post_vec;
   pre_vec.x = 0.0;
   pre_vec.y = 0.0;
-  pre_vec.z = 1.0;
-  grasp.pre_grasp_approach.direction.vector = post_vec;
+  pre_vec.z = 1.0; //above grasp
+  grasp.post_grasp_retreat.direction.vector = post_vec;
   if(hasCollision(grasp, obj.point_cloud) != true){
     grasps.push_back(grasp);
   }
@@ -87,8 +90,31 @@ void GraspGenerator::getGrasps(){
 
 }
 
-void GraspGenerator::publishMarkers(tangible_msgs::Scene scene_msg){
-  ;
+geometry_msgs::PoseStamped GraspGenerator::poseFromVec(geometry_msgs::PoseStamped pose, geometry_msgs::Vector3 vec, float dist){
+  geometry_msgs::PoseStamped new_pose;
+  new_pose = pose;
+  new_pose.pose.position.x = pose.pose.position.x + vec.x * dist;
+  new_pose.pose.position.y = pose.pose.position.y + vec.y * dist;
+  new_pose.pose.position.z = pose.pose.position.z + vec.z * dist;
+  return new_pose;
+}
+
+void GraspGenerator::publishMarkers(){
+  for (int i=0; i < grasps.size(); i++){
+    moveit_msgs::Grasp grasp = grasps[i];
+    GripperMarker gripper_marker;
+    std::vector<visualization_msgs::Marker> grasp_markers = gripper_marker.generateMarker(0, grasp.grasp_pose, gripper_marker.UNKNOWN, "grasp_pose_frame");
+    geometry_msgs::PoseStamped pre_grasp_pose = poseFromVec(grasp.grasp_pose, grasp.pre_grasp_approach.direction.vector, grasp.pre_grasp_approach.desired_distance);
+    std::vector<visualization_msgs::Marker> pre_grasp_markers = gripper_marker.generateMarker(5, pre_grasp_pose, gripper_marker.UNKNOWN, "pre_grasp_pose_frame");
+    geometry_msgs::PoseStamped post_grasp_pose = poseFromVec(grasp.grasp_pose, grasp.post_grasp_retreat.direction.vector, grasp.post_grasp_retreat.desired_distance);    
+    std::vector<visualization_msgs::Marker> post_grasp_markers = gripper_marker.generateMarker(10, post_grasp_pose, gripper_marker.UNKNOWN, "post_grasp_pose_frame");
+
+    for(int j=0; j < grasp_markers.size(); j++){
+      marker_pub.publish(grasp_markers[i]);
+      marker_pub.publish(pre_grasp_markers[i]);
+      marker_pub.publish(post_grasp_markers[i]);
+    }
+  }
 }
 
 bool GraspGenerator::hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCloud2 pc2){

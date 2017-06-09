@@ -1,10 +1,11 @@
-#ifndef TANGIBLE_GRASP_GENERATOR
-#define TANGIBLE_GRASP_GENERATOR
+#ifndef TANGIBLE_GRIPPER_MARKER
+#define TANGIBLE_GRIPPER_MARKER
 
 #include <vector>
 
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
+#include "std_msgs/ColorRGBA.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/TransformStamped.h"
@@ -74,57 +75,17 @@
 
 namespace tangible {
 
-struct Box {
-	double min_x;
-	double min_y;
-	double min_z;
-	double max_x;
-	double max_y;
-	double max_z;
-};
-
-class GraspGenerator {
-private:
-
-	ros::NodeHandle node_handle;
-	void publishMarkers();
-
-	ros::Publisher marker_pub;
-	std::vector<moveit_msgs::Grasp> grasps;
-	tangible_msgs::SceneObject obj;
-	//distance from wrist to gripper on PR2
-  	const static double palm_dist = 0.12;
-  	const static double pre_grasp_dist = 0.15;
-  	const static double post_grasp_dist = 0.15;
-  	const static int min_points_in_gripper = 50;
-    // max number of points in cluster that can intersect with fingers
-    const static int max_finger_collision_points = 7;
-    const static int max_palm_collision_points = 6;
-    // approximately half hand thickness
-    const static double half_gripper_height = 0.03;
-    // approximate distance from palm frame origin to palm surface
-    const static double dist_to_palm = 0.12;
-    // approximate distance from palm frame origin to fingertip with gripper closed
-    const static double dist_to_fingertips = 0.20;
-    // approx dist between fingers when gripper open
-    const static double gripper_palm_width = 0.08;
-    // approx height of pads of fingertips
-    const static double gripper_finger_height = 0.03;
-
-    const static double y_offset = 0.005;
-  	void getGrasps();
-	bool hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCloud2 pc2);
-	int findPointsInBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, Box box, std::string frame);
-
-geometry_msgs::PoseStamped poseFromVec(geometry_msgs::PoseStamped pose, geometry_msgs::Vector3 vec, float dist);
-
+class GripperMarker {
 
 public:
-	GraspGenerator(ros::NodeHandle& n);
-	~GraspGenerator();
+	GripperMarker();
+	~GripperMarker();
 
-	bool graspCallback(tangible_msgs::GetGrasps::Request& req,
-                 tangible_msgs::GetGrasps::Response& res);
+  const static int REACHABLE = 0;
+  const static int UNREACHABLE = 1;
+  const static int UNKNOWN = 2;
+
+std::vector<visualization_msgs::Marker> generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame);
 
 };
 
