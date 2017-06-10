@@ -1,7 +1,5 @@
 #include "tangible/execution_manager.h"
 
-#include "tangible/pick_and_place.h"
-
 namespace tangible
 {
 
@@ -68,6 +66,7 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 
 		default:
 			ROS_ERROR("Invalid Mode");
+			break;
 	}
 }
 
@@ -156,9 +155,8 @@ void ExecutionManager::start_execution()
 
 	
 	for(int i = 0; i < program.size(); i++)
-	{
 		program[i] -> reset();
-	}
+	
 }
 
 void ExecutionManager::stop_execution()
