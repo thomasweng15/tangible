@@ -1,4 +1,5 @@
 tangible_msgs/SceneObject object
+tangible_msgs/Scene scene
 # May want to add more information like only grasp from the top or something
 ---
 moveit_msgs/Grasp[] grasps

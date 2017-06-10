@@ -26,7 +26,7 @@
 
   <!-- TF Frames -->
   <!-- I don't think we need this if using with real robot -->
-  <!-- <include file="$(find tangible)/launch/userdefined_frame.launch" >
+  <!-- <include file="$(find tangible_programming)/launch/userdefined_frame.launch" >
     <arg name="camera" value="$(arg camera)" />
   </include> --> 
 
@@ -39,14 +39,14 @@
   </include>
 
   <!-- Object Processing -->
-  <node pkg="tangible" type="object_processing_node" name="object_processing_node">
+  <node pkg="tangible_programming" type="object_processing_node" name="object_processing_node">
     <param name="output_frame" type="string" value="$(arg scene_output_frame)" />
     <param name="scene_service_name" type="string" value="$(arg scene_service_name)" />
     <param name="cloud_topic" type="string" value="$(arg cloud_topic)" />
   </node>
 
   <!-- Block Parsing -->
-  <node pkg="tangible" type="block_parsing_node" name="block_parsing_node">
+  <node pkg="tangible_programming" type="block_parsing_node" name="block_parsing_node">
     <param name="mode_change_topic" type="string" value="$(arg mode_change_topic)" />
     <param name="block_service_name" type="string" value="$(arg block_service_name)" />
     <param name="run_id" type="int" value="$(arg run_id)" />
@@ -55,7 +55,7 @@
   </node> 
 
   <!-- Compiler -->
-  <node pkg="tangible" type="compiler_node" name="compiler_node">
+  <node pkg="tangible_programming" type="compiler_node" name="compiler_node">
     <param name="mode_change_topic" type="string" value="$(arg mode_change_topic)" />
     <param name="block_service_name" type="string" value="$(arg block_service_name)" />
     <param name="scene_service_name" type="string" value="$(arg scene_service_name)" />
@@ -66,20 +66,23 @@
   </node>
 
   <!-- Grasp Generation -->
-  <!-- <node pkg="tangible" type="grasp_generator_node" name="grasp_generator_node">
+  <node pkg="tangible_programming" type="grasp_generator_node" name="grasp_generator_node">
     <param name="grasp_service_name" type="string" value="$(arg grasp_service_name)" />
-  </node> -->
+  </node>
 
   <!-- Object Matching -->
-  <!-- <node pkg="tangible" type="object_matching_node" name="object_matching_node">
+  <!-- <node pkg="tangible_programming" type="object_matching_node" name="object_matching_node">
     <param name="object_matching_service_name" type="string" value="$(arg object_matching_service_name)"
     <param name="point_location_threshold" type="double" value="$(arg point_location_threshold)"
     <param name="box_dimension_threshold" type="double" value="$(arg box_dimension_threshold)"
      />
   </node> -->
 
+  <!-- Static TF Node -->
+  <node pkg="tangible_programming" type="static_tf.py" name="static_tf" />
+
   <!-- RViz -->
   <!-- If we want to use an rviz config, we need to add it to the package and launch with frontend -->
-  <node pkg="rviz" type="rviz" name="visualization" args="-d /home/yasaman/.rviz/visualization.rviz"/>
+  <!-- <node pkg="rviz" type="rviz" name="visualization" args="-d /home/yasaman/.rviz/visualization.rviz"/> -->
 
 </launch>

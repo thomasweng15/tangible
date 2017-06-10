@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "std_msgs/ColorRGBA.h"
+#include "tangible_msgs/SetStaticTransform.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/TransformStamped.h"
@@ -77,15 +78,20 @@ namespace tangible {
 
 class GripperMarker {
 
+private:
+
+	ros::NodeHandle node_handle;
+    ros::ServiceClient set_static_tf_client;
+
 public:
-	GripperMarker();
+	GripperMarker(ros::NodeHandle& n);
 	~GripperMarker();
 
   const static int REACHABLE = 0;
   const static int UNREACHABLE = 1;
   const static int UNKNOWN = 2;
 
-std::vector<visualization_msgs::Marker> generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame);
+std::vector<visualization_msgs::Marker> generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame, std::string ns);
 
 };
 

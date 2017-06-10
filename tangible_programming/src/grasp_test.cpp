@@ -27,6 +27,12 @@ bool GraspTest::testCallback(std_srvs::Empty::Request& req,
     tangible_msgs::GetGrasps grasp_srv;
     grasp_srv.request.object = obj;
     grasp_client.call(grasp_srv);
+    if (grasp_srv.response.grasps.size() > 0) {
+      ROS_INFO("Got grasps");
+    }
+    else {
+      ROS_WARN("No grasps found");
+    }
 
   }
   else{

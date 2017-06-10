@@ -12,7 +12,7 @@
 #include "geometry_msgs/TransformStamped.h"
 #include "geometry_msgs/Point.h"
 #include "visualization_msgs/Marker.h"
-
+#include "tangible_msgs/SetStaticTransform.h"
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 
@@ -115,7 +115,7 @@ private:
   	void getGrasps();
 	bool hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCloud2 pc2);
 	int findPointsInBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, Box box, std::string frame);
-
+    ros::ServiceClient set_static_tf_client;
 geometry_msgs::PoseStamped poseFromVec(geometry_msgs::PoseStamped pose, geometry_msgs::Vector3 vec, float dist);
 
 

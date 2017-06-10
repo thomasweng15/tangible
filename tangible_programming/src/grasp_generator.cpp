@@ -6,8 +6,8 @@ namespace tangible {
 
 GraspGenerator::GraspGenerator(ros::NodeHandle& n){
   node_handle = n;
-  marker_pub = node_handle.advertise<visualization_msgs::Marker>("grasp_markers", 20);
-
+  marker_pub = node_handle.advertise<visualization_msgs::Marker>("grasp_markers", 100);
+  set_static_tf_client = node_handle.serviceClient<tangible_msgs::SetStaticTransform>("set_static_transform");
 }
 
 GraspGenerator::~GraspGenerator() {}
@@ -70,9 +70,9 @@ void GraspGenerator::getGrasps(){
   grasp.post_grasp_retreat.desired_distance = post_grasp_dist;
   grasp.post_grasp_retreat.direction.header.frame_id = obj.bounding_box.pose.header.frame_id;
   geometry_msgs::Vector3 post_vec;
-  pre_vec.x = 0.0;
-  pre_vec.y = 0.0;
-  pre_vec.z = 1.0; //above grasp
+  post_vec.x = 0.0;
+  post_vec.y = 0.0;
+  post_vec.z = 1.0; //above grasp
   grasp.post_grasp_retreat.direction.vector = post_vec;
   if(hasCollision(grasp, obj.point_cloud) != true){
     grasps.push_back(grasp);
@@ -102,17 +102,18 @@ geometry_msgs::PoseStamped GraspGenerator::poseFromVec(geometry_msgs::PoseStampe
 void GraspGenerator::publishMarkers(){
   for (int i=0; i < grasps.size(); i++){
     moveit_msgs::Grasp grasp = grasps[i];
-    GripperMarker gripper_marker;
-    std::vector<visualization_msgs::Marker> grasp_markers = gripper_marker.generateMarker(0, grasp.grasp_pose, gripper_marker.UNKNOWN, "grasp_pose_frame");
+    GripperMarker gripper_marker = GripperMarker(node_handle);
+    std::vector<visualization_msgs::Marker> grasp_markers = gripper_marker.generateMarker(0 + 15*i, grasp.grasp_pose, gripper_marker.UNKNOWN, "grasp_pose_frame", "main_grasp");
     geometry_msgs::PoseStamped pre_grasp_pose = poseFromVec(grasp.grasp_pose, grasp.pre_grasp_approach.direction.vector, grasp.pre_grasp_approach.desired_distance);
-    std::vector<visualization_msgs::Marker> pre_grasp_markers = gripper_marker.generateMarker(5, pre_grasp_pose, gripper_marker.UNKNOWN, "pre_grasp_pose_frame");
+    std::vector<visualization_msgs::Marker> pre_grasp_markers = gripper_marker.generateMarker(5 + 15*i, pre_grasp_pose, gripper_marker.UNKNOWN, "pre_grasp_pose_frame", "pre_grasp");
     geometry_msgs::PoseStamped post_grasp_pose = poseFromVec(grasp.grasp_pose, grasp.post_grasp_retreat.direction.vector, grasp.post_grasp_retreat.desired_distance);    
-    std::vector<visualization_msgs::Marker> post_grasp_markers = gripper_marker.generateMarker(10, post_grasp_pose, gripper_marker.UNKNOWN, "post_grasp_pose_frame");
+    std::vector<visualization_msgs::Marker> post_grasp_markers = gripper_marker.generateMarker(10 + 15*i, post_grasp_pose, gripper_marker.UNKNOWN, "post_grasp_pose_frame", "post_grasp");
 
     for(int j=0; j < grasp_markers.size(); j++){
-      marker_pub.publish(grasp_markers[i]);
-      marker_pub.publish(pre_grasp_markers[i]);
-      marker_pub.publish(post_grasp_markers[i]);
+      marker_pub.publish(grasp_markers[j]);
+      marker_pub.publish(pre_grasp_markers[j]);
+      marker_pub.publish(post_grasp_markers[j]);
+      ROS_INFO("publishing grasp markers");
     }
   }
 }
@@ -135,10 +136,23 @@ bool GraspGenerator::hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCl
                      grasp.grasp_pose.pose.orientation.z,
                      grasp.grasp_pose.pose.orientation.w);
     // q.setRPY(0, 0, msg->theta);
-    transform.setRotation(q);
+    //transform.setRotation(q);
     std::string grasp_frame = "grasp";
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_footprint", grasp_frame));
-    ros::Duration(0.25).sleep();
+    geometry_msgs::TransformStamped trans;
+    trans.header.frame_id = "base_footprint";
+    trans.child_frame_id = grasp_frame;
+    trans.transform.translation.x = grasp.grasp_pose.pose.position.x; 
+    trans.transform.translation.y = grasp.grasp_pose.pose.position.y; 
+    trans.transform.translation.z = grasp.grasp_pose.pose.position.z;
+    trans.transform.rotation.x = grasp.grasp_pose.pose.orientation.x; 
+    trans.transform.rotation.y = grasp.grasp_pose.pose.orientation.y; 
+    trans.transform.rotation.z = grasp.grasp_pose.pose.orientation.z; 
+    trans.transform.rotation.w = grasp.grasp_pose.pose.orientation.w; 
+    //tf::StampedTransform(transform, ros::Time::now(), "base_footprint", grasp_frame);
+    //ros::Duration(0.25).sleep();
+    tangible_msgs::SetStaticTransform tf_srv;
+    tf_srv.request.transform = trans;
+    set_static_tf_client.call(tf_srv);
 
     // hand boxes
     Box palm_box; 
@@ -187,8 +201,8 @@ bool GraspGenerator::hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCl
         sensor_msgs::PointCloud2 transformed_cloud_msg;
         tf::TransformListener tf_listener;
         tf::StampedTransform cloud_transform;
-        tf_listener.waitForTransform(grasp_frame, pc2.header.frame_id, ros::Time(0), ros::Duration(3.0));
-        //ROS_INFO("... done waiting.");
+        tf_listener.waitForTransform(grasp_frame, pc2.header.frame_id, ros::Time::now(), ros::Duration(10.0));
+        ROS_INFO("... done waiting.");
         tf_listener.lookupTransform(grasp_frame, pc2.header.frame_id, ros::Time(0), cloud_transform);
         pcl_ros::transformPointCloud(grasp_frame, cloud_transform, pc2, transformed_cloud_msg);
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
