@@ -77,13 +77,14 @@ namespace tangible {
     }
 
 
-GripperMarker::GripperMarker(){
+GripperMarker::GripperMarker(ros::NodeHandle& n){
 
+  set_static_tf_client = node_handle.serviceClient<tangible_msgs::SetStaticTransform>("set_static_transform");
 }
 
 GripperMarker::~GripperMarker() {}
 
-std::vector<visualization_msgs::Marker> GripperMarker::generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame)
+std::vector<visualization_msgs::Marker> GripperMarker::generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame, std::string ns)
 {
 
   double DEFAULT_OFFSET = 0.09;
@@ -121,13 +122,32 @@ std::vector<visualization_msgs::Marker> GripperMarker::generateMarker(int start_
                      pose.pose.orientation.w);
   // q.setRPY(0, 0, msg->theta);
   transform.setRotation(q);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_footprint", grasp_pose_frame));
-  ros::Duration(0.25).sleep();
+  //br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_footprint", grasp_pose_frame));
+  //ros::Duration(0.25).sleep();
+
+  geometry_msgs::TransformStamped trans;
+  trans.header.frame_id = "base_footprint";
+  trans.child_frame_id = grasp_pose_frame;
+  trans.transform.translation.x = pose.pose.position.x; 
+  trans.transform.translation.y = pose.pose.position.y; 
+  trans.transform.translation.z = pose.pose.position.z;
+  trans.transform.rotation.x = pose.pose.orientation.x; 
+  trans.transform.rotation.y = pose.pose.orientation.y; 
+  trans.transform.rotation.z = pose.pose.orientation.z; 
+  trans.transform.rotation.w = pose.pose.orientation.w; 
+  //tf::StampedTransform(transform, ros::Time::now(), "base_footprint", grasp_frame);
+  //ros::Duration(0.25).sleep();
+  tangible_msgs::SetStaticTransform tf_srv;
+  tf_srv.request.transform = trans;
+  set_static_tf_client.call(tf_srv);
+
+
   // Set angle of meshes based on gripper open vs closed.
   double angle = ANGLE_GRIPPER_OPEN; //if is_hand_open else ANGLE_GRIPPER_CLOSED
 
   std::vector<visualization_msgs::Marker> markers;
   visualization_msgs::Marker mesh;
+  mesh.ns = ns;
   mesh.mesh_use_embedded_materials = false;
   mesh.header.frame_id = grasp_pose_frame;
   mesh.type = visualization_msgs::Marker::MESH_RESOURCE;
@@ -157,15 +177,15 @@ std::vector<visualization_msgs::Marker> GripperMarker::generateMarker(int start_
 
   mesh.mesh_resource = "package://pr2_description/meshes/gripper_v0/gripper_palm.dae";
   mesh.pose.orientation.w = 1;
-  mesh.id = 0;
+  mesh.id = start_id;
   markers.push_back( mesh );
   mesh.mesh_resource = "package://pr2_description/meshes/gripper_v0/l_finger.dae";
   mesh.pose = createPoseMsg(T_proximal);
-  mesh.id = 1;
+  mesh.id = start_id + 1;
   markers.push_back( mesh );
   mesh.mesh_resource = "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae";
   mesh.pose = createPoseMsg(T_distal);
-  mesh.id = 2;
+  mesh.id = start_id + 2;
   markers.push_back( mesh );
 
   T1.setOrigin(tf::Vector3(0.07691, -0.01, 0));
@@ -177,11 +197,11 @@ std::vector<visualization_msgs::Marker> GripperMarker::generateMarker(int start_
 
   mesh.mesh_resource = "package://pr2_description/meshes/gripper_v0/l_finger.dae";
   mesh.pose = createPoseMsg(T_proximal);
-  mesh.id = 3;
+  mesh.id = start_id + 3;
   markers.push_back( mesh );
   mesh.mesh_resource = "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae";
   mesh.pose = createPoseMsg(T_distal);
-  mesh.id = 4;
+  mesh.id = start_id + 4;
   markers.push_back( mesh );
 
 

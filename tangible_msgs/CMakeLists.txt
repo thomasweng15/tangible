@@ -70,6 +70,8 @@ add_service_files(
   GetGrasps.srv
   GetMatchingObjects.srv
   GetReleases.srv
+  SetStaticTransform.srv
+  DeleteStaticTransform.srv
   GetMovements.srv
 )
 

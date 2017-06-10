@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   tangible_msgs
   std_msgs
+  std_srvs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -179,7 +180,14 @@ add_dependencies(tangible_object_matching
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(tangible_grasp_generator ${catkin_LIBRARIES})
+target_link_libraries(tangible_object_matching ${catkin_LIBRARIES})
+
+add_library(tangible_grasp_test src/grasp_test.cpp)
+add_dependencies(tangible_grasp_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_grasp_test ${catkin_LIBRARIES})
 
 add_library(tangible_operation src/operation.cpp)
 add_dependencies(tangible_operation
@@ -269,7 +277,7 @@ target_link_libraries(compiler_node
 )
 
 add_executable(object_matching_node src/object_matching_node.cpp)
-add_dependencies(block_parsing_node
+add_dependencies(object_matching_node
   tangible_object_matching
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
@@ -277,6 +285,16 @@ add_dependencies(block_parsing_node
 target_link_libraries(object_matching_node 
   tangible_object_matching
   ${catkin_LIBRARIES}
+)
+
+add_executable(grasp_test_node src/grasp_test_node.cpp)
+add_dependencies(grasp_test_node
+  tangible_grasp_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(grasp_test_node 
+  tangible_grasp_test
 )
 
 add_executable(grasp_generator_node src/grasp_generator_node.cpp)

@@ -1,12 +1,11 @@
-#ifndef TANGIBLE_GRIPPER_MARKER
-#define TANGIBLE_GRIPPER_MARKER
+#ifndef TANGIBLE_GRASP_TEST
+#define TANGIBLE_GRASP_TEST
 
 #include <vector>
 
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "std_msgs/ColorRGBA.h"
-#include "tangible_msgs/SetStaticTransform.h"
+#include "std_srvs/Empty.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/TransformStamped.h"
@@ -76,22 +75,29 @@
 
 namespace tangible {
 
-class GripperMarker {
+struct Box {
+	double min_x;
+	double min_y;
+	double min_z;
+	double max_x;
+	double max_y;
+	double max_z;
+};
 
+class GraspTest {
 private:
 
 	ros::NodeHandle node_handle;
-    ros::ServiceClient set_static_tf_client;
+  ros::ServiceClient scene_client;
+  ros::ServiceClient grasp_client;
+
 
 public:
-	GripperMarker(ros::NodeHandle& n);
-	~GripperMarker();
+	GraspTest(ros::NodeHandle& n, std::string scene_service_name, std::string grasp_service_name);
+	~GraspTest();
 
-  const static int REACHABLE = 0;
-  const static int UNREACHABLE = 1;
-  const static int UNKNOWN = 2;
-
-std::vector<visualization_msgs::Marker> generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame, std::string ns);
+	bool testCallback(std_srvs::Empty::Request& req,
+                 std_srvs::Empty::Response& res);
 
 };
 
