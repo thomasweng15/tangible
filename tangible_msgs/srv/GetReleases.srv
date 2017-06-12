@@ -4,5 +4,7 @@ uint8 type
 tangible_msgs/Target target
 tangible_msgs/SceneObject object 
 tangible_msgs/Scene scene #to not collide with objects in the scene? could remove
+uint8 num_orientations
+float32 region_sample_spacing #in metres
 ---
 moveit_msgs/Grasp[] releases
