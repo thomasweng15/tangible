@@ -55,6 +55,7 @@ bool ReleaseGenerator::doIntersect(geometry_msgs::Point p1, geometry_msgs::Point
 
 bool ReleaseGenerator::isInside(std::vector<geometry_msgs::PointStamped> corners, geometry_msgs::PoseStamped pose)
 {
+    /*
     // There must be at least 3 vertices in polygon[]
  
     // Create a point for line segment from p to infinite
@@ -85,6 +86,31 @@ bool ReleaseGenerator::isInside(std::vector<geometry_msgs::PointStamped> corners
  
     // Return true if count is odd, false otherwise
     return count&1;  // Same as (count%2 == 1)
+    */
+  //vector<Point> points = polygon.getPoints();
+  int i, j; //nvert = points.size();
+  bool c = false;
+
+  for(i = 0, j = corners.size() - 1; i < corners.size(); j = i++) {
+    if( ( (corners[i].point.y >= pose.pose.position.y ) != (corners[j].point.y >= pose.pose.position.y) ) &&
+        (pose.pose.position.x <= (corners[j].point.x - corners[i].point.x) * (pose.pose.position.y - corners[i].point.y) / (corners[j].point.y - corners[i].point.y) + corners[i].point.x)
+      )
+      c = !c;
+  }
+
+  /*std::vector<geometry_msgs::PointStamped> corners_rev = corners;
+  std::reverse(corners_rev.begin(),corners_rev.end());
+  for(i = 0, j = corners_rev.size() - 1; i < corners_rev.size(); j = i++) {
+    if( ( (corners_rev[i].point.y >= pose.pose.position.y ) != (corners_rev[j].point.y >= pose.pose.position.y) ) &&
+        (pose.pose.position.x <= (corners_rev[j].point.x - corners_rev[i].point.x) * (pose.pose.position.y - corners_rev[i].point.y) / (corners_rev[j].point.y - corners_rev[i].point.y) + corners_rev[i].point.x)
+      )
+      c2 = !c2;
+  }
+
+  */
+
+  return c;
+
 }
 
 ReleaseGenerator::ReleaseGenerator(ros::NodeHandle& n){
@@ -110,22 +136,28 @@ bool ReleaseGenerator::releaseCallback(tangible_msgs::GetReleases::Request& req,
 }
 
 float ReleaseGenerator::random(float low, float high){
-    srand (static_cast <unsigned> (time(0)));
-    float r = low + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(high-low)));
-    return r;
+    //srand (static_cast <unsigned> (time(0)));
+    //float r = low + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(high-low)));
+    //return r;
+    float random = ((float) rand()) / (float) RAND_MAX;
+    float diff = high - low;
+    float r = random * diff;
+    return low + r;
+
 }
 
 void ReleaseGenerator::getReleases(){
   releases.clear();
 
   if (target.type == tangible_msgs::Target::POINT_LOCATION){
+  ROS_INFO("Point location type target");
   //pose of location gives x,y position for release. 
   geometry_msgs::PoseStamped release_pose;
   release_pose.header.frame_id = target.specified_point.header.frame_id;
   release_pose.pose.position.x = target.specified_point.point.x;
   release_pose.pose.position.y = target.specified_point.point.y;
 
-  release_pose.pose.position.z = target.specified_point.point.x + 
+  release_pose.pose.position.z = target.specified_point.point.z + 
                                     obj.bounding_box.dimensions.z + palm_dist + vertical_release_offset;
   if (release_type == tangible_msgs::GetReleases::Request::DROP){
     release_pose.pose.position.z+=drop_offset;
@@ -161,6 +193,7 @@ void ReleaseGenerator::getReleases(){
 
   else if (target.type == tangible_msgs::Target::OBJECT_SELECTOR){
     // get point location from object 
+  ROS_INFO("Object selector type target");
   geometry_msgs::PoseStamped release_pose;
   release_pose.header.frame_id = target.selected_object.bounding_box.pose.header.frame_id;
   release_pose.pose.position.x = target.selected_object.bounding_box.pose.pose.position.x;
@@ -203,6 +236,7 @@ void ReleaseGenerator::getReleases(){
     //REGION
     // randomly pick a point in region
     // pick multiple points? 
+  ROS_INFO("Region type target");
     geometry_msgs::PoseStamped release_pose;
     while (true){
 
@@ -217,14 +251,30 @@ void ReleaseGenerator::getReleases(){
 
       float x = random(min_x, max_x);
       float y = random(min_y, max_y);
+      ROS_INFO("Random: %f, %f", x,y);
+      ROS_INFO("X low high: %f, %f", min_x,max_x);
+      ROS_INFO("Y low high: %f, %f", min_y,max_y);
 
-      geometry_msgs::PoseStamped release_pose;
+      ROS_INFO("c0: %f, %f", c0.point.x, c0.point.y);
+      ROS_INFO("c1: %f, %f", c1.point.x, c1.point.y);
+      ROS_INFO("c2: %f, %f", c2.point.x, c2.point.y);
+      ROS_INFO("c3: %f, %f", c3.point.x, c3.point.y);
+
+      //geometry_msgs::PoseStamped release_pose;
       release_pose.header.frame_id = target.region_corners[0].header.frame_id;
       release_pose.pose.position.x = x;
       release_pose.pose.position.y = y;
 
+      ROS_INFO("Current release pose: %f, %f, %f", 
+        release_pose.pose.position.x,
+        release_pose.pose.position.y,
+        release_pose.pose.position.z);
+
       if (isInside(target.region_corners, release_pose)){
         break;
+      }
+      else {
+      ROS_INFO("Not inside");
       }
 
     }
@@ -234,6 +284,39 @@ void ReleaseGenerator::getReleases(){
   if (release_type == tangible_msgs::GetReleases::Request::DROP){
     release_pose.pose.position.z+=drop_offset;
   }
+
+      ROS_INFO("Updates release pose: %f, %f, %f", 
+        release_pose.pose.position.x,
+        release_pose.pose.position.y,
+        release_pose.pose.position.z);
+
+
+
+double yaw = 0.0; // for now                                 
+  geometry_msgs::Quaternion q = tf::createQuaternionMsgFromRollPitchYaw(0.0,3.14/2.0, yaw);
+  release_pose.pose.orientation.x = q.x;
+  release_pose.pose.orientation.y = q.y;
+  release_pose.pose.orientation.z = q.z;
+  release_pose.pose.orientation.w = q.w;
+
+  moveit_msgs::Grasp release;
+  release.grasp_pose = release_pose;
+  release.pre_grasp_approach.desired_distance = pre_release_dist;
+  release.pre_grasp_approach.direction.header.frame_id = target.specified_point.header.frame_id;
+  geometry_msgs::Vector3 pre_vec;
+  pre_vec.x = 0.0;
+  pre_vec.y = 0.0;
+  pre_vec.z = 1.0; //above grasp
+  release.pre_grasp_approach.direction.vector = pre_vec;
+
+  release.post_grasp_retreat.desired_distance = post_release_dist;
+  release.post_grasp_retreat.direction.header.frame_id = target.specified_point.header.frame_id;
+  geometry_msgs::Vector3 post_vec;
+  post_vec.x = 0.0;
+  post_vec.y = 0.0;
+  post_vec.z = 1.0; //above grasp
+  release.post_grasp_retreat.direction.vector = post_vec;
+  releases.push_back(release);
 
 }
 }

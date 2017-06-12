@@ -59,7 +59,7 @@ bool ReleaseTest::testCallback(tangible_msgs::ReleaseTest::Request& req,
           geometry_msgs::PointStamped point;
           point.header.frame_id = "base_footprint";
           point.point.x = 0.70;
-          point.point.y = 0.70;
+          point.point.y = -0.70;
           point.point.z = obj.bounding_box.pose.pose.position.z - obj.bounding_box.dimensions.z/2.0;
 
           target.specified_point = point;
@@ -88,6 +88,11 @@ bool ReleaseTest::testCallback(tangible_msgs::ReleaseTest::Request& req,
         release_client.call(release_srv);
         if (release_srv.response.releases.size() > 0){
           ROS_INFO("Got releases");
+          for (int j =0; j < release_srv.response.releases.size(); j ++){
+            ROS_INFO("Release pose: %f, %f, %f", release_srv.response.releases[j].grasp_pose.pose.position.x, 
+                                                 release_srv.response.releases[j].grasp_pose.pose.position.y,
+                                                 release_srv.response.releases[j].grasp_pose.pose.position.z);
+          }
         }
         else {
           ROS_INFO("No releases found");
