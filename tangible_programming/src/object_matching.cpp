@@ -112,7 +112,7 @@ bool ObjectMatching::doIntersect(geometry_msgs::Point p1, geometry_msgs::Point q
 bool ObjectMatching::isInside(std::vector<geometry_msgs::PointStamped> corners, geometry_msgs::PoseStamped pose)
 {
     // There must be at least 3 vertices in polygon[]
- 
+    /* 
     // Create a point for line segment from p to infinite
     geometry_msgs::Point extreme;
     extreme.x = 10000.0;
@@ -141,6 +141,30 @@ bool ObjectMatching::isInside(std::vector<geometry_msgs::PointStamped> corners, 
  
     // Return true if count is odd, false otherwise
     return count&1;  // Same as (count%2 == 1)
+    */
+ int i, j; //nvert = points.size();
+  bool c = false;
+
+  for(i = 0, j = corners.size() - 1; i < corners.size(); j = i++) {
+    if( ( (corners[i].point.y >= pose.pose.position.y ) != (corners[j].point.y >= pose.pose.position.y) ) &&
+        (pose.pose.position.x <= (corners[j].point.x - corners[i].point.x) * (pose.pose.position.y - corners[i].point.y) / (corners[j].point.y - corners[i].point.y) + corners[i].point.x)
+      )
+      c = !c;
+  }
+
+  /*std::vector<geometry_msgs::PointStamped> corners_rev = corners;
+  std::reverse(corners_rev.begin(),corners_rev.end());
+  for(i = 0, j = corners_rev.size() - 1; i < corners_rev.size(); j = i++) {
+    if( ( (corners_rev[i].point.y >= pose.pose.position.y ) != (corners_rev[j].point.y >= pose.pose.position.y) ) &&
+        (pose.pose.position.x <= (corners_rev[j].point.x - corners_rev[i].point.x) * (pose.pose.position.y - corners_rev[i].point.y) / (corners_rev[j].point.y - corners_rev[i].point.y) + corners_rev[i].point.x)
+      )
+      c2 = !c2;
+  }
+
+  */
+
+  return c;
+
 }
 
 bool ObjectMatching::matchesRegion(tangible_msgs::SceneObject obj, tangible_msgs::Target target){

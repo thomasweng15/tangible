@@ -7,7 +7,7 @@ MatchTest::MatchTest(ros::NodeHandle& n, std::string scene_service_name, std::st
   node_handle = n;
   // marker_pub = node_handle.advertise<visualization_msgs::Marker>("grasp_markers", 20);
   scene_client = n.serviceClient<tangible_msgs::GetScene>(scene_service_name);
-  match_client = n.serviceClient<tangible_msgs::GetGrasps>(object_matching_service_name);
+  match_client = n.serviceClient<tangible_msgs::GetMatchingObjects>(object_matching_service_name);
 
 }
 
