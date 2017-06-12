@@ -175,6 +175,17 @@ target_link_libraries(tangible_grasp_generator
   ${catkin_LIBRARIES}
 )
 
+add_library(tangible_release_generator src/release_generator.cpp)
+add_dependencies(tangible_release_generator
+  tangible_gripper_marker
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_release_generator 
+  tangible_gripper_marker
+  ${catkin_LIBRARIES}
+)
+
 add_library(tangible_object_matching src/object_matching.cpp)
 add_dependencies(tangible_object_matching
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -188,6 +199,20 @@ add_dependencies(tangible_grasp_test
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(tangible_grasp_test ${catkin_LIBRARIES})
+
+add_library(tangible_release_test src/release_test.cpp)
+add_dependencies(tangible_release_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_release_test ${catkin_LIBRARIES})
+
+add_library(tangible_match_test src/match_test.cpp)
+add_dependencies(tangible_match_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_match_test ${catkin_LIBRARIES})
 
 add_library(tangible_operation src/operation.cpp)
 add_dependencies(tangible_operation
@@ -297,6 +322,26 @@ target_link_libraries(grasp_test_node
   tangible_grasp_test
 )
 
+add_executable(release_test_node src/release_test_node.cpp)
+add_dependencies(release_test_node
+  tangible_release_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(release_test_node 
+  tangible_release_test
+)
+
+add_executable(match_test_node src/match_test_node.cpp)
+add_dependencies(match_test_node
+  tangible_match_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(match_test_node 
+  tangible_match_test
+)
+
 add_executable(grasp_generator_node src/grasp_generator_node.cpp)
 add_dependencies(grasp_generator_node
   tangible_grasp_generator
@@ -307,6 +352,19 @@ add_dependencies(grasp_generator_node
 target_link_libraries(grasp_generator_node 
   tangible_gripper_marker
   tangible_grasp_generator
+  ${catkin_LIBRARIES}
+)
+
+add_executable(release_generator_node src/release_generator_node.cpp)
+add_dependencies(release_generator_node
+  tangible_release_generator
+  tangible_gripper_marker
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(release_generator_node 
+  tangible_gripper_marker
+  tangible_release_generator
   ${catkin_LIBRARIES}
 )
 

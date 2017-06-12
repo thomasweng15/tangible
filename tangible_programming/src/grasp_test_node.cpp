@@ -2,10 +2,6 @@
 #include "std_srvs/Empty.h"
 #include "tangible/grasp_test.h"
 
-bool testCallback(std_srvs::Empty::Request& req,
-                 std_srvs::Empty::Response& res){
-};
-
 using tangible::GraspTest;
 
 int main(int argc, char **argv)
