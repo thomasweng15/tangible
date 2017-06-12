@@ -92,6 +92,9 @@ private:
 	ros::NodeHandle node_handle;
   ros::ServiceClient scene_client;
   ros::ServiceClient match_client;
+  ros::Publisher marker_pub;
+void makeMarker(tangible_msgs::SceneObject obj, bool original, int id);
+
 
 
 public:
