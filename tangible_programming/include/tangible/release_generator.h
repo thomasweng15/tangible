@@ -99,42 +99,40 @@ private:
 	tangible_msgs::SceneObject obj;
   tangible_msgs::Target target;
   int release_type;
+  int num_orientations;
+  double region_sample_spacing;
 	//distance from wrist to gripper on PR2
-  	const static double palm_dist = 0.12;
-  	const static double pre_release_dist = 0.15;
-  	const static double post_release_dist = 0.15;
-    const static double drop_offset = 0.15;
-  	// const static int min_points_in_gripper = 50;
-   //  // max number of points in cluster that can intersect with fingers
-   //  const static int max_finger_collision_points = 7;
-   //  const static int max_palm_collision_points = 6;
-   //  // approximately half hand thickness
-   //  const static double half_gripper_height = 0.03;
-    // approximate distance from palm frame origin to palm surface
-    const static double dist_to_palm = 0.12;
-    // approximate distance from palm frame origin to fingertip with gripper closed
-    const static double dist_to_fingertips = 0.20;
-    // distance above surface to release
-    const static double vertical_release_offset = 0.03;
-    // approx dist between fingers when gripper open
-    // const static double gripper_palm_width = 0.08;
-    // // approx height of pads of fingertips
-    // const static double gripper_finger_height = 0.03;
+	const static double palm_dist = 0.12;
+	const static double pre_release_dist = 0.15;
+	const static double post_release_dist = 0.15;
+  const static double drop_offset = 0.15;
+  // const static int min_points_in_gripper = 50;
+  //  // max number of points in cluster that can intersect with fingers
+  //  const static int max_finger_collision_points = 7;
+  //  const static int max_palm_collision_points = 6;
+  //  // approximately half hand thickness
+  //  const static double half_gripper_height = 0.03;
+  // approximate distance from palm frame origin to palm surface
+  const static double dist_to_palm = 0.12;
+  // approximate distance from palm frame origin to fingertip with gripper closed
+  const static double dist_to_fingertips = 0.20;
+  // distance above surface to release
+  const static double vertical_release_offset = 0.03;
+  // approx dist between fingers when gripper open
+  // const static double gripper_palm_width = 0.08;
+  // // approx height of pads of fingertips
+  // const static double gripper_finger_height = 0.03;
 
-    // const static double y_offset = 0.005;
-  	void getReleases();
-    int orientation(geometry_msgs::Point p, geometry_msgs::Point q, geometry_msgs::Point r);
-  bool doIntersect(geometry_msgs::Point p1, geometry_msgs::Point q1, 
-    geometry_msgs::Point p2, geometry_msgs::Point q2);
+  // const static double y_offset = 0.005;
+	void getReleases();
   bool isInside(std::vector<geometry_msgs::PointStamped> corners, geometry_msgs::PoseStamped pose);
   bool matchesRegion(tangible_msgs::SceneObject obj, tangible_msgs::Target target);
   bool matchesObjSelector (tangible_msgs::SceneObject obj, tangible_msgs::Target target);
-  bool onSegment(geometry_msgs::Point p, geometry_msgs::Point q, geometry_msgs::Point r);
   float random(float low, float high);
 	// bool hasCollision(moveit_msgs::Grasp grasp, sensor_msgs::PointCloud2 pc2);
 	// int findPointsInBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, Box box, std::string frame);
-    ros::ServiceClient set_static_tf_client;
-geometry_msgs::PoseStamped poseFromVec(geometry_msgs::PoseStamped pose, geometry_msgs::Vector3 vec, float dist);
+  ros::ServiceClient set_static_tf_client;
+  geometry_msgs::PoseStamped poseFromVec(geometry_msgs::PoseStamped pose, geometry_msgs::Vector3 vec, float dist);
 
 
 public:

@@ -92,6 +92,7 @@ public:
   const static int UNKNOWN = 2;
 
 std::vector<visualization_msgs::Marker> generateMarker(int start_id, geometry_msgs::PoseStamped pose, int reachability, std::string grasp_pose_frame, std::string ns);
+std::vector<visualization_msgs::Marker> generateMarkerWithColour(int start_id, geometry_msgs::PoseStamped pose, std_msgs::ColorRGBA colour, std::string grasp_pose_frame, std::string ns);
 
 };
 
