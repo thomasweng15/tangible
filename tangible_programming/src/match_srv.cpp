@@ -32,7 +32,15 @@ bool match_callback(tangible_msgs::GetMatchingObjects::Request& req, tangible_ms
 					objs_out.push_back(objs_in[i]);
 				break;
 			case tangible_msgs::Target::REGION:
-				// TO-DO
+				// NOTE: assumptions :
+				// - region_corners[0] is the bottom left corner of the region
+				// - region_corners[1] is the top right corner of the region
+				// - the region is on the table top => I do not need to check z axis
+				if( (target.region_corners[0].point.x <= objs_in[i].bounding_box.pose.pose.position.x  && 
+					 target.region_corners[1].point.x >= objs_in[i].bounding_box.pose.pose.position.x) &&
+					(target.region_corners[0].point.y <= objs_in[i].bounding_box.pose.pose.position.y &&
+					 target.region_corners[1].point.y >= objs_in[i].bounding_box.pose.pose.position.y))
+					objs_out.push_back(objs_in[i]);
 				break;
 			case tangible_msgs::Target::OBJECT_SELECTOR: // TO-DO rename to OBJECT_LOCATION
 				// ROS_INFO("matching object bb(%f, %f, %f) to object bb(%f, %f, %f)", objs_in[i].bounding_box.dimensions.x,

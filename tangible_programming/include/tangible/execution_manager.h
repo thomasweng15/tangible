@@ -20,6 +20,8 @@ namespace tangible
 class ExecutionManager
 {
 private:
+	const static int STOPPED = -1;
+	
 	ros::NodeHandle node_handle;
 	ros::Subscriber exec_mode;
 
