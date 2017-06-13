@@ -202,10 +202,11 @@ target_link_libraries(tangible_grasp_test ${catkin_LIBRARIES})
 
 add_library(tangible_release_test src/release_test.cpp)
 add_dependencies(tangible_release_test
+  tangible_gripper_marker
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(tangible_release_test ${catkin_LIBRARIES})
+target_link_libraries(tangible_release_test tangible_gripper_marker ${catkin_LIBRARIES})
 
 add_library(tangible_match_test src/match_test.cpp)
 add_dependencies(tangible_match_test

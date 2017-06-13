@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <ctime>
 // #include "stdlib.h"
+#include <sstream>
 
 #include "rapid_perception/scene.h"
 #include "rapid_perception/scene_parsing.h"
@@ -133,8 +134,6 @@ private:
 	// int findPointsInBox(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, Box box, std::string frame);
   ros::ServiceClient set_static_tf_client;
   geometry_msgs::PoseStamped poseFromVec(geometry_msgs::PoseStamped pose, geometry_msgs::Vector3 vec, float dist);
-
-
 public:
 	ReleaseGenerator(ros::NodeHandle& n);
 	~ReleaseGenerator();
