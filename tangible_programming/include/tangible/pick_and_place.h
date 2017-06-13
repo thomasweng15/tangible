@@ -29,6 +29,8 @@ private:
 
 	bool once;
 
+	tangible_msgs::SceneObject obj_of_op;
+
 	bool attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& pick_status);
 	bool attempt_place(tangible_msgs::SceneObject obj_held);
 

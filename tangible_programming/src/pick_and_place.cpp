@@ -37,10 +37,7 @@ bool PickAndPlace::execute()
 	ROS_INFO("executing pick and place operation");
 
 	int attempt = 0;
-	// NOTE that the content is only used when it holds valid information so no need
-	// to clean it up from one execution to another.
-	tangible_msgs::SceneObject obj_of_op;
-
+	
 	while(!done[PLACE] && attempt <= OPERATION_MAX_ATTEMPTS)
 	{
 		
@@ -51,6 +48,10 @@ bool PickAndPlace::execute()
 			done[PICK] = attempt_pick(obj_of_op, pick_status);
 
 		if(done[PICK])
+			// NOTE: the content of obj_of_op is only used when it holds  
+			// valid information so no need to clean it up from one attempt 
+			// of operation to another or from one iteration over the entire 
+			// program of operations to another.	
 			done[PLACE] = attempt_place(obj_of_op);
 
 		attempt++;
@@ -81,6 +82,8 @@ bool PickAndPlace::execute()
 
 	if(done[PLACE])
 		all_done = true;
+
+	ROS_INFO("execution of operation was %s", all_done ? "SUCCESSFUL" : "UNSUCCESSFUL");
 
 	return all_done;
 	// TO-DO what to return is debatable
@@ -184,6 +187,12 @@ bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& p
 bool PickAndPlace::attempt_place(tangible_msgs::SceneObject obj_held)
 {
 	ROS_INFO("   place...");
+	ROS_INFO("   object bb(%f, %f, %f) at (%f, %f, %f):", obj_held.bounding_box.dimensions.x,
+														  obj_held.bounding_box.dimensions.y,
+														  obj_held.bounding_box.dimensions.z,
+														  obj_held.bounding_box.pose.pose.position.x,
+														  obj_held.bounding_box.pose.pose.position.y,
+														  obj_held.bounding_box.pose.pose.position.z);
 
 	tangible_msgs::Scene scene = get_scene();
 

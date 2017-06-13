@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 
 #include "ros/ros.h"
@@ -9,6 +10,8 @@
 
 bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetScene::Response& res)
 {
+	int input; // to simulate object being picked up
+
 	tangible_msgs::Scene scene;
 	tangible_msgs::Surface srf;
 	tangible_msgs::SceneObject obj;
@@ -32,6 +35,10 @@ bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetSce
 	bb.dimensions.z = 3;
 	obj.bounding_box = bb;
 	scene.objects.push_back(obj);
+	// ROS_INFO("add object #1? 1: YES."); // to simulate object being picked up
+	// std::cin >> input;
+	// if(input == 1)
+	// 	scene.objects.push_back(obj);
 
 	// object 2
 	bb.pose.pose.position.x = 1;
@@ -42,6 +49,11 @@ bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetSce
 	bb.dimensions.z = 2;
 	obj.bounding_box = bb;
 	scene.objects.push_back(obj);
+	// ROS_INFO("add object #2? 1: YES."); // to simulate object being picked up
+	// std::cin >> input;
+	// if(input == 1)
+	// 	scene.objects.push_back(obj);
+	
 
 	// object 3
 	bb.pose.pose.position.x = 4;
@@ -52,6 +64,10 @@ bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetSce
 	bb.dimensions.z = 2;
 	obj.bounding_box = bb;
 	scene.objects.push_back(obj);
+	// ROS_INFO("add object #3? 1: YES."); // to simulate object being picked up
+	// std::cin >> input;
+	// if(input == 1)
+	// 	scene.objects.push_back(obj);
 
 	res.scene = scene;
 

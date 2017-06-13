@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "ros/ros.h"
 
 #include "tangible_msgs/GetMovements.h"
@@ -5,6 +7,13 @@
 bool move_callback(tangible_msgs::GetMovements::Request& req, tangible_msgs::GetMovements::Response& res)
 {
 	res.success = true;
+	// int input; // to simulate actual service
+	// ROS_INFO("arm moved? 1: YES");
+	// std::cin >> input;
+	// if(input == 1)
+	// 	res.success = true;
+	// else
+	// 	res.success = false;
 	return true;
 }
 
