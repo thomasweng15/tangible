@@ -11,7 +11,7 @@ ExecutionManager::ExecutionManager(ros::NodeHandle& n)
 	exec_mode = node_handle.subscribe(system_mode_topic, 1000, &tangible::ExecutionManager::mode_callback, this);
 
 	executing = false;
-	current_operation_index = -1;
+	current_operation_index = STOPPED;
 
 	ROS_INFO("Execution node is instantiated and listens to %s topic.", system_mode_topic.c_str());
 	// NOTE: system_mode_topic is tpbd_mode
@@ -144,28 +144,41 @@ void ExecutionManager::start_execution()
 {
 	ROS_INFO("executing the program");
 	
+	bool full_program_iteration = true;
+
+	// TO-DO can be more efficient if current_operation_index is only reset upon clearing programs (currently
+	// at stopping programs) so we can start this loop from current_operation_index instead of the beginning of
+	// of the program and skipping over the programs that are done.
 	for(int i = 0; i < program.size(); i++)
 	{
 		if(program[i] -> is_done())
 			continue;
+		// TO-DO remove if the loop starts at current_operation_index
+
 		current_operation_index = i;
+		
 		if(executing)
-			program[i] -> execute();
+			full_program_iteration = program[i] -> execute();
+
+		// NOTE: should not move to the next operation if the most recent operation failed
+		if(!full_program_iteration)
+			break;
 	}
 
-	
-	for(int i = 0; i < program.size(); i++)
-		program[i] -> reset();
+
+	if(full_program_iteration)
+		for(int i = 0; i < program.size(); i++)
+			program[i] -> reset();
 	
 }
 
 void ExecutionManager::stop_execution()
 {
-	ROS_INFO("stop moving the robot");
+	ROS_INFO("stop moving the robot at operation# %d", current_operation_index);
 
-	if(!program.empty())
+	if(!program.empty() && current_operation_index != STOPPED)
 		program[current_operation_index] -> stop();
-	current_operation_index = -1;
+	current_operation_index = STOPPED;
 }
 
 }

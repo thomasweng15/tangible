@@ -34,8 +34,8 @@ bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetSce
 	scene.objects.push_back(obj);
 
 	// object 2
-	bb.pose.pose.position.x = 4;
-	bb.pose.pose.position.y = 1;
+	bb.pose.pose.position.x = 1;
+	bb.pose.pose.position.y = 4;
 	bb.pose.pose.position.z = 0;
 	bb.dimensions.x = 2;
 	bb.dimensions.y = 2;
@@ -44,8 +44,8 @@ bool scene_callback(tangible_msgs::GetScene::Request& req, tangible_msgs::GetSce
 	scene.objects.push_back(obj);
 
 	// object 3
-	bb.pose.pose.position.x = 1;
-	bb.pose.pose.position.y = 4;
+	bb.pose.pose.position.x = 4;
+	bb.pose.pose.position.y = 1;
 	bb.pose.pose.position.z = 0;
 	bb.dimensions.x = 1;
 	bb.dimensions.y = 1;
