@@ -85,6 +85,9 @@ private:
 	ros::NodeHandle node_handle;
   ros::ServiceClient scene_client;
   ros::ServiceClient release_client;
+  ros::Publisher marker_pub;
+  void publishMarkers(std::vector<moveit_msgs::Grasp> releases);
+
 
 
 public:
