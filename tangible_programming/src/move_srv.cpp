@@ -6,7 +6,7 @@
 
 bool move_callback(tangible_msgs::GetMovements::Request& req, tangible_msgs::GetMovements::Response& res)
 {
-	res.success = true;
+	res.status = true;
 	// int input; // to simulate actual service
 	// ROS_INFO("arm moved? 1: YES");
 	// std::cin >> input;

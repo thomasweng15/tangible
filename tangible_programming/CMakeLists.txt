@@ -7,6 +7,7 @@ project(tangible_programming)
 find_package(catkin REQUIRED COMPONENTS
   rapid_perception
   ar_track_alvar_msgs
+  moveit_ros_planning_interface
   roscpp
   message_generation
   geometry_msgs
@@ -215,6 +216,13 @@ add_dependencies(tangible_match_test
 )
 target_link_libraries(tangible_match_test ${catkin_LIBRARIES})
 
+add_library(tangible_arm_motion src/arm_motion.cpp)
+add_dependencies(tangible_arm_motion
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_arm_motion ${catkin_LIBRARIES})
+
 add_library(tangible_operation src/operation.cpp)
 add_dependencies(tangible_operation
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -276,6 +284,17 @@ target_link_libraries(block_parsing_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(compiler_node src/compiler_node.cpp)
+add_dependencies(compiler_node
+  tangible_compiler
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(compiler_node 
+  tangible_compiler
+  ${catkin_LIBRARIES}
+)
+
 add_executable(program_execution_node src/execution_manager_node.cpp)
 add_dependencies(program_execution_node
   tangible_operation
@@ -291,17 +310,6 @@ target_link_libraries(program_execution_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(compiler_node src/compiler_node.cpp)
-add_dependencies(compiler_node
-  tangible_compiler
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(compiler_node 
-  tangible_compiler
-  ${catkin_LIBRARIES}
-)
-
 add_executable(object_matching_node src/object_matching_node.cpp)
 add_dependencies(object_matching_node
   tangible_object_matching
@@ -310,6 +318,43 @@ add_dependencies(object_matching_node
 )
 target_link_libraries(object_matching_node 
   tangible_object_matching
+  ${catkin_LIBRARIES}
+)
+
+add_executable(grasp_generator_node src/grasp_generator_node.cpp)
+add_dependencies(grasp_generator_node
+  tangible_grasp_generator
+  tangible_gripper_marker
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(grasp_generator_node 
+  tangible_gripper_marker
+  tangible_grasp_generator
+  ${catkin_LIBRARIES}
+)
+
+add_executable(release_generator_node src/release_generator_node.cpp)
+add_dependencies(release_generator_node
+  tangible_release_generator
+  tangible_gripper_marker
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(release_generator_node 
+  tangible_gripper_marker
+  tangible_release_generator
+  ${catkin_LIBRARIES}
+)
+
+add_executable(arm_motion_node src/arm_motion_node.cpp)
+add_dependencies(arm_motion_node
+  tangible_arm_motion
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(arm_motion_node 
+  tangible_arm_motion
   ${catkin_LIBRARIES}
 )
 
@@ -341,32 +386,6 @@ add_dependencies(match_test_node
 )
 target_link_libraries(match_test_node 
   tangible_match_test
-)
-
-add_executable(grasp_generator_node src/grasp_generator_node.cpp)
-add_dependencies(grasp_generator_node
-  tangible_grasp_generator
-  tangible_gripper_marker
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(grasp_generator_node 
-  tangible_gripper_marker
-  tangible_grasp_generator
-  ${catkin_LIBRARIES}
-)
-
-add_executable(release_generator_node src/release_generator_node.cpp)
-add_dependencies(release_generator_node
-  tangible_release_generator
-  tangible_gripper_marker
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(release_generator_node 
-  tangible_gripper_marker
-  tangible_release_generator
-  ${catkin_LIBRARIES}
 )
 
 add_executable(fake_compilation_node src/program_srv.cpp)

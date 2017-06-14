@@ -74,6 +74,7 @@ add_service_files(
   DeleteStaticTransform.srv
   GetMovements.srv
   ReleaseTest.srv
+  StopMovements.srv
 )
 
 ## Generate actions in the 'action' folder
