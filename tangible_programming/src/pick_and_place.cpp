@@ -358,7 +358,7 @@ bool PickAndPlace::move(std::vector<moveit_msgs::Grasp> poses)
 
 	bool movement_success = false;
 	if(success)
-		movement_success = move_srv.response.success;
+		movement_success = move_srv.response.status;
 	else
 		ROS_ERROR("failed to call service %s to move the arm.", move_service.c_str());
 
@@ -368,7 +368,7 @@ bool PickAndPlace::move(std::vector<moveit_msgs::Grasp> poses)
 void PickAndPlace::stop()
 {
 	ROS_INFO("stop Pick and Place operation");
-	// TO-DO
+	// TO-DO: make a call to the stop service 
 }
 
 void PickAndPlace::reset()
