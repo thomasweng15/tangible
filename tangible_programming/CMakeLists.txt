@@ -455,6 +455,15 @@ target_link_libraries(fake_move_arm_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(arm_motion_test src/arm_motion_test.cpp)
+add_dependencies(arm_motion_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(arm_motion_test 
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############

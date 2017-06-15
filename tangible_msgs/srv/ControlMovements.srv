@@ -1,2 +1,5 @@
+uint8 DISABLE = 0
+uint8 ENABLE = 1
+uint8 type
 ---
 # just in case we want some information back

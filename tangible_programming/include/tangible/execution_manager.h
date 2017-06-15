@@ -28,7 +28,6 @@ private:
 	int mode;
 	std::vector<tangible::Operation*> program;
 
-	bool executing;
 	int current_operation_index;
 
 	std::string get_private_param(std::string param_name);

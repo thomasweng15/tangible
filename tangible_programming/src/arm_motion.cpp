@@ -7,18 +7,17 @@ ArmMotion::ArmMotion(ros::NodeHandle& n) : right_arm("right_arm"), right_gripper
 {
 	node_handle = n;
 	srv_move = node_handle.advertiseService("move_arm", &ArmMotion::move_callback, this);
-	srv_stop = node_handle.advertiseService("stop_arm", &ArmMotion::stop_callback, this);
+	srv_control = node_handle.advertiseService("control_arm", &ArmMotion::control_callback, this);
 
-	status = SUCCESSUL;
-	stopped = false;
+	status = UNSUCCESSFUL;
+	motion = DISABLED;
 }
 
 ArmMotion::~ArmMotion() {}
 
 bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangible_msgs::GetMovements::Response& res)
 {
-	ROS_INFO("planning motion");
-	stopped = false;
+	ROS_INFO("planning motion...");
 	status = UNSUCCESSFUL;
 
 	moveit::planning_interface::MoveGroup::Plan plan;
@@ -26,7 +25,7 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 	for(int i = 0; i < req.poses.size(); i++)
 	{
 		
-		if(stopped)
+		if(motion == DISABLED)
 			break;
 
 		geometry_msgs::Pose grasp, pre_grasp, post_grasp;
@@ -64,26 +63,28 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 			continue;
 		}
 
-		if(stopped)
+		if(motion == DISABLED)
 			break;
+
+		ROS_INFO("motion in progress...");
 
 		right_arm.setPoseTarget(pre_grasp);
 		right_arm.move();
 
-		if(stopped)
+		if(motion == DISABLED)
 			break;
 
 		if(req.type == tangible_msgs::GetMovements::Request::PICK)
 			right_gripper.open();
 		// TO-DO handle the case when oppening gripper is not successful
 
-		if(stopped)
+		if(motion == DISABLED)
 			break;
 
 		right_arm.setPoseTarget(grasp);
 		right_arm.move();
 
-		if(stopped)
+		if(motion == DISABLED)
 			break;
 
 		if(req.type == tangible_msgs::GetMovements::Request::PICK)
@@ -92,13 +93,15 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 			right_gripper.open();
 		// TO-DO handle the case when gripping (pick) or openning gripper (release) is not successful
 
-		if(stopped)
+		if(motion == DISABLED)
 			break;
 
 		right_arm.setPoseTarget(post_grasp);
 		right_arm.move();
 
 		// NOTE: no need to check again whether moving to post_grasp was successful
+
+		// TO-DO handle the case when any of the movements (arm or gripper) are not successful
 
 		status = SUCCESSUL;
 		break;
@@ -118,11 +121,23 @@ geometry_msgs::Point ArmMotion::get_relative_point(geometry_msgs::Point org, geo
 	return relative_point;
 }
 
-bool ArmMotion::stop_callback(tangible_msgs::StopMovements::Request& req, tangible_msgs::StopMovements::Response& res)
+bool ArmMotion::control_callback(tangible_msgs::ControlMovements::Request& req, tangible_msgs::ControlMovements::Response& res)
 {
-	ROS_INFO("stopping all movements");
-	stopped = true;
-	right_arm.stop();
+	if(req.type == tangible_msgs::ControlMovements::Request::ENABLE)
+	{
+		ROS_INFO("enabling movements");
+		motion = ENABLED;
+	}
+	else if(req.type == tangible_msgs::ControlMovements::Request::DISABLE)
+	{
+		ROS_INFO("stopping all movements");
+		motion = DISABLED;
+		right_arm.stop();
+		// TO-DO also stop the gripper if that's the kind of motion in progress?
+	}
+	else
+		ROS_ERROR("Motion control type %d not recognized.", req.type);
+
 	return true;
 }
 
