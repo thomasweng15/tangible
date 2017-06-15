@@ -7,7 +7,7 @@
 
 // user-defined classes
 #include "tangible/operation.h"
-#include "tangible/pick_and_place.h"
+#include "tangible/pick_and_release.h"
 
 // msg's and srv's
 #include "tangible_msgs/Mode.h"

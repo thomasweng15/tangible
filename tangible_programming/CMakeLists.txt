@@ -230,13 +230,13 @@ add_dependencies(tangible_operation
 )
 target_link_libraries(tangible_operation ${catkin_LIBRARIES})
 
-add_library(tangible_pick_and_place src/pick_and_place.cpp)
-add_dependencies(tangible_pick_and_place
+add_library(tangible_pick_and_release src/pick_and_release.cpp)
+add_dependencies(tangible_pick_and_release
   tangible_operation
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(tangible_pick_and_place 
+target_link_libraries(tangible_pick_and_release 
   tangible_operation
   ${catkin_LIBRARIES}
 )
@@ -244,13 +244,13 @@ target_link_libraries(tangible_pick_and_place
 add_library(tangible_execution_manager src/execution_manager.cpp)
 add_dependencies(tangible_execution_manager
   tangible_operation
-  tangible_pick_and_place
+  tangible_pick_and_release
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(tangible_execution_manager
   tangible_operation
-  tangible_pick_and_place  
+  tangible_pick_and_release  
   ${catkin_LIBRARIES}
 )
 
@@ -298,14 +298,14 @@ target_link_libraries(compiler_node
 add_executable(program_execution_node src/execution_manager_node.cpp)
 add_dependencies(program_execution_node
   tangible_operation
-  tangible_pick_and_place
+  tangible_pick_and_release
   tangible_execution_manager
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(program_execution_node
   tangible_operation
-  tangible_pick_and_place 
+  tangible_pick_and_release 
   tangible_execution_manager
   ${catkin_LIBRARIES}
 )

@@ -1,15 +1,15 @@
-#include "tangible/pick_and_place.h"
+#include "tangible/pick_and_release.h"
 
 namespace tangible
 {
 
-PickAndPlace::PickAndPlace(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction> ins) : Operation (n, ins) 
+PickAndRelease::PickAndRelease(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction> ins) : Operation (n, ins) 
 {
 	// TO-DO error-checking
 	// make sure there are exactly two instructions within the operation
-	// the first instruction is a pick and the second one is a place
+	// the first instruction is a pick and the second one is a release
 
-	// ROS_INFO("a pick and place operation created with the following instructions");
+	// ROS_INFO("a pick and release operation created with the following instructions");
 	// for(int i = 0; i < instructions.size(); i++)
 	// 	switch(instructions[i].type)
 	// 	{
@@ -30,15 +30,15 @@ PickAndPlace::PickAndPlace(ros::NodeHandle& n, std::vector<tangible_msgs::Instru
 	once = false; 
 }
 
-PickAndPlace::~PickAndPlace() {}
+PickAndRelease::~PickAndRelease() {}
 
-bool PickAndPlace::execute() 
+bool PickAndRelease::execute() 
 {
-	ROS_INFO("executing pick and place operation");
+	ROS_INFO("executing pick and release operation");
 
 	int attempt = 0;
 	
-	while(!done[PLACE] && attempt <= OPERATION_MAX_ATTEMPTS)
+	while(!done[RELEASE] && attempt <= OPERATION_MAX_ATTEMPTS)
 	{
 		
 		ROS_INFO("attempt #%d", attempt+1);
@@ -52,35 +52,35 @@ bool PickAndPlace::execute()
 			// valid information so no need to clean it up from one attempt 
 			// of operation to another or from one iteration over the entire 
 			// program of operations to another.	
-			done[PLACE] = attempt_place(obj_of_op);
+			done[RELEASE] = attempt_release(obj_of_op);
 
 		attempt++;
 
-		if(done[PLACE] && !once)
+		if(done[RELEASE] && !once)
 			once = true;
 
 		if(!(instructions[PICK].target.type == tangible_msgs::Target::POINT_LOCATION || 
 		   instructions[PICK].target.type == tangible_msgs::Target::OBJECT_SELECTOR))
 			// TO-DO better to clearly state the conditions for OBJECT_SELECTOR and OBJECTS_SELECTOR
 		{
-			if(done[PLACE])
+			if(done[RELEASE])
 			{
 				done[PICK] = false;
-				done[PLACE] = false;
+				done[RELEASE] = false;
 				attempt = 0;
 				ROS_INFO("moving to the next object of operation...");
 			}
 			else if(!done[PICK] && once && pick_status == NO_PICK)
 			// TO-DO check whether the condition can be simplified. done[PICK] and pick_status seem redundant
 			{
-				done[PLACE] = true;
+				done[RELEASE] = true;
 				ROS_INFO("no more objects for operation.");
 			}
 		}
 
 	}
 
-	if(done[PLACE])
+	if(done[RELEASE])
 		all_done = true;
 
 	ROS_INFO("execution of operation was %s", all_done ? "SUCCESSFUL" : "UNSUCCESSFUL");
@@ -89,7 +89,7 @@ bool PickAndPlace::execute()
 	// TO-DO what to return is debatable
 }
 
-bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& pick_status)
+bool PickAndRelease::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& pick_status)
 {
 	ROS_INFO("   pick...");
 
@@ -112,10 +112,10 @@ bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& p
 
 		bool already_placed = false;
 
-		if(instructions[PLACE].target.type == tangible_msgs::Target::REGION ||  
-		   instructions[PLACE].target.type == tangible_msgs::Target::POINT_LOCATION)
+		if(instructions[RELEASE].target.type == tangible_msgs::Target::REGION ||  
+		   instructions[RELEASE].target.type == tangible_msgs::Target::POINT_LOCATION)
 
-			already_placed = match_obj2criteria(scene.objects[i], instructions[PLACE].target);
+			already_placed = match_obj2criteria(scene.objects[i], instructions[RELEASE].target);
 			
 		else 
 		// TO-DO better to clearly state the conditions for OBJECT_SELECTOR and OBJECTS_SELECTOR
@@ -128,7 +128,7 @@ bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& p
 				if(j == i)
 					continue;
 
-				if(!match_obj2criteria(scene.objects[j], instructions[PLACE].target))
+				if(!match_obj2criteria(scene.objects[j], instructions[RELEASE].target))
 					continue;
 				
 				tangible_msgs::Target place_target;
@@ -146,7 +146,7 @@ bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& p
 
 		if(already_placed)
 			continue;
-		ROS_INFO("      is not already at place target");
+		ROS_INFO("      is not already at release target");
 
 		int pick_attempt = 0;
 		std::vector<moveit_msgs::Grasp> grasps;
@@ -168,7 +168,7 @@ bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& p
 		while(pick_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
 			// if here, there has been a grasp
-			if(move(grasps))
+			if(move(grasps, PICK))
 			{
 				ROS_INFO("      is successfully picked.");
 				obj_under_op = scene.objects[i];
@@ -184,9 +184,9 @@ bool PickAndPlace::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int& p
 	return false;
 }
 
-bool PickAndPlace::attempt_place(tangible_msgs::SceneObject obj_held)
+bool PickAndRelease::attempt_release(tangible_msgs::SceneObject obj_held)
 {
-	ROS_INFO("   place...");
+	ROS_INFO("   release...");
 	ROS_INFO("   object bb(%f, %f, %f) at (%f, %f, %f):", obj_held.bounding_box.dimensions.x,
 														  obj_held.bounding_box.dimensions.y,
 														  obj_held.bounding_box.dimensions.z,
@@ -198,17 +198,17 @@ bool PickAndPlace::attempt_place(tangible_msgs::SceneObject obj_held)
 
 	std::vector<tangible_msgs::Target> place_target;
 
-	if(instructions[PLACE].target.type == tangible_msgs::Target::REGION ||  
-	   instructions[PLACE].target.type == tangible_msgs::Target::POINT_LOCATION)
+	if(instructions[RELEASE].target.type == tangible_msgs::Target::REGION ||  
+	   instructions[RELEASE].target.type == tangible_msgs::Target::POINT_LOCATION)
 
-		place_target.push_back(instructions[PLACE].target);
+		place_target.push_back(instructions[RELEASE].target);
 
 	else 
 	// TO-DO better to clearly state the conditions for OBJECT_SELECTOR and OBJECTS_SELECTOR
 	{
 		
 		for(int i = 0; i < scene.objects.size(); i++)
-			if(match_obj2criteria(scene.objects[i], instructions[PLACE].target))
+			if(match_obj2criteria(scene.objects[i], instructions[RELEASE].target))
 			{
 				tangible_msgs::Target target;
 				target.type = tangible_msgs::Target::OBJECT_SELECTOR;
@@ -229,7 +229,7 @@ bool PickAndPlace::attempt_place(tangible_msgs::SceneObject obj_held)
 		int place_attempt = 0;
 		while(place_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
-			releases = get_release(place_target[i], obj_held, scene, instructions[PLACE].type);
+			releases = get_release(place_target[i], obj_held, scene, instructions[RELEASE].type);
 			if(!releases.empty())
 				break;
 			place_attempt++;
@@ -243,7 +243,7 @@ bool PickAndPlace::attempt_place(tangible_msgs::SceneObject obj_held)
 		while(place_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
 			// if here, there has been a release
-			if(move(releases))
+			if(move(releases, RELEASE))
 			{
 				ROS_INFO("      is successfully released.");
 				return true;
@@ -256,7 +256,7 @@ bool PickAndPlace::attempt_place(tangible_msgs::SceneObject obj_held)
 	return false;
 }
 
-bool PickAndPlace::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_msgs::Target trg)
+bool PickAndRelease::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_msgs::Target trg)
 {
 	std::vector<tangible_msgs::SceneObject> objs_to_check;
 	objs_to_check.push_back(obj);
@@ -295,7 +295,7 @@ bool PickAndPlace::match_obj2criteria(tangible_msgs::SceneObject obj, tangible_m
 	return !objs_checked.empty();
 }
 
-std::vector<moveit_msgs::Grasp> PickAndPlace::get_grasp(tangible_msgs::SceneObject obj, tangible_msgs::Scene scene)
+std::vector<moveit_msgs::Grasp> PickAndRelease::get_grasp(tangible_msgs::SceneObject obj, tangible_msgs::Scene scene)
 {
 	std::string grasp_service = get_private_param("grasp_acquisition_service");
 	ros::ServiceClient grasp_acquisition_client = node_handle.serviceClient<tangible_msgs::GetGrasps>(grasp_service);
@@ -315,19 +315,18 @@ std::vector<moveit_msgs::Grasp> PickAndPlace::get_grasp(tangible_msgs::SceneObje
 	return grasps;
 }
 
-std::vector<moveit_msgs::Grasp> PickAndPlace::get_release(tangible_msgs::Target target, tangible_msgs::SceneObject obj, tangible_msgs::Scene scene, int release_type)
+std::vector<moveit_msgs::Grasp> PickAndRelease::get_release(tangible_msgs::Target target, tangible_msgs::SceneObject obj, tangible_msgs::Scene scene, int release_type)
 {
 	std::string release_service = get_private_param("release_acquisition_service");
 	ros::ServiceClient release_acquisition_client = node_handle.serviceClient<tangible_msgs::GetReleases>(release_service);
 
 	tangible_msgs::GetReleases release_srv;
-	// if(release_type == tangible_msgs::Instruction::PLACE)
-	// 	release_srv.request.type = tangible_msgs::GetReleases::PLACE;
-	// else if(release_type == tangible_msgs::Instruction::DROP)
-	// 	release_srv.request.type = tangible_msgs::GetReleases::DROP;
-	// TO-DO uncomment the above after pulling the latest version of GetReleases
-	// TO-DO release_srv.request.num_orientations = 4;
-	// TO-DO release_srv.request.region_sample_spacing = 0.3;
+	if(release_type == tangible_msgs::Instruction::PLACE)
+		release_srv.request.type = tangible_msgs::GetReleases::Request::PLACE;
+	else if(release_type == tangible_msgs::Instruction::DROP)
+		release_srv.request.type = tangible_msgs::GetReleases::Request::DROP;
+	release_srv.request.num_orientations = 4;
+	release_srv.request.region_sample_spacing = 0.3;
 	release_srv.request.target = target;
 	release_srv.request.object = obj;
 	release_srv.request.scene = scene;
@@ -343,18 +342,21 @@ std::vector<moveit_msgs::Grasp> PickAndPlace::get_release(tangible_msgs::Target 
 	return releases;
 }
 
-bool PickAndPlace::move(std::vector<moveit_msgs::Grasp> poses)
+bool PickAndRelease::move(std::vector<moveit_msgs::Grasp> poses, int type)
 {
 	std::string move_service = get_private_param("arm_movement_service");
 	ros::ServiceClient move_client = node_handle.serviceClient<tangible_msgs::GetMovements>(move_service);
 
 	tangible_msgs::GetMovements move_srv;
 	move_srv.request.poses = poses;
+	if(type == PICK)
+		move_srv.request.type = tangible_msgs::GetMovements::Request::PICK;
+	else if(type == RELEASE)
+		move_srv.request.type = tangible_msgs::GetMovements::Request::RELEASE;
+	else
+		ROS_ERROR("invalid movement type passed to arm_movement_service");
 
 	bool success = move_client.call(move_srv);
-	// TO-DO arm_movement service has to try all generated grasps. If none was possible it should return false.
-	// possible: there is a plan. 
-	// there are other cases for failure, e.g. the movement is incomplete.
 
 	bool movement_success = false;
 	if(success)
@@ -365,19 +367,28 @@ bool PickAndPlace::move(std::vector<moveit_msgs::Grasp> poses)
 	return movement_success;
 }
 
-void PickAndPlace::stop()
+void PickAndRelease::stop()
 {
-	ROS_INFO("stop Pick and Place operation");
-	// TO-DO: make a call to the stop service 
+	std::string stop_service = get_private_param("arm_stop_service");
+	ros::ServiceClient stop_client = node_handle.serviceClient<tangible_msgs::StopMovements>(stop_service);
+
+	tangible_msgs::StopMovements stop_srv;
+
+	bool success = stop_client.call(stop_srv);
+
+	if(success)
+		ROS_INFO("successfully called service %s to stop arm motions.", stop_service.c_str());
+	else
+		ROS_ERROR("failed to call service %s to stop arm motions.", stop_service.c_str());
 }
 
-void PickAndPlace::reset()
+void PickAndRelease::reset()
 {
 	once = false;
 
 	Operation::reset();
 	
-	ROS_INFO("pick_and_place reset");
+	ROS_INFO("pick_and_release reset");
 }
 
 }

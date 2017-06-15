@@ -7,7 +7,7 @@ Operation::Operation(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction>
 {
 	node_handle = n;
 
-	instructions = ins; // NOTE that operator= does a deep copy
+	instructions = ins; // NOTE: operator= does a deep copy
 
 	for(int i = 0; i < ins.size(); i++)
 		done.push_back(false);

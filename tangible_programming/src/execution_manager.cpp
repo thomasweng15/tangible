@@ -89,7 +89,7 @@ void ExecutionManager::setup_program(tangible_msgs::Program p)
 			op.instructions[0].type == tangible_msgs::Instruction::PICK &&
 			(op.instructions[1].type == tangible_msgs::Instruction::PLACE ||
 			 op.instructions[1].type == tangible_msgs::Instruction::DROP))
-			program.push_back(new PickAndPlace(node_handle, op.instructions));
+			program.push_back(new PickAndRelease(node_handle, op.instructions));
 	}
 }
 
