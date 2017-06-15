@@ -25,6 +25,9 @@
     <arg name="publish_tf" value="false"/>
   </include>
 
+  <!-- MoveIt -->
+  <include file="$(find tangible_programming)/launch/move_group.launch" />
+
   <!-- TF Frames -->
   <!-- I don't think we need this if using with real robot -->
   <!-- <include file="$(find tangible_programming)/launch/userdefined_frame.launch" >
