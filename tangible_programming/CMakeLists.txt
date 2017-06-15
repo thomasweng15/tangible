@@ -216,12 +216,23 @@ add_dependencies(tangible_match_test
 )
 target_link_libraries(tangible_match_test ${catkin_LIBRARIES})
 
-add_library(tangible_arm_motion src/arm_motion.cpp)
-add_dependencies(tangible_arm_motion
+add_library(tangible_gripper src/gripper.cpp)
+add_dependencies(tangible_gripper
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(tangible_arm_motion ${catkin_LIBRARIES})
+target_link_libraries(tangible_gripper ${catkin_LIBRARIES})
+
+add_library(tangible_arm_motion src/arm_motion.cpp)
+add_dependencies(tangible_arm_motion
+  tangible_gripper
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_arm_motion
+  tangible_gripper
+  ${catkin_LIBRARIES}
+)
 
 add_library(tangible_operation src/operation.cpp)
 add_dependencies(tangible_operation
@@ -349,11 +360,13 @@ target_link_libraries(release_generator_node
 
 add_executable(arm_motion_node src/arm_motion_node.cpp)
 add_dependencies(arm_motion_node
+  tangible_gripper
   tangible_arm_motion
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
-target_link_libraries(arm_motion_node 
+target_link_libraries(arm_motion_node
+  tangible_gripper 
   tangible_arm_motion
   ${catkin_LIBRARIES}
 )

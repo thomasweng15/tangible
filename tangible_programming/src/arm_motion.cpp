@@ -3,7 +3,7 @@
 namespace tangible
 {
 
-ArmMotion::ArmMotion(ros::NodeHandle& n) : right_arm("right_arm")
+ArmMotion::ArmMotion(ros::NodeHandle& n) : right_arm("right_arm"), right_gripper('r')
 {
 	node_handle = n;
 	srv_move = node_handle.advertiseService("move_arm", &ArmMotion::move_callback, this);
@@ -73,9 +73,9 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 		if(stopped)
 			break;
 
-		// TO-DO 
-		// - open gripper for PICK
-		// - do not do anything for RELEASE
+		if(req.type == tangible_msgs::GetMovements::Request::PICK)
+			right_gripper.open();
+		// TO-DO handle the case when oppening gripper is not successful
 
 		if(stopped)
 			break;
@@ -86,9 +86,11 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 		if(stopped)
 			break;
 
-		// TO-DO 
-		// - close gripper for PICK 
-		// - open gripper for RELEASE
+		if(req.type == tangible_msgs::GetMovements::Request::PICK)
+			right_gripper.close();
+		else if(req.type == tangible_msgs::GetMovements::Request::RELEASE)
+			right_gripper.open();
+		// TO-DO handle the case when gripping (pick) or openning gripper (release) is not successful
 
 		if(stopped)
 			break;

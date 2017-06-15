@@ -3,6 +3,9 @@
 
 #include "ros/ros.h"
 
+// user-defined classes
+#include "tangible/gripper.h"
+
 // msg's and srv's
 #include "tangible_msgs/GetMovements.h"
 #include "tangible_msgs/StopMovements.h"
@@ -26,6 +29,7 @@ private:
 
 	moveit::planning_interface::MoveGroup right_arm;
 	// TO-DO later on also instantiate the group for left arm;
+	tangible::Gripper right_gripper;
 	
 	bool status, stopped;
 
