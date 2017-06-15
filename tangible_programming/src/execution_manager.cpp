@@ -45,7 +45,7 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 			stop_execution();
 			
 			// clear the program. A new program should be obtained after the edit
-			// TO-DO this requires the compilation node to always hold on to the last valid program
+			// NOTE: this requires the compilation node to always hold on to the last valid program
 			clear_program();
 
 			break;
