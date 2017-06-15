@@ -10,7 +10,6 @@ ExecutionManager::ExecutionManager(ros::NodeHandle& n)
 	std::string system_mode_topic = get_private_param("system_mode_topic");
 	exec_mode = node_handle.subscribe(system_mode_topic, 1000, &tangible::ExecutionManager::mode_callback, this);
 
-	executing = false;
 	current_operation_index = STOPPED;
 
 	ROS_INFO("Execution node is instantiated and listens to %s topic.", system_mode_topic.c_str());
@@ -30,7 +29,6 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 	{
 		case tangible_msgs::Mode::IDLE:
 			ROS_INFO("Idle Mode");
-			executing = false;
 
 			// stop all movements
 			stop_execution();
@@ -39,7 +37,6 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 
 		case tangible_msgs::Mode::EDIT:
 			ROS_INFO("Edit Mode");
-			executing = false;
 
 			// stop all movements
 			stop_execution();
@@ -52,13 +49,12 @@ void ExecutionManager::mode_callback(const tangible_msgs::Mode::ConstPtr& mode_m
 
 		case tangible_msgs::Mode::EXECUTE:
 			ROS_INFO("Execution Mode");
-			executing = true;
 
 			// a program is a sequence of operations. If the program is not defined, obtain 
 			// the program. Else, resume its execution from the first incompelete instruction.
 			// NOTE: instructions are the atomic units of normal program execution.
 			if(program.empty())
-				executing = get_program();
+				get_program();
 
 			start_execution();
 
@@ -144,7 +140,7 @@ void ExecutionManager::start_execution()
 {
 	ROS_INFO("executing the program");
 	
-	bool full_program_iteration = true;
+	bool full_program_iteration = false;
 
 	// TO-DO can be more efficient if current_operation_index is only reset upon clearing programs (currently
 	// at stopping programs) so we can start this loop from current_operation_index instead of the beginning of
@@ -157,8 +153,8 @@ void ExecutionManager::start_execution()
 
 		current_operation_index = i;
 		
-		if(executing)
-			full_program_iteration = program[i] -> execute();
+		program[i] -> start();
+		full_program_iteration = program[i] -> execute();
 
 		// NOTE: should not move to the next operation if the most recent operation failed
 		if(!full_program_iteration)

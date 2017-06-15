@@ -13,7 +13,7 @@
 #include "tangible_msgs/GetGrasps.h"
 #include "tangible_msgs/GetReleases.h"
 #include "tangible_msgs/GetMovements.h"
-#include "tangible_msgs/StopMovements.h"
+#include "tangible_msgs/ControlMovements.h"
 #include "moveit_msgs/Grasp.h"
 
 namespace tangible
@@ -45,6 +45,7 @@ public:
 	PickAndRelease(ros::NodeHandle& n, std::vector<tangible_msgs::Instruction> ins);
 	~PickAndRelease();
 
+	void start();
 	bool execute();
 	void stop();
 	void reset();

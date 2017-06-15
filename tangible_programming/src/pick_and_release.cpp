@@ -32,6 +32,22 @@ PickAndRelease::PickAndRelease(ros::NodeHandle& n, std::vector<tangible_msgs::In
 
 PickAndRelease::~PickAndRelease() {}
 
+void PickAndRelease::start()
+{
+	std::string start_service = get_private_param("arm_motion_control_service");
+	ros::ServiceClient start_client = node_handle.serviceClient<tangible_msgs::ControlMovements>(start_service);
+
+	tangible_msgs::ControlMovements start_srv;
+	start_srv.request.type = tangible_msgs::ControlMovements::Request::ENABLE;
+
+	bool success = start_client.call(start_srv);
+
+	if(success)
+		ROS_INFO("successfully called service %s to start arm motions.", start_service.c_str());
+	else
+		ROS_ERROR("failed to call service %s to start arm motions.", start_service.c_str());
+}
+
 bool PickAndRelease::execute() 
 {
 	ROS_INFO("executing pick and release operation");
@@ -369,10 +385,11 @@ bool PickAndRelease::move(std::vector<moveit_msgs::Grasp> poses, int type)
 
 void PickAndRelease::stop()
 {
-	std::string stop_service = get_private_param("arm_stop_service");
-	ros::ServiceClient stop_client = node_handle.serviceClient<tangible_msgs::StopMovements>(stop_service);
+	std::string stop_service = get_private_param("arm_motion_control_service");
+	ros::ServiceClient stop_client = node_handle.serviceClient<tangible_msgs::ControlMovements>(stop_service);
 
-	tangible_msgs::StopMovements stop_srv;
+	tangible_msgs::ControlMovements stop_srv;
+	stop_srv.request.type = tangible_msgs::ControlMovements::Request::DISABLE;
 
 	bool success = stop_client.call(stop_srv);
 
