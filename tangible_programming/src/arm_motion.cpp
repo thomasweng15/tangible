@@ -31,6 +31,14 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 		geometry_msgs::Pose grasp, pre_grasp, post_grasp;
 		
 		grasp = req.poses[i].grasp_pose.pose;
+
+		// ROS_INFO("grasp pose position (%f, %f, %f) | orientation (%f, %f, %f, %f) ", grasp.position.x,
+		// 																			 grasp.position.y, 
+		// 																			 grasp.position.z, 
+		// 																			 grasp.orientation.x, 
+		// 																			 grasp.orientation.y, 
+		// 																			 grasp.orientation.z, 
+		// 																			 grasp.orientation.w);
 		
 		pre_grasp.orientation = grasp.orientation;
 		pre_grasp.position = get_relative_point(grasp.position, 
