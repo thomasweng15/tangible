@@ -28,9 +28,9 @@
   <arg name="point_location_threshold" default="0.02" />
   <arg name="box_dimension_threshold" default="0.02" />
   <arg name="cloud_topic" default="$(arg camera)/depth_registered/points" />
-  <arg name="idle_id" default="0"/>
-  <arg name="run_id" default="1" />
-  <arg name="edit_id" default="2"/>
+  <arg name="run_id" default="16" />
+  <arg name="edit_id" default="17"/>
+  <arg name="idle_id" default="18"/>
 
   <!-- Turn on the Kinect -->
   <include file="$(find freenect_launch)/launch/freenect.launch">
