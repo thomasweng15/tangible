@@ -89,7 +89,7 @@
     <param name="system_mode_topic" type="string" value="$(arg mode_change_topic)" />
     <param name="program_acquisition_service" type="string" value="$(arg program_service_name)" />
     <param name="scene_information_service" type="string" value="$(arg scene_service_name)" />
-    <param name="check_criteria_service" type="string" value="$(arg match_objects)" />
+    <param name="check_criteria_service" type="string" value="$(arg object_matching_service_name)" />
     <param name="grasp_acquisition_service" type="string" value="$(arg grasp_service_name)" />
     <param name="release_acquisition_service" type="string" value="$(arg release_service_name)" />
     <param name="arm_movement_service" type="string" value="$(arg arm_movement_service)" />
