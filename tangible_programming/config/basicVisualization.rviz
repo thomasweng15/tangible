@@ -29,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: DepthCloud
 Visualization Manager:
   Class: ""
   Displays:
@@ -94,7 +94,7 @@ Visualization Manager:
       Marker Topic: visualization_marker
       Name: ARMarker
       Namespaces:
-        {}
+        basic_shapes: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -121,7 +121,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.4298
+      Distance: 3.54343
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -136,7 +136,7 @@ Visualization Manager:
       Pitch: 1.4198
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.4754
+      Yaw: 1.5404
     Saved: ~
 Window Geometry:
   Displays:
