@@ -98,10 +98,9 @@
 
   <!-- Object Matching -->
   <node pkg="tangible_programming" type="object_matching_node" name="object_matching_node">
-    <param name="object_matching_service_name" type="string" value="$(arg object_matching_service_name)"
-    <param name="point_location_threshold" type="double" value="$(arg point_location_threshold)"
-    <param name="box_dimension_threshold" type="double" value="$(arg box_dimension_threshold)"
-     />
+    <param name="object_matching_service_name" type="string" value="$(arg object_matching_service_name)"/>
+    <param name="point_location_threshold" type="double" value="$(arg point_location_threshold)"/>
+    <param name="box_dimension_threshold" type="double" value="$(arg box_dimension_threshold)"/>
   </node>
 
   <!-- Grasp Generation -->
