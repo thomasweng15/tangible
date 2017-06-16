@@ -34,7 +34,7 @@ PickAndRelease::~PickAndRelease() {}
 
 void PickAndRelease::start()
 {
-	std::string start_service = get_private_param("arm_motion_control_service");
+	std::string start_service = get_private_param("arm_movement_control_service");
 	ros::ServiceClient start_client = node_handle.serviceClient<tangible_msgs::ControlMovements>(start_service);
 
 	tangible_msgs::ControlMovements start_srv;
@@ -385,7 +385,7 @@ bool PickAndRelease::move(std::vector<moveit_msgs::Grasp> poses, int type)
 
 void PickAndRelease::stop()
 {
-	std::string stop_service = get_private_param("arm_motion_control_service");
+	std::string stop_service = get_private_param("arm_movement_control_service");
 	ros::ServiceClient stop_client = node_handle.serviceClient<tangible_msgs::ControlMovements>(stop_service);
 
 	tangible_msgs::ControlMovements stop_srv;

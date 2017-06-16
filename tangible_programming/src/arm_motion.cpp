@@ -3,11 +3,13 @@
 namespace tangible
 {
 
-ArmMotion::ArmMotion(ros::NodeHandle& n) : right_arm("right_arm"), right_gripper('r')
+ArmMotion::ArmMotion(ros::NodeHandle& n, 
+	                 std::string mv_srv_name, 
+	                 std::string ctrl_srv_name) : right_arm("right_arm"), right_gripper('r')
 {
 	node_handle = n;
-	srv_move = node_handle.advertiseService("move_arm", &ArmMotion::move_callback, this);
-	srv_control = node_handle.advertiseService("control_arm", &ArmMotion::control_callback, this);
+	srv_move = node_handle.advertiseService(mv_srv_name, &ArmMotion::move_callback, this);
+	srv_control = node_handle.advertiseService(ctrl_srv_name, &ArmMotion::control_callback, this);
 
 	status = UNSUCCESSFUL;
 	motion = DISABLED;

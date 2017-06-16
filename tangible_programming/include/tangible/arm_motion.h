@@ -38,7 +38,7 @@ private:
 	geometry_msgs::Point get_relative_point(geometry_msgs::Point org, geometry_msgs::Vector3Stamped vec, double mag);
 
 public:
-	ArmMotion(ros::NodeHandle& n);
+	ArmMotion(ros::NodeHandle& n, std::string mv_srv_name, std::string ctrl_srv_name);
 	~ArmMotion();
 
 	bool move_callback(tangible_msgs::GetMovements::Request& req, tangible_msgs::GetMovements::Response& res);
