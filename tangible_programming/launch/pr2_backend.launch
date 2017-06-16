@@ -2,20 +2,35 @@
   <!-- Kinect -->
   <arg name="camera" default="head_mount_kinect" />
   <arg name="scene_output_frame" default="/base_footprint" />
+  
+  <arg name="mode_change_topic" default="tpbd_mode" />
+
   <arg name="scene_service_name" default="get_scene" />
+  <arg name="scene_information_service" default="get_scene" />   <!-- redundant -->
+  
   <arg name="block_service_name" default="get_blocks" />
+  
   <arg name="program_service_name" default="get_program" />
+  <arg name="program_acquisition_service" default="get_program" /> <!-- redundant -->
+  
   <arg name="grasp_service_name" default="get_grasps" />
+  <arg name="grasp_acquisition_service" default="get_grasps" /> <!-- redundant -->
+  
   <arg name="release_service_name" default="get_releases" />
+  <arg name="release_acquisition_service" default="get_releases" /> <!-- redundant -->
+  
   <arg name="object_matching_service_name" default="match_objects" />
-  <arg name="point_location_threshold" default="0.02" />
+  <arg name="check_criteria_service" default="match_objects" /> <!-- redundant -->
+
+  <arg name="arm_movement_service" default="move_arm" />
+  <arg name="arm_movement_control_service" default="control_arm" />  
+  
+  <arg name="point_location_threshold" default="0.1" />
   <arg name="box_dimension_threshold" default="0.02" />
   <arg name="cloud_topic" default="$(arg camera)/depth_registered/points" />
-
-  <arg name="idle_id" default="0"/>
-  <arg name="run_id" default="1" />
-  <arg name="edit_id" default="2"/>
-  <arg name="mode_change_topic" default="mode_change" />
+  <arg name="run_id" default="16" />
+  <arg name="edit_id" default="17"/>
+  <arg name="idle_id" default="18"/>
 
   <!-- Turn on the Kinect -->
   <include file="$(find freenect_launch)/launch/freenect.launch">
@@ -69,23 +84,40 @@
     <param name="idle_id" type="int" value="$(arg idle_id)" />
   </node>
 
+  <!-- Execution -->
+  <!--<node pkg="tangible_programming" type="program_execution_node" name="program_execution_node">
+    <param name="system_mode_topic" type="string" value="$(arg mode_change_topic)" />
+    <param name="program_acquisition_service" type="string" value="$(arg program_service_name)" />
+    <param name="scene_information_service" type="string" value="$(arg scene_service_name)" />
+    <param name="check_criteria_service" type="string" value="$(arg object_matching_service_name)" />
+    <param name="grasp_acquisition_service" type="string" value="$(arg grasp_service_name)" />
+    <param name="release_acquisition_service" type="string" value="$(arg release_service_name)" />
+    <param name="arm_movement_service" type="string" value="$(arg arm_movement_service)" />
+    <param name="arm_movement_control_service" type="string" value="$(arg arm_movement_control_service)" />
+  </node> -->
+
+  <!-- Object Matching -->
+  <node pkg="tangible_programming" type="object_matching_node" name="object_matching_node">
+    <param name="object_matching_service_name" type="string" value="$(arg object_matching_service_name)"/>
+    <param name="point_location_threshold" type="double" value="$(arg point_location_threshold)"/>
+    <param name="box_dimension_threshold" type="double" value="$(arg box_dimension_threshold)"/>
+  </node>
+
   <!-- Grasp Generation -->
   <node pkg="tangible_programming" type="grasp_generator_node" name="grasp_generator_node">
     <param name="grasp_service_name" type="string" value="$(arg grasp_service_name)" />
   </node>
 
   <!-- Release Generation -->
-  <!-- <node pkg="tangible_programming" type="release_generator_node" name="release_generator_node">
+  <node pkg="tangible_programming" type="release_generator_node" name="release_generator_node">
     <param name="release_service_name" type="string" value="$(arg release_service_name)" />
-  </node> -->
+  </node>
 
-  <!-- Object Matching -->
-  <!-- <node pkg="tangible_programming" type="object_matching_node" name="object_matching_node">
-    <param name="object_matching_service_name" type="string" value="$(arg object_matching_service_name)"
-    <param name="point_location_threshold" type="double" value="$(arg point_location_threshold)"
-    <param name="box_dimension_threshold" type="double" value="$(arg box_dimension_threshold)"
-     />
-  </node> -->
+  <!-- Arm Motion -->
+ <node pkg="tangible_programming" type="arm_motion_node" name="arm_motion_node"> 
+    <param name="arm_movement_service" type="string" value="$(arg arm_movement_service)" />
+    <param name="arm_movement_control_service" type="string" value="$(arg arm_movement_control_service)" />
+  </node> 
 
   <!-- Static TF Node -->
   <node pkg="tangible_programming" type="static_tf.py" name="static_tf" />
