@@ -73,6 +73,13 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 			continue;
 		}
 
+		right_arm.setPoseTarget(get_away_pose());
+		if(!right_arm.plan(plan))
+		{
+			ROS_INFO("no plan to away");
+			continue;
+		}
+
 		if(motion == DISABLED)
 			break;
 
@@ -109,7 +116,13 @@ bool ArmMotion::move_callback(tangible_msgs::GetMovements::Request& req, tangibl
 		right_arm.setPoseTarget(post_grasp);
 		right_arm.move();
 
-		// NOTE: no need to check again whether moving to post_grasp was successful
+		if(motion == DISABLED)
+			break;
+
+		right_arm.setPoseTarget(get_away_pose());
+		right_arm.move();
+
+		// NOTE: no need to check again whether moving to away was successful
 
 		// TO-DO handle the case when any of the movements (arm or gripper) are not successful
 
@@ -129,6 +142,19 @@ geometry_msgs::Point ArmMotion::get_relative_point(geometry_msgs::Point org, geo
 	relative_point.y = org.y + vec.vector.y * mag;
 	relative_point.z = org.z + vec.vector.z * mag;
 	return relative_point;
+}
+
+geometry_msgs::Pose ArmMotion::get_away_pose()
+{
+	geometry_msgs::Pose away;
+	away.position.x = 0.393;
+	away.position.y = -0.699;
+	away.position.z = 1.275;
+	away.orientation.x = 0.307;
+	away.orientation.y = 0.560;
+	away.orientation.z = -0.321;
+	away.orientation.w = 0.699;
+	return away;
 }
 
 bool ArmMotion::control_callback(tangible_msgs::ControlMovements::Request& req, tangible_msgs::ControlMovements::Response& res)
