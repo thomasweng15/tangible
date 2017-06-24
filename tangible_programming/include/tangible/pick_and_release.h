@@ -2,6 +2,8 @@
 #define TANGIBLE_PICK_AND_PLACE
 
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "tangible/operation.h"
 
@@ -49,6 +51,8 @@ public:
 	bool execute();
 	void stop();
 	void reset();
+	
+	std::string print();
 
 };
 

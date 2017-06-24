@@ -1,3 +1,5 @@
+#include <string>
+
 #include "ros/ros.h"
 #include "tangible/arm_motion.h"
 

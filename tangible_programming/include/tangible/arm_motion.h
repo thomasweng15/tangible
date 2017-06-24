@@ -1,6 +1,8 @@
 #ifndef TANGIBLE_ARM_MOTION
 #define TANGIBLE_ARM_MOTION
 
+#include <string>
+
 #include "ros/ros.h"
 
 // user-defined classes

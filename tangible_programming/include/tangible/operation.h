@@ -2,6 +2,7 @@
 #define TANGIBLE_OPERATION
 
 #include <vector>
+#include <string>
 
 #include "ros/ros.h"
 
@@ -42,6 +43,8 @@ public:
 	virtual bool execute() = 0;
 	virtual void stop() = 0;
 	virtual void reset();
+
+	virtual std::string print() = 0;
 };
 
 };

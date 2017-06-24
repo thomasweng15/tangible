@@ -408,4 +408,9 @@ void PickAndRelease::reset()
 	ROS_INFO("pick_and_release reset");
 }
 
+std::string PickAndRelease::print()
+{
+	return "";
+}
+
 }
