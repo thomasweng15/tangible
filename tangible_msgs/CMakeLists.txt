@@ -75,6 +75,7 @@ add_service_files(
   GetMovements.srv
   ReleaseTest.srv
   ControlMovements.srv
+  VisualizeObjects.srv
 )
 
 ## Generate actions in the 'action' folder

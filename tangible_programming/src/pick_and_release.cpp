@@ -110,10 +110,11 @@ bool PickAndRelease::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int&
 	ROS_INFO("   pick...");
 
 	tangible_msgs::Scene scene = get_scene();
-	//print_scene(scene);
+	display_objects(scene.objects);
 	
 	for(int i = 0; i < scene.objects.size(); i++)
 	{
+		// TO-DO highlight the object being considered
 		ROS_INFO("   object %d bb(%f, %f, %f) at (%f, %f, %f):", i,
 															  	 scene.objects[i].bounding_box.dimensions.x,
 															  	 scene.objects[i].bounding_box.dimensions.y,
@@ -211,6 +212,7 @@ bool PickAndRelease::attempt_release(tangible_msgs::SceneObject obj_held)
 														  obj_held.bounding_box.pose.pose.position.z);
 
 	tangible_msgs::Scene scene = get_scene();
+	display_objects(scene.objects);
 
 	std::vector<tangible_msgs::Target> place_target;
 
@@ -240,6 +242,7 @@ bool PickAndRelease::attempt_release(tangible_msgs::SceneObject obj_held)
 
 	for(int i = 0; i < place_target.size(); i++)
 	{
+		//TO-DO highlight the object being considered
 		
 		std::vector<moveit_msgs::Grasp> releases;
 		int place_attempt = 0;
@@ -410,7 +413,120 @@ void PickAndRelease::reset()
 
 std::string PickAndRelease::print()
 {
-	return "";
+	std::stringstream ss;
+
+	for(int i = 0; i < instructions.size(); i++)
+	{
+		switch(instructions[i].type)
+		{
+			case tangible_msgs::Instruction::PICK:
+				ss << "pick";
+				switch(instructions[i].target.type)
+				{
+					case tangible_msgs::Target::POINT_LOCATION:
+						ss << " from point ";
+						break;
+					case tangible_msgs::Target::OBJECT_SELECTOR:
+						ss << " the  object";
+						break;
+					case tangible_msgs::Target::REGION:
+						ss << " from region";
+						break;
+					// TO-DO the case of objects selector
+					default:
+						ROS_ERROR("invalid pick and release selection; abort printing");
+						return "";
+				}
+				break;
+			case tangible_msgs::Instruction::PLACE:
+				ss << "place";
+				switch(instructions[i].target.type)
+				{
+					case tangible_msgs::Target::POINT_LOCATION:
+						ss << " at point ";
+						break;
+					case tangible_msgs::Target::OBJECT_SELECTOR:
+						ss << " on object";
+						break;
+					case tangible_msgs::Target::REGION:
+						ss << " in region";
+						break;
+					// TO-DO the case of objects selector
+					default:
+						ROS_ERROR("invalid pick and release selection; abort printing");
+						return "";
+				}
+				break;
+			case tangible_msgs::Instruction::DROP:
+				ss << "drop";
+				switch(instructions[i].target.type)
+				{
+					case tangible_msgs::Target::POINT_LOCATION:
+						ss << " at point ";
+						break;
+					case tangible_msgs::Target::OBJECT_SELECTOR:
+						ss << " in object";
+						break;
+					case tangible_msgs::Target::REGION:
+						ss << " in region";
+						break;
+					// TO-DO the case of objects selector
+					default:
+						ROS_ERROR("invalid pick and release selection; abort printing");
+						return "";
+				}
+				break;
+			default:
+				ROS_ERROR("invalid pick and release action; abort printing");
+				return "";
+				break;
+		}
+
+		switch(instructions[i].target.type)
+		{
+			case tangible_msgs::Target::POINT_LOCATION:
+				ss << " (" << instructions[i].target.specified_point.point.x;
+				ss << ", " << instructions[i].target.specified_point.point.y;
+				ss << ", " << instructions[i].target.specified_point.point.z << ")";
+				break;
+			case tangible_msgs::Target::OBJECT_SELECTOR:
+				ss << " bb(" << instructions[i].target.selected_object.bounding_box.dimensions.x;
+				ss << ", "   << instructions[i].target.selected_object.bounding_box.dimensions.y;
+				ss << ", "   << instructions[i].target.selected_object.bounding_box.dimensions.z << ")";
+				break;
+			case tangible_msgs::Target::REGION:
+				ss << "(";
+				for(int j = 0; j < instructions[i].target.region_corners.size(); j++)
+				{
+					ss <<          instructions[i].target.region_corners[j].point.x;
+					ss << ", "  << instructions[i].target.region_corners[j].point.y;
+					ss << ", "  << instructions[i].target.region_corners[j].point.z << " ^ ";
+				}
+				ss << ")";
+				break;
+			// TO-DO the case of objects selector
+		}
+
+		ss << " then ";
+	}
+
+	return ss.str();
+}
+
+void PickAndRelease::display_objects(std::vector<tangible_msgs::SceneObject> objs)
+{
+	std::string display_service = get_private_param("object_visualization_service");
+	ros::ServiceClient display_client = node_handle.serviceClient<tangible_msgs::VisualizeObjects>(display_service);
+
+	tangible_msgs::VisualizeObjects display_srv;
+	display_srv.request.objects = objs;
+
+	bool success = display_client.call(display_srv);
+
+	if(success)
+		ROS_INFO("successfully called service %s to visualize objects.", display_service.c_str());
+	else
+		ROS_ERROR("failed to call service %s to visualize objects.", display_service.c_str());
 }
 
 }

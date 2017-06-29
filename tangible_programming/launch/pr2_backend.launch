@@ -23,7 +23,12 @@
   <arg name="check_criteria_service" default="match_objects" /> <!-- redundant -->
 
   <arg name="arm_movement_service" default="move_arm" />
-  <arg name="arm_movement_control_service" default="control_arm" />  
+
+  <arg name="arm_movement_control_service" default="control_arm" />
+
+  <arg name="object_visualization_topic" default="object_bb_vizualization" />
+  
+  <arg name="object_visualization_service" default="visualize_objects" />  
   
   <arg name="point_location_threshold" default="0.1" />
   <arg name="box_dimension_threshold" default="0.02" />
@@ -94,6 +99,7 @@
     <param name="release_acquisition_service" type="string" value="$(arg release_service_name)" />
     <param name="arm_movement_service" type="string" value="$(arg arm_movement_service)" />
     <param name="arm_movement_control_service" type="string" value="$(arg arm_movement_control_service)" />
+    <param name="object_visualization_service" type="string" value="$(arg object_visualization_service)" />
   </node> -->
 
   <!-- Object Matching -->
@@ -114,9 +120,15 @@
   </node>
 
   <!-- Arm Motion -->
- <node pkg="tangible_programming" type="arm_motion_node" name="arm_motion_node"> 
+  <node pkg="tangible_programming" type="arm_motion_node" name="arm_motion_node"> 
     <param name="arm_movement_service" type="string" value="$(arg arm_movement_service)" />
     <param name="arm_movement_control_service" type="string" value="$(arg arm_movement_control_service)" />
+  </node> 
+
+  <!-- Visualization -->
+  <node pkg="tangible_programming" type="visualization_node" name="visualization_node"> 
+    <param name="object_visualization_topic" type="string" value="$(arg object_visualization_topic)" />
+    <param name="object_visualization_service" type="string" value="$(arg object_visualization_service)" />
   </node> 
 
   <!-- Static TF Node -->

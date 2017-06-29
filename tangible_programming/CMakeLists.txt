@@ -265,7 +265,14 @@ target_link_libraries(tangible_execution_manager
   ${catkin_LIBRARIES}
 )
 
-
+add_library(tangible_visualization src/visualization.cpp)
+add_dependencies(tangible_visualization
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(tangible_visualization 
+  ${catkin_LIBRARIES}
+)
 
 ## Executable files
 ## ----------------
@@ -368,6 +375,17 @@ add_dependencies(arm_motion_node
 target_link_libraries(arm_motion_node
   tangible_gripper 
   tangible_arm_motion
+  ${catkin_LIBRARIES}
+)
+
+add_executable(visualization_node src/visualization_node.cpp)
+add_dependencies(visualization_node
+  tangible_visualization
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(visualization_node
+  tangible_visualization 
   ${catkin_LIBRARIES}
 )
 
