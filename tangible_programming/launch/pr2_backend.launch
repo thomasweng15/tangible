@@ -120,10 +120,10 @@
   </node>
 
   <!-- Arm Motion -->
-  <node pkg="tangible_programming" type="arm_motion_node" name="arm_motion_node"> 
+  <!-- <node pkg="tangible_programming" type="arm_motion_node" name="arm_motion_node"> 
     <param name="arm_movement_service" type="string" value="$(arg arm_movement_service)" />
     <param name="arm_movement_control_service" type="string" value="$(arg arm_movement_control_service)" />
-  </node> 
+  </node> -->
 
   <!-- Visualization -->
   <node pkg="tangible_programming" type="visualization_node" name="visualization_node"> 
