@@ -124,7 +124,10 @@ bool PickAndRelease::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int&
 															  	 scene.objects[i].bounding_box.pose.pose.position.z);
 
 		if(!match_obj2criteria(scene.objects[i], instructions[PICK].target))
+		{
+			ROS_INFO("      does not match pick criteria ==> skipped ");
 			continue;
+		}
 		ROS_INFO("      matched pick criteria");
 
 		bool already_placed = false;
@@ -162,7 +165,10 @@ bool PickAndRelease::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int&
 		}
 
 		if(already_placed)
+		{
+			ROS_INFO("      but is already at release target ==> skipped ");
 			continue;
+		}
 		ROS_INFO("      is not already at release target");
 
 		int pick_attempt = 0;
@@ -180,7 +186,10 @@ bool PickAndRelease::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int&
 		if(pick_attempt == 0)
 			ROS_INFO("      has a grasp sequence.");
 		else
+		{
+			ROS_INFO("      unfortunately, does not have a grasp sequence. ==> skipped ");
 			pick_status = FAILED_GRASP;
+		}
 
 		while(pick_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
@@ -194,6 +203,7 @@ bool PickAndRelease::attempt_pick(tangible_msgs::SceneObject& obj_under_op, int&
 			pick_attempt++; 
 		}
 
+		ROS_INFO("      unfortunately, pick was not successful. ==> skipped ");
 		pick_status = FAILED_GRASP;
 
 	}
