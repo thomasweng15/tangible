@@ -1,0 +1,13 @@
+<launch>
+  <!-- Kinect -->
+  <arg name="camera" default="head_mount_kinect" />
+
+  <!-- Turn on the Kinect -->
+  <include file="$(find freenect_launch)/launch/freenect.launch">
+    <arg name="depth_registration" value="true"/>
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="depth_frame_id" value="head_mount_kinect_ir_optical_frame" />
+    <arg name="publish_tf" value="false"/>
+   </include>
+
+ </launch>
