@@ -268,6 +268,8 @@ bool PickAndRelease::attempt_release(tangible_msgs::SceneObject obj_held)
 
 		if(place_attempt == 0)
 			ROS_INFO("      has a release sequence");
+		else
+			ROS_INFO("      does not have a release sequence.");
 
 		while(place_attempt <= INSTRUCTION_MAX_ATTEMPTS)
 		{
@@ -279,6 +281,8 @@ bool PickAndRelease::attempt_release(tangible_msgs::SceneObject obj_held)
 			}
 			place_attempt++;
 		}
+
+		ROS_INFO("      unfortunately, release was unsuccessful.");	
 
 	}
 
