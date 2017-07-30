@@ -359,7 +359,7 @@ std::vector<moveit_msgs::Grasp> PickAndRelease::get_release(tangible_msgs::Targe
 	else if(release_type == tangible_msgs::Instruction::DROP)
 		release_srv.request.type = tangible_msgs::GetReleases::Request::DROP;
 	release_srv.request.num_orientations = 4;
-	release_srv.request.region_sample_spacing = 0.3;
+	release_srv.request.region_sample_spacing = 0.1;
 	release_srv.request.target = target;
 	release_srv.request.object = obj;
 	release_srv.request.scene = scene;
