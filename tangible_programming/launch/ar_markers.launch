@@ -1,0 +1,15 @@
+<launch>
+  <!-- AR Tracking -->
+  <arg name="camera" default="head_mount_kinect" />
+  <arg name="scene_output_frame" default="/base_footprint" />
+
+  <arg name="cloud_topic" default="$(arg camera)/depth_registered/points" />
+
+  <!-- Changes for real robot -->
+  <include file="$(find ar_track_alvar)/launch/pr2_indiv.launch" >
+    <arg name="output_frame" default="$(arg scene_output_frame)" />
+    <arg name="cam_image_topic" default="$(arg cloud_topic)" />
+    <arg name="cam_info_topic" default="$(arg camera)/rgb/camera_info" />
+  </include>
+
+</launch>

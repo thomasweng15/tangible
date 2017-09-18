@@ -138,7 +138,7 @@ bool ExecutionManager::get_program()
 
 void ExecutionManager::start_execution()
 {
-	ROS_INFO("executing the program");
+	ROS_INFO("executing the program %s", print_program().c_str());
 	
 	bool full_program_iteration = false;
 
@@ -166,6 +166,16 @@ void ExecutionManager::start_execution()
 		for(int i = 0; i < program.size(); i++)
 			program[i] -> reset();
 	
+}
+
+std::string ExecutionManager::print_program()
+{
+	std::stringstream ss;
+	for(int i = 0; i < program.size(); i ++)
+	{
+		ss << program[i]->print() << std::endl;
+	}
+	return ss.str();
 }
 
 void ExecutionManager::stop_execution()

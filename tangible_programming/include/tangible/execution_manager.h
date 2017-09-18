@@ -2,6 +2,8 @@
 #define TANGIBLE_EXECUTION_MANAGER
 
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "ros/ros.h"
 
@@ -39,6 +41,8 @@ private:
 
 	void start_execution();
 	void stop_execution();
+
+	std::string print_program();
 	
 public:
 	ExecutionManager(ros::NodeHandle& n);

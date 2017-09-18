@@ -2,6 +2,8 @@
 #define TANGIBLE_PICK_AND_PLACE
 
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "tangible/operation.h"
 
@@ -14,6 +16,7 @@
 #include "tangible_msgs/GetReleases.h"
 #include "tangible_msgs/GetMovements.h"
 #include "tangible_msgs/ControlMovements.h"
+#include "tangible_msgs/VisualizeObjects.h"
 #include "moveit_msgs/Grasp.h"
 
 namespace tangible
@@ -49,6 +52,9 @@ public:
 	bool execute();
 	void stop();
 	void reset();
+
+	std::string print();
+	void display_objects(std::vector<tangible_msgs::SceneObject> objs);
 
 };
 

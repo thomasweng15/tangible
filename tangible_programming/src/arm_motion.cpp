@@ -146,14 +146,15 @@ geometry_msgs::Point ArmMotion::get_relative_point(geometry_msgs::Point org, geo
 
 geometry_msgs::Pose ArmMotion::get_away_pose()
 {
+	// TO-DO use joint angles so it's not dependent on the height of the robot
 	geometry_msgs::Pose away;
-	away.position.x = 0.393;
-	away.position.y = -0.699;
-	away.position.z = 1.275;
-	away.orientation.x = 0.307;
-	away.orientation.y = 0.560;
-	away.orientation.z = -0.321;
-	away.orientation.w = 0.699;
+	away.position.x = 0.469;
+	away.position.y = -0.728;
+	away.position.z = 1.085;
+	away.orientation.x = 0.477;
+	away.orientation.y = -0.203;
+	away.orientation.z = 0.055;
+	away.orientation.w = 0.854;
 	return away;
 }
 

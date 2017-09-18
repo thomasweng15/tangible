@@ -1,0 +1,9 @@
+<launch>
+  <!-- Release Generation -->
+  <arg name="release_service_name" default="get_releases" />
+
+  <node pkg="tangible_programming" type="release_generator_node" name="release_generator_node">
+    <param name="release_service_name" type="string" value="$(arg release_service_name)" />
+  </node>
+
+</launch>
