@@ -124,6 +124,9 @@ include_directories(
 )
 
 ## Declare a C++ library
+
+find_package( OpenCV REQUIRED )
+
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/tangible_projection.cpp
 # )
@@ -145,7 +148,6 @@ target_link_libraries(tangible_projection_save_cloud_main
    ${catkin_LIBRARIES}
 )
 
-## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
