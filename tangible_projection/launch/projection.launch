@@ -2,5 +2,5 @@
 <launch>
     <node name="publish_saved_cloud" pkg="tangible_projection" type="publish_saved_cloud.py" args="$(find tangible_projection)/../data/arrow.bag" />
 
-    <node name="main" pkg="tangible_projection" type="main" />
+    <node name="projector_main" pkg="tangible_projection" type="projector_main" />
 </launch>

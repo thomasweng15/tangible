@@ -10,6 +10,7 @@ project(tangible_projection)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  image_transport
   pcl_ros
   tf
   std_msgs
@@ -108,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-    tangible_projection_projector
+    tangible_projection_annotator
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -128,9 +129,9 @@ include_directories(
 
 find_package( OpenCV REQUIRED )
 
-add_library(tangible_projection_projector src/projector.cpp)
-add_dependencies(tangible_projection_projector ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(tangible_projection_projector ${catkin_LIBRARIES})
+add_library(tangible_projection_annotator src/annotator.cpp)
+add_dependencies(tangible_projection_annotator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(tangible_projection_annotator ${catkin_LIBRARIES})
 
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/tangible_projection.cpp
@@ -153,10 +154,10 @@ target_link_libraries(tangible_projection_save_cloud_main
    ${catkin_LIBRARIES}
 )
 
-add_executable(tangible_projection_main src/main.cpp)
-set_target_properties(tangible_projection_main PROPERTIES OUTPUT_NAME main PREFIX "")
-add_dependencies(tangible_projection_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(tangible_projection_main
+add_executable(tangible_projection_projector_main src/projector_main.cpp)
+set_target_properties(tangible_projection_projector_main PROPERTIES OUTPUT_NAME projector_main PREFIX "")
+add_dependencies(tangible_projection_projector_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(tangible_projection_projector_main
    ${catkin_LIBRARIES}
 )
 
