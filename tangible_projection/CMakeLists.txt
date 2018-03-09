@@ -10,7 +10,10 @@ project(tangible_projection)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  pcl_ros
+  tf
   std_msgs
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -134,6 +137,13 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/tangible_projection_node.cpp)
+
+add_executable(tangible_projection_save_cloud_main src/offline/save_cloud_main.cpp)
+set_target_properties(tangible_projection_save_cloud_main PROPERTIES OUTPUT_NAME save_cloud PREFIX "")
+add_dependencies(tangible_projection_save_cloud_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(tangible_projection_save_cloud_main
+   ${catkin_LIBRARIES}
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
