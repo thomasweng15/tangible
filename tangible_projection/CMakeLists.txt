@@ -148,6 +148,14 @@ target_link_libraries(tangible_projection_save_cloud_main
    ${catkin_LIBRARIES}
 )
 
+add_executable(tangible_projection_project_main src/project_main.cpp)
+set_target_properties(tangible_projection_project_main PROPERTIES OUTPUT_NAME project_main PREFIX "")
+add_dependencies(tangible_projection_project_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(tangible_projection_project_main
+   ${catkin_LIBRARIES}
+)
+
+
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
