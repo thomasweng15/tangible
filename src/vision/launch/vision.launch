@@ -1,3 +1,5 @@
 <launch>
+    <node name="publish_saved_cloud" pkg="vision" type="publish_saved_cloud.py" args="$(find vision)/../data/ar_tag.bag" />
+
     <include file="$(find vision)/launch/ar_track.launch">
 </launch>
