@@ -51,6 +51,7 @@ WATCH_DIRS=( \
     ~/catkin_ws/src/tangible/tangible_projection/src \
     ~/catkin_ws/src/tangible/tangible_projection/src/offline \
     ~/catkin_ws/src/tangible/tangible_projection/include \
+    ~/catkin_ws/src/tangible/src/perception
 )
 
 inotifywait -m ${WATCH_DIRS[@]} -e close_write |

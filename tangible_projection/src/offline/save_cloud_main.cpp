@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
   rosbag::Bag bag;
   bag.open(filename, rosbag::bagmode::Write);
   bag.write("head_mount_kinect/depth_registered/points", ros::Time::now(), cloud_out);
+  bag.write("head_mount_kinect/depth_registered/points", ros::Time::now(), cloud_out);
   bag.close();
 
   return 0;
