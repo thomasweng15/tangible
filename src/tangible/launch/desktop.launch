@@ -1,3 +1,3 @@
 <launch>
-    <include file="$(find feedback)/launch/feedback.launch"/>
+    <include file="$(find feedback_viz)/launch/feedback_viz.launch"/>
 </launch>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(feedback)
+project(feedback_viz)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -129,9 +129,9 @@ include_directories(
 
 find_package( OpenCV REQUIRED )
 
-add_library(feedback_annotator src/annotator.cpp)
-add_dependencies(feedback_annotator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(feedback_annotator ${catkin_LIBRARIES})
+add_library(feedback_viz_annotator src/annotator.cpp)
+add_dependencies(feedback_viz_annotator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(feedback_viz_annotator ${catkin_LIBRARIES})
 
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/projection.cpp
@@ -147,10 +147,10 @@ target_link_libraries(feedback_annotator ${catkin_LIBRARIES})
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/tangible_projection_node.cpp)
 
-add_executable(feedback_projector_main src/feedback_main.cpp)
-set_target_properties(feedback_projector_main PROPERTIES OUTPUT_NAME feedback_main PREFIX "")
-add_dependencies(feedback_projector_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(feedback_projector_main
+add_executable(feedback_viz_main src/main.cpp)
+set_target_properties(feedback_viz_main PROPERTIES OUTPUT_NAME main PREFIX "")
+add_dependencies(feedback_viz_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(feedback_viz_main
    ${catkin_LIBRARIES}
 )
 

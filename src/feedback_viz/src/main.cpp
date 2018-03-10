@@ -2,7 +2,7 @@
 #include <image_transport/image_transport.h>
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "project_main");
+    ros::init(argc, argv, "feedback_viz_main");
     ros::NodeHandle nh;
 
     // Listen for ar tags and project onto tag. 

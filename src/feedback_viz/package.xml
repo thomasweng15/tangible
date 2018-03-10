@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>feedback</name>
+  <name>feedback_viz</name>
   <version>0.0.0</version>
-  <description>The feedback package</description>
+  <description>The feedback_viz package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
