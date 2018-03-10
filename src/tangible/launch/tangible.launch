@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find vision)/launch/vision.launch"/>
+    <include file="$(find feedback)/launch/feedback.launch"/>
+</launch>
