@@ -1,3 +1,5 @@
 <launch>
     <include file="$(find vision)/launch/vision.launch"/>
+    
+    <node pkg="tangible" type="ar_tag_annotator.py" name="ar_tag_annotator" output="screen" />
 </launch>
