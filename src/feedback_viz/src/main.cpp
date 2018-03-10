@@ -11,11 +11,15 @@ int main(int argc, char** argv) {
     image_transport::ImageTransport it(nh);
     image_transport::Publisher image_pub = 
     it.advertise("projector/image", 1);
-
     Annotator annotator(image_pub);
     ros::Subscriber annotations_sub = 
         nh.subscribe("annotations", 1, &Annotator::Callback, &annotator);
 
-    ros::spin();
+    ros::Rate r(10);
+    while (nh.ok()){
+        ros::spinOnce();
+        annotator.project();
+        r.sleep();
+    }
     return 0;
 }
