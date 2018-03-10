@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   std_msgs
   sensor_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -109,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-    feedback_annotator
+    feedback_viz_annotator
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -151,9 +152,9 @@ add_executable(feedback_viz_main src/main.cpp)
 set_target_properties(feedback_viz_main PROPERTIES OUTPUT_NAME main PREFIX "")
 add_dependencies(feedback_viz_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(feedback_viz_main
+    feedback_viz_annotator
    ${catkin_LIBRARIES}
 )
-
 
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
