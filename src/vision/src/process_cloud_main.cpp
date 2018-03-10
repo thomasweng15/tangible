@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv) {
   if (argc < 3) {
-    ROS_INFO("Usage: rosrun perception process_cloud_main DATA_DIR");
+    ROS_INFO("Usage: rosrun vision process_cloud_main DATA_DIR");
     return 1;
   }
   std::string data_dir(argv[1]);

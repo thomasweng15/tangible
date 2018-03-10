@@ -3,10 +3,21 @@
     <param name="saved_cloud" value="$(arg saved_cloud)"/>
 
     <group if="$(arg saved_cloud)">
-        <node name="publish_saved_cloud" pkg="vision" type="publish_saved_cloud.py" args="$(find vision)    /data/ar_tag.bag" />
+        <node name="publish_saved_cloud" pkg="vision" type="publish_saved_cloud.py" args="$(find vision)/data/ar_tag.bag" />
     </group>
 
-    <include file="$(find vision)/launch/ar_track.launch"/>
+    <group if="$(arg saved_cloud)">
+        <include file="$(find vision)/launch/ar_track.launch">
+            <arg name="cam_image_topic" default="/mock_point_cloud" />
+        </include>
+    </group>
+
+    <group unless="$(arg saved_cloud)">
+        <include file="$(find vision)/launch/ar_track.launch">
+            <arg name="cam_image_topic" default="/head_mount_kinect/depth_registered/points" />
+        </include>
+    </group>
+
     <include file="$(find vision)/launch/obj_recog.launch">
         <arg name="saved_cloud" default="$(arg saved_cloud)"/>
     </include>
