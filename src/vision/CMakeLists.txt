@@ -108,8 +108,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES 
-    tangible_projection_annotator
+#  LIBRARIES 
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -144,6 +143,13 @@ add_executable(vision_save_cloud_main src/offline/save_cloud_main.cpp)
 set_target_properties(vision_save_cloud_main PROPERTIES OUTPUT_NAME save_cloud PREFIX "")
 add_dependencies(vision_save_cloud_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vision_save_cloud_main
+   ${catkin_LIBRARIES}
+)
+
+add_executable(vision_process_cloud_main src/process_cloud_main.cpp)
+set_target_properties(vision_process_cloud_main PROPERTIES OUTPUT_NAME process_cloud PREFIX "")
+add_dependencies(vision_process_cloud_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vision_process_cloud_main
    ${catkin_LIBRARIES}
 )
 

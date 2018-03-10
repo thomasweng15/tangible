@@ -1,0 +1,8 @@
+<launch>
+    <arg name="saved_cloud" default="false"/>
+    <param name="saved_cloud" value="$(arg saved_cloud)"/>
+
+    <node name="process_cloud" pkg="vision" type="process_cloud" output="screen" required="true" args="$(find vision)/data/">
+        <remap from="cloud_in" to="mock_point_cloud" />
+    </node>
+</launch>
