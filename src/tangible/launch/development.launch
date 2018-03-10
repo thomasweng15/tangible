@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find tangible)/launch/robot.launch"/>
+    <include file="$(find tangible)/launch/desktop.launch"/>
+</launch>
